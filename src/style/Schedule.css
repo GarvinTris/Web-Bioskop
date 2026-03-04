@@ -1,0 +1,19 @@
+.date-buttons button {
+    margin: 5px;
+    padding: 10px 15px;
+    border: 1px solid #333;
+    background-color: #fff;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: 0.2s;
+  }
+  
+  .date-buttons button:hover {
+    background-color: #eee;
+  }
+  
+  .date-buttons button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+  }

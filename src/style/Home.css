@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Poppins:wght@500&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background-color: aliceblue;
+}
+nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gap-default);
+  padding: var(--gap-default) 1.8rem;
+  background-color: #000940;
+  color: aliceblue;
+  font-family: 'Poppins',sans-serif;
+  font-size: var(--text-body);
+}
+nav i {
+  font-size: var(--text-head);
+}
+nav ul {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  list-style: none;
+}
+nav ul a {
+  color: white;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+}
+nav ul a:hover {
+  color: #ff4c4c;
+}
+.layout {
+  display: flex;
+  position: relative;
+  align-items: center;
+  gap: var(--gap-default);
+  justify-content: right;
+}
+.layout:hover > select { 
+  display: block;
+}
+.layout select {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 99;
+  padding: 2rem;
+  background-color: aliceblue;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+section {
+  padding: var(--pad-3) var(--pad-1);
+}
+section h1 {
+  padding: var(--pad-2) 0;
+  font-family: 'Poppins',sans-serif;
+}
+section h2 {
+  font-family: 'Lato',sans-serif;
+}
+.jumbotron {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-default);
+  height: 70vh;
+  position: relative;
+}
+.jumbotron img {
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  box-shadow: 6px 6px 10px rgba(0,0,0,0.2);
+  filter: brightness(0.7);
+}
+.jumbotron h1 {
+  font-size: var(--text-head);
+  font-family: 'Arial',sans-serif;
+  color: white;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+.jumbotron p {
+  font-size: var(--text-body);
+  font-family: 'Lato',sans-serif;
+  color: white;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+}
+.jumbotron input {
+  padding: 1.5rem 1rem;
+  width: 500px;
+  border: 1px solid transparent;
+  outline: none;
+  border-radius: 52px;
+  font-size: var(--text-body);
+  background-color: white;
+}
+.jumbotron input:focus {
+  border: 1px solid red;
+}
+.rekomen {
+  display: grid;
+  grid-template-columns: repeat(5,minmax(250px,1fr));
+  gap: var(--gap-default);
+}
+a {
+  text-decoration: none;
+  color: black;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-default);
+  text-align: center;
+}
+.card img {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  border-radius: 20px;
+  box-shadow: 6px 6px 10px rgba(0,0,0,0.2);
+}
+
+:root {
+  --text-head: 34px;
+  --text-body: 16px;
+  --gap-default: 1.5rem;
+  --gap-small: 0.5rem;
+  --pad-1: 48px;
+  --pad-2: 32px;
+  --pad-3: 16px;
+}

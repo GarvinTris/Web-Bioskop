@@ -1,0 +1,56 @@
+.reservasi-container {
+    height: 100vh;
+    display: grid;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+}
+.reservasi-showcase {
+    display: flex;
+}
+.reservasi-info {
+    display: grid;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+.reservasi-card {
+    background: #1c1c1c;
+    padding: 40px;
+    border-radius: 15px;
+    text-align: center;
+    width: 400px;
+    box-shadow: 0 0 20px rgba(255,0,0,0.3);
+}
+
+.judul-movie {
+    color: white;
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.jadwal button {
+    margin: 5px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    background-color: red;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.jadwal button:hover {
+    background-color: darkred;
+}
+
+.btn-pesan {
+    margin-top: 20px;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 10px;
+    background-color: #ff3c3c;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
