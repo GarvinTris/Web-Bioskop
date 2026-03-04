@@ -68,6 +68,17 @@ function Reservasi() {
 
   const film = movie[0];
 
+  const formatDurasi = (timeString) => {
+    if (!timeString) return "";
+  
+    const [hours, minutes] = timeString.split(":");
+  
+    const jam = parseInt(hours, 10);
+    const menit = parseInt(minutes, 10);
+  
+    return `${jam} HOUR ${menit} MINUTES`;
+  };
+
   return (
     <div className="reservasi-container">
 
@@ -81,7 +92,7 @@ function Reservasi() {
         <p>Genre: {film.ID_Kategori}</p>
         <p>Director: {film.Director}</p>
         <p>Rating: ⭐ {film.Rating}</p>
-        <p>Durasi: {film.Durasi} menit</p>
+        <p>Durasi: {formatDurasi(film.Durasi)} menit</p>
 
         <button>See Trailer</button>
       </div>

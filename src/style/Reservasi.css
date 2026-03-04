@@ -8,6 +8,13 @@
 .reservasi-showcase {
     display: flex;
 }
+.reservasi-showcase img {
+    width: 400px;
+    height: 600px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(255,0,0,0.3);
+    object-fit: cover;
+}
 .reservasi-info {
     display: grid;
     flex-direction: column;
@@ -54,3 +61,4 @@
     font-weight: bold;
     cursor: pointer;
 }
+
