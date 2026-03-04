@@ -92,7 +92,7 @@ function Reservasi() {
         <p>Genre: {film.ID_Kategori}</p>
         <p>Director: {film.Director}</p>
         <p>Rating: ⭐ {film.Rating}</p>
-        <p>Durasi: {formatDurasi(film.Durasi)} menit</p>
+        <p>Durasi: {formatDurasi(film.Durasi)}</p>
 
         <button>See Trailer</button>
       </div>
