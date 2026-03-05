@@ -1,0 +1,374 @@
+/* RiwayatTiket.css */
+
+/* ===== DASAR ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0a0a0a;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+.riwayat-container {
+  min-height: 100vh;
+  background-color: #0f0f0f;
+  color: #ffffff;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.riwayat-container > * {
+  width: 100%;
+  max-width: 1200px;
+}
+
+.riwayat-container h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 30px;
+  text-align: center;
+  color: #fff;
+  border-bottom: 2px solid #e50914;
+  padding-bottom: 15px;
+  display: inline-block;
+  align-self: center;
+}
+
+/* ===== FILTER BUTTONS ===== */
+.riwayat-filters {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  color: #aaa;
+  padding: 12px 28px;
+  border-radius: 40px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.filter-btn:hover {
+  background: #2a2a2a;
+  border-color: #e50914;
+  color: #fff;
+}
+
+.filter-btn.active {
+  background: #e50914;
+  border-color: #e50914;
+  color: white;
+  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+}
+
+/* ===== STATISTIK CARDS ===== */
+.riwayat-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  margin-bottom: 50px;
+}
+
+.stat-card {
+  background: #121212;
+  border-radius: 20px;
+  padding: 30px 20px;
+  text-align: center;
+  border: 1px solid #2a2a2a;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(229, 9, 20, 0.2);
+  border-color: #e50914;
+}
+
+.stat-label {
+  display: block;
+  color: #aaa;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.stat-value {
+  display: block;
+  color: #e50914;
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+/* ===== DAFTAR TRANSAKSI ===== */
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.transaction-card {
+  background: #121212;
+  border-radius: 20px;
+  border: 1px solid #2a2a2a;
+  overflow: hidden;
+  transition: all 0.2s;
+}
+
+.transaction-card:hover {
+  border-color: #e50914;
+  box-shadow: 0 10px 20px rgba(229, 9, 20, 0.15);
+  transform: scale(1.01);
+}
+
+.transaction-header {
+  background: #1a1a1a;
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.transaction-header > div {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.transaction-id {
+  font-weight: 600;
+  color: #e50914;
+  font-size: 1rem;
+  font-family: monospace;
+  background: #2a2a2a;
+  padding: 4px 10px;
+  border-radius: 30px;
+}
+
+.transaction-badge {
+  background: #00c853;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.transaction-date {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+.transaction-body {
+  padding: 25px;
+}
+
+.movie-info h3 {
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #fff;
+}
+
+.studio-info {
+  display: flex;
+  gap: 20px;
+  color: #aaa;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.studio-info span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.seats-info {
+  margin-bottom: 20px;
+  padding: 15px 0;
+  border-top: 1px dashed #2a2a2a;
+  border-bottom: 1px dashed #2a2a2a;
+}
+
+.seats-label {
+  display: block;
+  color: #aaa;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.seats-value {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.seat-badge {
+  background: #2a2a2a;
+  color: #e50914;
+  padding: 6px 14px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid #444;
+}
+
+.transaction-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.price-detail {
+  text-align: left;
+}
+
+.price-label {
+  display: block;
+  color: #aaa;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+}
+
+.total-price {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #e50914;
+}
+
+.view-ticket-btn {
+  background: transparent;
+  border: 2px solid #e50914;
+  color: #e50914;
+  padding: 12px 30px;
+  border-radius: 40px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.view-ticket-btn:hover {
+  background: #e50914;
+  color: white;
+  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+}
+
+/* ===== KOSONG ===== */
+.no-transactions {
+  text-align: center;
+  padding: 80px 20px;
+  background: #121212;
+  border-radius: 20px;
+  border: 1px solid #2a2a2a;
+}
+
+.empty-icon {
+  font-size: 5rem;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-transactions p {
+  color: #aaa;
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+.btn-cari-film {
+  background: #e50914;
+  color: white;
+  border: none;
+  padding: 15px 40px;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.btn-cari-film:hover {
+  background: #b2070d;
+}
+
+/* ===== LOADING ===== */
+.loading-spinner {
+  text-align: center;
+  padding: 100px;
+  color: #e50914;
+  font-size: 1.5rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .riwayat-container h1 {
+    font-size: 2rem;
+  }
+
+  .filter-btn {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+
+  .stat-card {
+    padding: 20px;
+  }
+
+  .stat-value {
+    font-size: 1.8rem;
+  }
+
+  .transaction-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .studio-info {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .transaction-footer {
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .view-ticket-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
