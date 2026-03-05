@@ -1,6 +1,6 @@
-import "../style/Contact.jsx"
+import "../style/Contact.css";
 
 function Contact(){
 
 }
-export default Contact();
+export default Contact;

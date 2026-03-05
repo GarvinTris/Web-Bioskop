@@ -1,4 +1,4 @@
-import "../style/About.jsx"
+import "../style/About.css";
 
 function About(){
     

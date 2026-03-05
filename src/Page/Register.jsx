@@ -1,31 +1,93 @@
 import "../style/Login.css";
-import {Link} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function Register() {
-    const handleRegister = () => {
-      // simulasi login
-      localStorage.setItem("loggedIn", true);
-      alert("Berhasil Register!");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const navigate = useNavigate();
+
+    const handleRegister = (e) => {
+        e.preventDefault();
+        
+        // Validasi sederhana
+        if (!email || !password || !confirmPassword) {
+            alert("Semua field harus diisi!");
+            return;
+        }
+        
+        if (password !== confirmPassword) {
+            alert("Password dan Confirm Password tidak cocok!");
+            return;
+        }
+        
+        // Simulasi register berhasil
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("isAdmin", "false");
+        localStorage.setItem("user", JSON.stringify({ 
+            email: email,
+            name: email.split('@')[0]
+        }));
+        
+        alert("Berhasil Register!");
+        
+        // 🔴 CEK APAKAH ADA REDIRECT SEBELUMNYA
+        const redirectTo = localStorage.getItem("redirectAfterLogin") || "/";
+        localStorage.removeItem("redirectAfterLogin"); // Hapus setelah dipakai
+        
+        navigate(redirectTo); // Redirect ke halaman yang dimaksud
     };
-  
+
     return (
-      <div className="login-format">
-        <h2>Register</h2>
-        <p>Let's get started!</p>
-        <div className="group-input">
-            <label htmlFor="">Email or Mobile Number</label>
-            <input type="text" />
-            <label htmlFor="">Password</label>
-            <input type="text" />
-            <label htmlFor="">Confirm Password</label>
-            <input type="text" />
-            <Link to={`/Forgot-password`}>Forgot Password</Link>
-            <button onClick={handleRegister}>Register</button>
-            <p>or sign up with</p>
-            <p>Already have an account? <Link to={`/Login`}>Login in</Link></p>
+        <div className="login-format">
+            <h2>Register</h2>
+            <p>Let's get started!</p>
+            <form onSubmit={handleRegister} className="group-input">
+                <label htmlFor="email">Email or Mobile Number</label>
+                <input 
+                    type="text" 
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                
+                <label htmlFor="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                
+                <label htmlFor="confirmPassword">Confirm Password</label>
+                <input 
+                    type="password" 
+                    id="confirmPassword"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                />
+                
+                <Link to="/Forgot-password">Forgot Password</Link>
+                
+                <button type="submit">Register</button>
+                
+                <p>or sign up with</p>
+                <div className="shortcut-login">
+                    <button className="google" type="button"></button>
+                    <button className="facebook" type="button"></button>
+                    <button className="biometrik" type="button"></button>
+                </div>
+                
+                <p>
+                    Already have an account? <Link to="/Login">Login</Link>
+                </p>
+            </form>
         </div>
-      </div>
     );
-  }
-  
-  export default Register;
+}
+
+export default Register;

@@ -1,34 +1,78 @@
 import "../style/Login.css";
-import {Link} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+
 
 function Login() {
-    const handleLogin = () => {
-      // simulasi login
-      localStorage.setItem("loggedIn", true);
-      alert("Berhasil login!");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const navigate = useNavigate();
+
+    const handleLogin = (e) => {
+        e.preventDefault();
+        
+        // Simulasi login sederhana
+        // Dalam implementasi nyata, ini akan panggil API
+        if (email && password) {
+            // Simpan data login
+            localStorage.setItem("isLoggedIn", "true");
+            localStorage.setItem("isAdmin", "false");
+            localStorage.setItem("user", JSON.stringify({ 
+                email: email,
+                name: email.split('@')[0] // ambil nama dari email
+            }));
+            
+            alert("Berhasil login!");
+            
+            const redirectTo = localStorage.getItem("redirectAfterLogin") || "/";
+            localStorage.removeItem("redirectAfterLogin"); // Hapus setelah dipakai
+            
+            navigate(redirectTo); // Redirect ke halaman yang dimaksud
+        } else {
+            alert("Email dan password harus diisi!");
+        }
     };
-  
+
     return (
-      <div className="login-format">
-        <h2>Login Page</h2>
-        <p>Let's get started!</p>
-        <div className="group-input">
-            <label htmlFor="">Email or Mobile Number</label>
-            <input type="text" />
-            <label htmlFor="">Password</label>
-            <input type="text" />
-            <Link to={`/Forgot-password`}>Forgot Password</Link>
-            <button onClick={handleLogin}>Login</button>
-            <p>or sign up with</p>
-            <div className="shortcut-login">
-                <button className="google"></button>
-                <button className="facebook"></button>
-                <button className="biometrik"></button>
-            </div>
-            <p>Don't have an account? <Link to={`/Register`}>Sign up</Link></p>
+        <div className="login-format">
+            <h2>Login Page</h2>
+            <p>Let's get started!</p>
+            <form onSubmit={handleLogin} className="group-input">
+                <label htmlFor="email">Email or Mobile Number</label>
+                <input 
+                    type="text" 
+                    id="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                
+                <label htmlFor="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                />
+                
+                <Link to="/Forgot-password">Forgot Password</Link>
+                
+                <button type="submit">Login</button>
+                
+                <p>or sign up with</p>
+                <div className="shortcut-login">
+                    <button className="google" type="button"></button>
+                    <button className="facebook" type="button"></button>
+                    <button className="biometrik" type="button"></button>
+                </div>
+                
+                <p>
+                    Don't have an account? <Link to="/Register">Sign up</Link>
+                </p>
+            </form>
         </div>
-      </div>
     );
-  }
-  
-  export default Login;
+}
+
+export default Login;

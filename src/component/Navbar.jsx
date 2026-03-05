@@ -68,7 +68,6 @@ function Navbar() {
         <li>|</li>
         
         {isLoggedIn ? (
-          // TAMPILAN KALAU SUDAH LOGIN
           <>
             <li style={{ color: "#4CAF50", fontWeight: "bold" }}>
               Hi, {userName}
@@ -93,7 +92,6 @@ function Navbar() {
             </li>
           </>
         ) : (
-          // TAMPILAN KALAU BELUM LOGIN
           <>
             <li><Link to="/login">Login</Link></li>
             <li><Link to="/register">Register</Link></li>

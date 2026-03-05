@@ -190,6 +190,7 @@ function Reservasi() {
     // Handle pilih jadwal
     const handlePilihJadwal = (item) => {
         if (!isLoggedIn) {
+            localStorage.setItem("redirectAfterLogin", window.location.pathname);
             navigate("/Login");
         } else {
             localStorage.setItem("selectedJadwal", JSON.stringify(item));

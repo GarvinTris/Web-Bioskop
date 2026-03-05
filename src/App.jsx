@@ -1,19 +1,20 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
-import Navbar from "./component/Navbar.jsx"
-import { Movie, Jumbotron } from "./Page/Homepage"
-import Admin from "./Page/Admin.jsx"
-import Reservasi from "./Page/Reservasi.jsx"
-import Login from "./Page/Login.jsx"
-import Register from "./Page/Register.jsx"
+import Layout from "./component/Layout.jsx";
+import { Movie, Jumbotron } from "./Page/Homepage";
+import Admin from "./Page/Admin.jsx";
+import Reservasi from "./Page/Reservasi.jsx";
+import Login from "./Page/Login.jsx";
+import Register from "./Page/Register.jsx";
 import SeatSelection from "./Page/SeatSelection.jsx";
 import Payment from "./Page/Payment.jsx";
 import PaymentSuccess from "./Page/PaymentSucess.jsx";
-import RiwayatTiket from "./Page/RiwayatTiket.jsx"
+import RiwayatTiket from "./Page/RiwayatTiket.jsx";
+import About from "./Page/About.jsx";
+import Contact from "./Page/Contact.jsx";
 
 function HomePage() {
   return (
     <>
-      <Navbar />
       <Jumbotron />
       <Movie />
     </>
@@ -24,17 +25,67 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/Reservasi/:Judul_Film" element={<Reservasi />} />
-        <Route path="/Login" element={<Login />}></Route>
-        <Route path="/Register" element={<Register />}></Route>
-        <Route path="/seat-selection" element={<SeatSelection />} />
-        <Route path="/payment" element={<Payment />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/riwayat-tiket" element={<RiwayatTiket />} />
+        <Route path="/" element={
+          <Layout>
+            <HomePage />
+          </Layout>
+        } />
+        <Route path="/admin" element={<Admin />}/>
+        
+        <Route path="/Reservasi/:Judul_Film" element={
+          <Layout>
+            <Reservasi />
+          </Layout>
+        } />
+        
+        <Route path="/Login" element={
+          <Layout>
+            <Login />
+          </Layout>
+        } />
+        
+        <Route path="/Register" element={
+          <Layout>
+            <Register />
+          </Layout>
+        } />
+        
+        <Route path="/seat-selection" element={
+          <Layout>
+            <SeatSelection />
+          </Layout>
+        } />
+        
+        <Route path="/payment" element={
+          <Layout>
+            <Payment />
+          </Layout>
+        } />
+        
+        <Route path="/payment-success" element={
+          <Layout>
+            <PaymentSuccess />
+          </Layout>
+        } />
+        
+        <Route path="/riwayat-tiket" element={
+          <Layout>
+            <RiwayatTiket />
+          </Layout>
+        } />
+        <Route path="/about" element={
+          <Layout>
+            <About />
+          </Layout>
+        } />
+        <Route path="/contact" element={
+          <Layout>
+            <Contact />
+          </Layout>
+        } />
       </Routes>
     </Router>
   )
 }
+
 export default App;
