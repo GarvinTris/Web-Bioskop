@@ -50,7 +50,10 @@
 .jadwal button:hover {
     background-color: darkred;
 }
-
+.synopsis {
+    max-width: 400px;
+    text-align: justify;
+}
 .btn-pesan {
     margin-top: 20px;
     padding: 12px 25px;

@@ -2,91 +2,95 @@ import "../style/Reservasi.css";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-function Synopsis() {
+function Synopsis({ deskripsi }) {
     return (
-        <div className="synopsis">
-            <h2>Synopsis</h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, quisquam.</p>
+        <div className="synopsis-content">
+            <p>{deskripsi || "Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptas, quisquam. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris."}</p>
         </div>
     );
 }
 
-function Schedule({ jadwal = [], onSelectJadwal }) {
-    const [selectedDate, setSelectedDate] = useState("");
-    const [selectedJadwal, setSelectedJadwal] = useState(null);
-
-    // Group jadwal by tanggal
-    const groupedJadwal = jadwal.reduce((acc, item) => {
-        if (!acc[item.Tanggal]) {
-            acc[item.Tanggal] = [];
-        }
-        acc[item.Tanggal].push(item);
-        return acc;
-    }, {});
-
-    const uniqueDates = Object.keys(groupedJadwal);
-
-    const handleDateClick = (date) => {
-        setSelectedDate(date);
-        setSelectedJadwal(null);
-    };
-
-    const handleTimeSelect = (item) => {
-        setSelectedJadwal(item);
-        if (onSelectJadwal) {
-            onSelectJadwal(item);
-        }
-    };
-
-    if (jadwal.length === 0) {
-        return (
-            <div className="schedule">
-                <h2>Schedule</h2>
-                <p>Belum ada jadwal untuk film ini</p>
-            </div>
-        );
-    }
-
+function ScheduleContent({ jadwal, filteredJadwal, selectedDate, setSelectedDate, searchCinema, setSearchCinema, uniqueDates, formatDateButton, handlePilihJadwal, isLoggedIn }) {
     return (
-        <div className="schedule">
-            <h2>Schedule</h2>
-            
-            {uniqueDates.length > 0 ? (
-                <>
+        <div className="schedule-content">
+            {/* FILTER SECTION */}
+            <div className="filter-section">
+                {/* DATE FILTER BUTTONS */}
+                <div className="date-filter">
+                    <h3>Pilih Tanggal</h3>
                     <div className="date-buttons">
-                        {uniqueDates.map((date, index) => (
+                        <button
+                            className={`date-btn ${selectedDate === '' ? 'active' : ''}`}
+                            onClick={() => setSelectedDate('')}
+                        >
+                            Semua
+                        </button>
+                        {uniqueDates.map((date) => (
                             <button
-                                key={index}
-                                className={selectedDate === date ? "active" : ""}
-                                onClick={() => handleDateClick(date)}
+                                key={date}
+                                className={`date-btn ${selectedDate === date ? 'active' : ''}`}
+                                onClick={() => setSelectedDate(date)}
                             >
-                                {new Date(date).toLocaleDateString('id-ID', {
-                                    weekday: 'short',
-                                    day: 'numeric',
-                                    month: 'short'
-                                })}
+                                {formatDateButton(date)}
                             </button>
                         ))}
                     </div>
+                </div>
 
-                    {selectedDate && (
-                        <div className="time-slots">
-                            <h4>Jam Tayang:</h4>
-                            {groupedJadwal[selectedDate].map((item, idx) => (
-                                <button
-                                    key={idx}
-                                    className={`time-btn ${selectedJadwal?.ID_Jadwal === item.ID_Jadwal ? 'active' : ''}`}
-                                    onClick={() => handleTimeSelect(item)}
+                {/* SEARCH CINEMA */}
+                <div className="search-filter">
+                    <h3>Cari Studio</h3>
+                    <div className="search-box">
+                        <input
+                            type="text"
+                            placeholder="Search cinema..."
+                            value={searchCinema}
+                            onChange={(e) => setSearchCinema(e.target.value)}
+                        />
+                        <i className="fa-solid fa-search"></i>
+                    </div>
+                </div>
+            </div>
+
+            {/* JADWAL LIST */}
+            <div className="jadwal-section">
+                <h2>Jadwal Tersedia</h2>
+                <p className="result-count">{filteredJadwal.length} jadwal ditemukan</p>
+
+                {filteredJadwal.length === 0 ? (
+                    <div className="no-result">
+                        <p>Tidak ada jadwal yang sesuai dengan filter</p>
+                    </div>
+                ) : (
+                    <div className="jadwal-grid">
+                        {filteredJadwal.map((item, index) => (
+                            <div key={index} className="jadwal-card">
+                                {/* STUDIO INFO */}
+                                <div className="studio-header">
+                                    <h3>{item.Nama_Studio || `Studio ${item.No_Studio}`}</h3>
+                                    <span className="studio-type">Regular 2D</span>
+                                </div>
+
+                                {/* PRICE */}
+                                <div className="price-info">
+                                    <span className="price-label">Harga</span>
+                                    <span className="price-value">
+                                        Rp {item.Harga?.toLocaleString() || "50.000"}
+                                    </span>
+                                </div>
+
+                                {/* JAM TAYANG SEBAGAI TOMBOL */}
+                                <button 
+                                    className="jam-btn"
+                                    onClick={() => handlePilihJadwal(item)}
                                 >
                                     {item.Jam_Mulai.substring(0, 5)} WIB
                                 </button>
-                            ))}
-                        </div>
-                    )}
-                </>
-            ) : (
-                <p>Tidak ada jadwal tersedia</p>
-            )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
@@ -95,59 +99,42 @@ function Reservasi() {
     const { Judul_Film } = useParams();
     const decodedTitle = decodeURIComponent(Judul_Film);
 
-    const [movie, setMovie] = useState(null); // Ubah jadi null, bukan array
+    const [movie, setMovie] = useState(null);
     const [jadwal, setJadwal] = useState([]);
-    const [selectedJadwal, setSelectedJadwal] = useState(null);
+    const [filteredJadwal, setFilteredJadwal] = useState([]);
+    
+    // FILTER STATES
+    const [selectedDate, setSelectedDate] = useState("");
+    const [searchCinema, setSearchCinema] = useState("");
+    
+    // TAB STATE
+    const [activeTab, setActiveTab] = useState("schedule"); // 'synopsis' atau 'schedule'
+    
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     
     const navigate = useNavigate();
     const isLoggedIn = localStorage.getItem("loggedIn");
 
-    const handleBuyTicket = () => {
-        if (!isLoggedIn) {
-            navigate("/Login");
-        } else if (!selectedJadwal) {
-            alert("Silakan pilih jadwal terlebih dahulu");
-        } else {
-            // Simpan data jadwal yang dipilih
-            localStorage.setItem("selectedJadwal", JSON.stringify(selectedJadwal));
-            navigate("/seat-selection");
-        }
-    };
-
     useEffect(() => {
         setLoading(true);
         
         fetch(`http://localhost/24SI1_PHP/bioskop.php?judul=${encodeURIComponent(decodedTitle)}`)
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
-                }
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
                 console.log("DATA DARI BIOSKOP.PHP:", data);
                 
                 if (data && data.length > 0) {
-                    // Data film ada di index 0
                     const filmData = data[0];
                     setMovie(filmData);
-                    
-                    // Set jadwal jika ada
-                    if (filmData.jadwal && filmData.jadwal.length > 0) {
-                        setJadwal(filmData.jadwal);
-                    } else {
-                        setJadwal([]);
-                    }
-                    
+                    setJadwal(filmData.jadwal || []);
+                    setFilteredJadwal(filmData.jadwal || []);
                     setError(null);
                 } else {
                     setMovie(null);
                     setJadwal([]);
                     setError("Film tidak ditemukan");
                 }
-                
                 setLoading(false);
             })
             .catch(err => {
@@ -157,95 +144,130 @@ function Reservasi() {
             });
     }, [decodedTitle]);
 
-    // Loading state
-    if (loading) {
-        return (
-            <div className="reservasi-container">
-                <h2>Loading...</h2>
-            </div>
-        );
-    }
-
-    // Error state
-    if (error) {
-        return (
-            <div className="reservasi-container">
-                <h2>Error: {error}</h2>
-                <button onClick={() => window.location.reload()}>Coba Lagi</button>
-            </div>
-        );
-    }
-
-    // Film tidak ditemukan
-    if (!movie) {
-        return (
-            <div className="reservasi-container">
-                <h2>Film tidak ditemukan</h2>
-            </div>
-        );
-    }
-
-    const formatDurasi = (timeString) => {
-        if (!timeString) return "";
+    // ========== FILTER FUNCTIONS ==========
+    
+    // Apply filters when selectedDate or searchCinema changes
+    useEffect(() => {
+        let filtered = [...jadwal];
         
-        // Handle format time dari database (HH:MM:SS)
-        const parts = timeString.split(":");
-        if (parts.length >= 2) {
-            const jam = parseInt(parts[0], 10);
-            const menit = parseInt(parts[1], 10);
-            
-            if (jam > 0 && menit > 0) {
-                return `${jam} HOUR ${menit} MINUTES`;
-            } else if (jam > 0) {
-                return `${jam} HOUR`;
-            } else if (menit > 0) {
-                return `${menit} MINUTES`;
-            }
+        // Filter by date
+        if (selectedDate) {
+            filtered = filtered.filter(j => j.Tanggal === selectedDate);
         }
         
-        return timeString;
+        // Filter by cinema name
+        if (searchCinema) {
+            filtered = filtered.filter(j => 
+                j.Nama_Studio?.toLowerCase().includes(searchCinema.toLowerCase())
+            );
+        }
+        
+        setFilteredJadwal(filtered);
+    }, [selectedDate, searchCinema, jadwal]);
+
+    // Get unique dates from jadwal
+    const uniqueDates = [...new Set(jadwal.map(j => j.Tanggal))].sort();
+
+    // Format tanggal untuk filter
+    const formatDateButton = (dateString) => {
+        const date = new Date(dateString);
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        if (date.toDateString() === today.toDateString()) {
+            return "Hari Ini";
+        } else if (date.toDateString() === tomorrow.toDateString()) {
+            return "Besok";
+        } else {
+            return date.toLocaleDateString('id-ID', { 
+                day: 'numeric', 
+                month: 'short' 
+            });
+        }
     };
+
+    // Handle pilih jadwal
+    const handlePilihJadwal = (item) => {
+        if (!isLoggedIn) {
+            navigate("/Login");
+        } else {
+            localStorage.setItem("selectedJadwal", JSON.stringify(item));
+            navigate("/seat-selection");
+        }
+    };
+
+    if (loading) return <div className="reservasi-container"><h2>Loading...</h2></div>;
+    if (error) return <div className="reservasi-container"><h2>Error: {error}</h2></div>;
+    if (!movie) return <div className="reservasi-container"><h2>Film tidak ditemukan</h2></div>;
 
     return (
         <div className="reservasi-container">
+            {/* MOVIE INFO - TETAP DI ATAS */}
             <div className="reservasi-showcase">
                 <img 
                     src={`http://localhost/24SI1_PHP/uploads/${movie.image}`}
                     alt={movie.Judul_Film}
-                    onError={(e) => {
-                        e.target.src = 'http://localhost/24SI1_PHP/uploads/placeholder.jpg';
-                    }}
+                    onError={(e) => e.target.src = 'http://localhost/24SI1_PHP/uploads/placeholder.jpg'}
                 />
                 <div className="reservasi-info">
                     <h1>{movie.Judul_Film}</h1>
                     <p>Genre: {movie.Nama_Kategori || movie.ID_Kategori}</p>
                     <p>Director: {movie.Director}</p>
                     <p>Rating: ⭐ {movie.Rating}</p>
-                    <p>Durasi: {formatDurasi(movie.Durasi)}</p>
-                    <button>See Trailer</button>
+                    <p>Durasi: {movie.Durasi?.substring(0, 5)} Jam</p>
+                    <button 
+                        className="trailer-btn"
+                        onClick={() => {
+                            if (movie.Trailer_URL) {
+                                window.open(movie.Trailer_URL, '_blank');
+                            } else {
+                                alert("Trailer tidak tersedia");
+                            }
+                        }}
+                    >
+                        <i className="fa-brands fa-youtube"></i> Watch Trailer
+                    </button>
                 </div>
             </div>
 
-            <Synopsis />
-            
-            <Schedule 
-                jadwal={jadwal} 
-                onSelectJadwal={setSelectedJadwal}
-            />
+            {/* TAB NAVIGATION */}
+            <div className="tab-navigation">
+                <button 
+                    className={`tab-btn ${activeTab === 'synopsis' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('synopsis')}
+                >
+                    Synopsis
+                </button>
+                <button 
+                    className={`tab-btn ${activeTab === 'schedule' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('schedule')}
+                >
+                    Schedule
+                </button>
+            </div>
 
-            <button 
-                onClick={handleBuyTicket}
-                disabled={!selectedJadwal}
-                style={{
-                    opacity: selectedJadwal ? 1 : 0.5,
-                    cursor: selectedJadwal ? "pointer" : "not-allowed",
-                    padding: "10px 20px",
-                    margin: "20px 0",
-                    fontSize: "16px"
-                }}
-            >
-                {selectedJadwal ? "BUY TICKET" : "PILIH JADWAL DAHULU"}
-            </button>
+            {/* TAB CONTENT */}
+            <div className="tab-content">
+                {activeTab === 'synopsis' && (
+                    <Synopsis deskripsi={movie.Deskripsi} />
+                )}
+                
+                {activeTab === 'schedule' && (
+                    <ScheduleContent 
+                        jadwal={jadwal}
+                        filteredJadwal={filteredJadwal}
+                        selectedDate={selectedDate}
+                        setSelectedDate={setSelectedDate}
+                        searchCinema={searchCinema}
+                        setSearchCinema={setSearchCinema}
+                        uniqueDates={uniqueDates}
+                        formatDateButton={formatDateButton}
+                        handlePilihJadwal={handlePilihJadwal}
+                        isLoggedIn={isLoggedIn}
+                    />
+                )}
+            </div>
         </div>
     );
 }

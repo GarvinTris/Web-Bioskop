@@ -9,6 +9,8 @@ function Admin() {
   const [ID_Kategori, setID_Kategori] = useState("")
   const [image, setImage] = useState(null)
   const [Director, setDirector] = useState("")
+  const [Deskripsi, setDeskripsi] = useState("")
+  const [Trailer_URL, setTrailer_URL] = useState("") 
   const [Rating, setRating] = useState("")
   
   // ========== STATE UNTUK FORM JADWAL ==========
@@ -80,6 +82,8 @@ function Admin() {
     formData.append("Durasi", DurasiFormatted)
     formData.append("ID_Kategori", ID_Kategori)
     formData.append("Director", Director)
+    formData.append("Deskripsi", Deskripsi)
+    formData.append("Trailer_URL", Trailer_URL)
     formData.append("Rating", Rating)
     formData.append("image", image)
 
@@ -122,6 +126,7 @@ function Admin() {
     formData.append("Tanggal", Tanggal)
     formData.append("Jam_Mulai", Jam_Mulai)
     formData.append("ID_Film", ID_FilmJadwal)
+    formData.append("No_Studio", No_Studio)
 
     try {
       const res = await axios.post(
@@ -136,6 +141,7 @@ function Admin() {
         setTanggal("")
         setJam_Mulai("")
         setID_FilmJadwal("")
+        setNo_Studio("")
         fetchJadwal() // Refresh daftar jadwal
       } else {
         setMessage({ text: "Error: " + res.data.error, type: "error" })
@@ -255,6 +261,24 @@ function Admin() {
               <input type="file" accept="image/png, image/jpeg, image/jpg" onChange={(e) => setImage(e.target.files[0])} required />
               <input type="text" placeholder="Director" value={Director} onChange={(e) => setDirector(e.target.value)} required />
               <input type="number" step="0.1" min="0" max="10" placeholder="Rating" value={Rating} onChange={(e) => setRating(e.target.value)} required />
+
+              <textarea
+                placeholder="Deskripsi Film"
+                value={Deskripsi}
+                onChange={(e) => setDeskripsi(e.target.value)}
+                rows="4"
+                style={{ padding: "10px", fontSize: "16px", fontFamily: "inherit" }}
+                required
+            />
+
+            <input
+                type="url"
+                placeholder="URL Trailer (YouTube)"
+                value={Trailer_URL}
+                onChange={(e) => setTrailer_URL(e.target.value)}
+                style={{ padding: "10px", fontSize: "16px" }}
+                required
+            />
               
               <button type="submit" style={{ padding: "10px", backgroundColor: "#28a745", color: "white", border: "none", borderRadius: "5px" }}>
                 Tambah Film
@@ -318,7 +342,6 @@ function Admin() {
           required 
         />
         
-        {/* JAM MULAI */}
         <input 
           type="time" 
           value={Jam_Mulai} 
@@ -326,7 +349,6 @@ function Admin() {
           required 
         />
         
-        {/* 🔴 STUDIO - TAMBAHKAN INI */}
         <select value={No_Studio} onChange={(e) => setNo_Studio(e.target.value)} required>
           <option value="">Pilih Studio</option>
           {studioList.map(studio => (
@@ -336,7 +358,6 @@ function Admin() {
           ))}
         </select>
         
-        {/* PILIH FILM */}
         <select 
           value={ID_FilmJadwal} 
           onChange={(e) => setID_FilmJadwal(e.target.value)} 
@@ -375,7 +396,7 @@ function Admin() {
           <th style={{ padding: "10px", border: "1px solid #ddd" }}>ID Jadwal</th>
           <th style={{ padding: "10px", border: "1px solid #ddd" }}>Tanggal</th>
           <th style={{ padding: "10px", border: "1px solid #ddd" }}>Jam</th>
-          <th style={{ padding: "10px", border: "1px solid #ddd" }}>Studio</th> {/* 🔴 KOLOM BARU */}
+          <th style={{ padding: "10px", border: "1px solid #ddd" }}>Studio</th>
           <th style={{ padding: "10px", border: "1px solid #ddd" }}>Film</th>
           <th style={{ padding: "10px", border: "1px solid #ddd" }}>Aksi</th>
         </tr>
@@ -387,7 +408,7 @@ function Admin() {
             <td style={{ padding: "10px", border: "1px solid #ddd" }}>{jadwal.Tanggal}</td>
             <td style={{ padding: "10px", border: "1px solid #ddd" }}>{jadwal.Jam_Mulai}</td>
             <td style={{ padding: "10px", border: "1px solid #ddd" }}>
-              {jadwal.Nama_Studio || `Studio ${jadwal.No_Studio}`} {/* 🔴 TAMPILKAN STUDIO */}
+              {jadwal.Nama_Studio || `Studio ${jadwal.No_Studio}`}
             </td>
             <td style={{ padding: "10px", border: "1px solid #ddd" }}>{jadwal.Judul_Film || `ID: ${jadwal.ID_Film}`}</td>
             <td style={{ padding: "10px", border: "1px solid #ddd" }}>

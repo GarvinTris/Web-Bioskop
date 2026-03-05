@@ -8,7 +8,7 @@ import Register from "./Page/Register.jsx"
 import SeatSelection from "./Page/SeatSelection.jsx";
 import Payment from "./Page/Payment.jsx";
 import PaymentSuccess from "./Page/PaymentSucess.jsx";
-import HistoryTransaksi from "./Page/HistoryTransaksi.jsx";
+import RiwayatTiket from "./Page/RiwayatTiket.jsx"
 
 function HomePage() {
   return (
@@ -32,7 +32,7 @@ function App() {
         <Route path="/seat-selection" element={<SeatSelection />} />
         <Route path="/payment" element={<Payment />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
-        <Route path="/riwayat-transaksi" element={<HistoryTransaksi />} />
+        <Route path="/riwayat-tiket" element={<RiwayatTiket />} />
       </Routes>
     </Router>
   )

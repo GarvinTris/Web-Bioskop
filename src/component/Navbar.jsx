@@ -73,7 +73,7 @@ function Navbar() {
             <li style={{ color: "#4CAF50", fontWeight: "bold" }}>
               Hi, {userName}
             </li>
-            <li><Link to="/riwayat-transaksi">Riwayat</Link></li>
+            <li><Link to="/riwayat-tiket">Riwayat</Link></li> 
             {isAdmin && (
               <li><Link to="/admin">Admin Panel</Link></li>
             )}
