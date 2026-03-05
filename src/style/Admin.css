@@ -20,6 +20,16 @@
 
 
 /* TAB NAVIGATION */
+.form-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.durasi-group{
+    display:flex;
+    gap:10px;
+}
 
 .admin-tabs{
     display:flex;
