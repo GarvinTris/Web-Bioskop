@@ -1,0 +1,236 @@
+/* GLOBAL */
+
+.admin-container{
+    max-width:1100px;
+    margin:40px auto;
+    padding:30px;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background:#f6f8fb;
+}
+
+/* TITLE */
+
+.admin-container h1{
+    text-align:center;
+    margin-bottom:30px;
+    font-size:28px;
+    font-weight:600;
+    color:#333;
+}
+
+
+/* TAB NAVIGATION */
+
+.admin-tabs{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+}
+
+.admin-tabs button{
+    padding:10px 22px;
+    border:none;
+    background:white;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:500;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    transition:0.25s;
+}
+
+.admin-tabs button:hover{
+    transform:translateY(-2px);
+}
+
+.admin-tabs .active{
+    background:#4f46e5;
+    color:white;
+}
+
+
+/* FORM CARD */
+
+.admin-form{
+    background:white;
+    padding:25px;
+    border-radius:12px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+    margin-bottom:35px;
+}
+
+/* GRID FORM */
+
+.form-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
+}
+
+/* INPUT */
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea{
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:14px;
+    width:100%;
+}
+
+/* DURASI */
+
+.durasi-group{
+    display:flex;
+    gap:10px;
+}
+
+/* TEXTAREA FULL */
+
+.form-grid textarea{
+    grid-column: span 2;
+}
+
+/* TRAILER FULL */
+
+.form-grid input[type="url"]{
+    grid-column: span 2;
+}
+
+/* BUTTON */
+
+.btn-success{
+    background:#4f46e5;
+    color:white;
+    border:none;
+    padding:10px;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.btn-success:hover{
+    background:#4338ca;
+}
+
+
+/* INPUT */
+
+.admin-form input,
+.admin-form select,
+.admin-form textarea{
+    padding:11px;
+    border:1px solid #ddd;
+    border-radius:6px;
+    font-size:14px;
+    outline:none;
+    transition:0.2s;
+}
+
+.admin-form input:focus,
+.admin-form select:focus,
+.admin-form textarea:focus{
+    border-color:#4f46e5;
+}
+
+
+/* TEXTAREA */
+
+.admin-form textarea{
+    resize:vertical;
+    min-height:80px;
+}
+
+
+/* SUBMIT BUTTON */
+
+.admin-form button{
+    margin-top:5px;
+    padding:11px;
+    border:none;
+    border-radius:7px;
+    background:#4f46e5;
+    color:white;
+    font-weight:500;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.admin-form button:hover{
+    background:#4338ca;
+}
+
+
+/* TABLE CARD */
+
+.admin-table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+
+/* TABLE HEADER */
+
+.admin-table th{
+    background:#4f46e5;
+    color:white;
+    padding:12px;
+    font-weight:500;
+}
+
+
+/* TABLE CELL */
+
+.admin-table td{
+    padding:12px;
+    border-bottom:1px solid #eee;
+}
+
+
+/* ROW HOVER */
+
+.admin-table tr:hover{
+    background:#f9fafc;
+}
+
+
+/* DELETE BUTTON */
+
+.btn-delete{
+    background:#ef4444;
+    color:white;
+    border:none;
+    padding:6px 12px;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:13px;
+    transition:0.2s;
+}
+
+.btn-delete:hover{
+    background:#dc2626;
+}
+
+
+/* MESSAGE */
+
+.message-success{
+    background:#e6fffa;
+    color:#065f46;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:20px;
+    border-left:5px solid #10b981;
+}
+
+.message-error{
+    background:#ffe4e6;
+    color:#7f1d1d;
+    padding:12px;
+    border-radius:8px;
+    margin-bottom:20px;
+    border-left:5px solid #ef4444;
+}
