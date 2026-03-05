@@ -1,34 +1,31 @@
 import "../style/Login.css";
 import {Link} from "react-router-dom";
 
-function Login() {
-    const handleLogin = () => {
+function Register() {
+    const handleRegister = () => {
       // simulasi login
       localStorage.setItem("loggedIn", true);
-      alert("Berhasil login!");
+      alert("Berhasil Register!");
     };
   
     return (
       <div className="login-format">
-        <h2>Login Page</h2>
+        <h2>Register</h2>
         <p>Let's get started!</p>
         <div className="group-input">
             <label htmlFor="">Email or Mobile Number</label>
             <input type="text" />
             <label htmlFor="">Password</label>
             <input type="text" />
+            <label htmlFor="">Confirm Password</label>
+            <input type="text" />
             <Link to={`/Forgot-password`}>Forgot Password</Link>
-            <button onClick={handleLogin}>Login</button>
+            <button onClick={handleRegister}>Register</button>
             <p>or sign up with</p>
-            <div className="shortcut-login">
-                <button className="google"></button>
-                <button className="facebook"></button>
-                <button className="biometrik"></button>
-            </div>
-            <p>Don't have an account? <Link to={`/Register`}>Sign up</Link></p>
+            <p>Already have an account? <Link to={`/Login`}>Login in</Link></p>
         </div>
       </div>
     );
   }
   
-  export default Login;
+  export default Register;
