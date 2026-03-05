@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "../style/RiwayatTiket.css";
 
 function RiwayatTiket() {
   const [transactions, setTransactions] = useState([]);
@@ -22,7 +23,7 @@ function RiwayatTiket() {
     try {
       // Ambil semua transaksi dari localStorage
       const allTransactions = [];
-      
+
       // Cari semua key yang dimulai dengan "transaction_"
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
@@ -35,10 +36,10 @@ function RiwayatTiket() {
           }
         }
       }
-      
+
       // Urutkan dari terbaru ke terlama
       allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-      
+
       setTransactions(allTransactions);
       setLoading(false);
     } catch (err) {
@@ -48,37 +49,37 @@ function RiwayatTiket() {
   };
 
   const formatRupiah = (angka) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
     }).format(angka);
   };
 
   const formatTanggal = (dateString) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
 
   const filterTransactions = (data) => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    switch(filter) {
+
+    switch (filter) {
       case "mingguini":
         const weekAgo = new Date(today);
         weekAgo.setDate(weekAgo.getDate() - 7);
-        return data.filter(t => new Date(t.date) >= weekAgo);
-      
+        return data.filter((t) => new Date(t.date) >= weekAgo);
+
       case "bulanini":
         const monthAgo = new Date(today);
         monthAgo.setMonth(monthAgo.getMonth() - 1);
-        return data.filter(t => new Date(t.date) >= monthAgo);
-      
+        return data.filter((t) => new Date(t.date) >= monthAgo);
+
       default:
         return data;
     }
@@ -102,25 +103,16 @@ function RiwayatTiket() {
   return (
     <div className="riwayat-container">
       <h1>Riwayat Tiket Saya</h1>
-      
+
       {/* FILTER BUTTONS */}
       <div className="riwayat-filters">
-        <button 
-          className={`filter-btn ${filter === 'semua' ? 'active' : ''}`}
-          onClick={() => setFilter('semua')}
-        >
+        <button className={`filter-btn ${filter === "semua" ? "active" : ""}`} onClick={() => setFilter("semua")}>
           Semua Transaksi
         </button>
-        <button 
-          className={`filter-btn ${filter === 'mingguini' ? 'active' : ''}`}
-          onClick={() => setFilter('mingguini')}
-        >
+        <button className={`filter-btn ${filter === "mingguini" ? "active" : ""}`} onClick={() => setFilter("mingguini")}>
           Minggu Ini
         </button>
-        <button 
-          className={`filter-btn ${filter === 'bulanini' ? 'active' : ''}`}
-          onClick={() => setFilter('bulanini')}
-        >
+        <button className={`filter-btn ${filter === "bulanini" ? "active" : ""}`} onClick={() => setFilter("bulanini")}>
           Bulan Ini
         </button>
       </div>
@@ -133,15 +125,11 @@ function RiwayatTiket() {
         </div>
         <div className="stat-card">
           <span className="stat-label">Total Tiket</span>
-          <span className="stat-value">
-            {filteredTransactions.reduce((sum, t) => sum + (t.seats?.length || 0), 0)}
-          </span>
+          <span className="stat-value">{filteredTransactions.reduce((sum, t) => sum + (t.seats?.length || 0), 0)}</span>
         </div>
         <div className="stat-card">
           <span className="stat-label">Total Pengeluaran</span>
-          <span className="stat-value">
-            {formatRupiah(filteredTransactions.reduce((sum, t) => sum + (t.total || 0), 0))}
-          </span>
+          <span className="stat-value">{formatRupiah(filteredTransactions.reduce((sum, t) => sum + (t.total || 0), 0))}</span>
         </div>
       </div>
 
@@ -163,39 +151,36 @@ function RiwayatTiket() {
                   <span className="transaction-id">{trx.id}</span>
                   <span className="transaction-badge">LUNAS</span>
                 </div>
-                <span className="transaction-date">
-                  {new Date(trx.date).toLocaleDateString('id-ID')}
-                </span>
+                <span className="transaction-date">{new Date(trx.date).toLocaleDateString("id-ID")}</span>
               </div>
-              
+
               <div className="transaction-body">
                 <div className="movie-info">
                   <h3>{trx.jadwal?.Judul_Film || "Film"}</h3>
                   <p className="studio-info">
                     <span>🎬 {trx.jadwal?.Nama_Studio || `Studio ${trx.jadwal?.No_Studio}`}</span>
-                    <span>📅 {formatTanggal(trx.jadwal?.Tanggal).split(',')[0]}</span>
+                    <span>📅 {formatTanggal(trx.jadwal?.Tanggal).split(",")[0]}</span>
                     <span>⏰ {trx.jadwal?.Jam_Mulai?.substring(0, 5)} WIB</span>
                   </p>
                 </div>
-                
+
                 <div className="seats-info">
                   <span className="seats-label">Kursi:</span>
                   <div className="seats-value">
                     {trx.seats?.map((seat, i) => (
-                      <span key={i} className="seat-badge">{seat}</span>
+                      <span key={i} className="seat-badge">
+                        {seat}
+                      </span>
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="transaction-footer">
                   <div className="price-detail">
                     <span className="price-label">Total</span>
                     <span className="total-price">{formatRupiah(trx.total)}</span>
                   </div>
-                  <button 
-                    className="view-ticket-btn"
-                    onClick={() => handleViewTicket(trx)}
-                  >
+                  <button className="view-ticket-btn" onClick={() => handleViewTicket(trx)}>
                     Lihat Tiket
                   </button>
                 </div>
