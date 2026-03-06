@@ -1,0 +1,435 @@
+/* ===== SEAT SELECTION STYLES ===== */
+.seat-selection-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    background-color: #0f0f0f;
+    min-height: 100vh;
+    color: #ffffff;
+  }
+  
+  /* Header & Info Film */
+  .selection-header {
+    margin-bottom: 30px;
+  }
+  
+  .selection-header h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 20px;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .selection-header h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: #e50914;
+    border-radius: 2px;
+  }
+  
+  .movie-info-card {
+    background: #1a1a1a;
+    border-radius: 16px;
+    padding: 25px;
+    border-left: 5px solid #e50914;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  }
+  
+  .movie-info-card h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 15px;
+  }
+  
+  .movie-info-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+  }
+  
+  .movie-info-details p {
+    color: #cccccc;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .movie-info-details p strong {
+    color: #e50914;
+    font-weight: 600;
+    min-width: 70px;
+  }
+  
+  /* Screen */
+  .screen-container {
+    margin: 40px 0 30px;
+    perspective: 300px;
+  }
+  
+  .screen {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    color: #ffffff;
+    text-align: center;
+    padding: 15px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1.2rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    box-shadow: 0 10px 20px rgba(229, 9, 20, 0.2);
+    transform: rotateX(-5deg);
+    margin-bottom: 20px;
+    border: 1px solid #333;
+  }
+  
+  .screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    pointer-events: none;
+  }
+  
+  /* Seat Layout */
+  .seats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 40px;
+    background: #121212;
+    padding: 30px;
+    border-radius: 24px;
+    border: 1px solid #2a2a2a;
+  }
+  
+  .seat-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .row-label {
+    width: 40px;
+    font-weight: 700;
+    color: #e50914;
+    font-size: 1.2rem;
+    text-align: center;
+  }
+  
+  .seat-button {
+    width: 45px;
+    height: 45px;
+    background-color: #2a2a2a;
+    border: 2px solid #3a3a3a;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  
+  .seat-button:hover:not(:disabled) {
+    background-color: #3a3a3a;
+    border-color: #e50914;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(229, 9, 20, 0.2);
+  }
+  
+  .seat-button.selected {
+    background-color: #e50914;
+    border-color: #e50914;
+    color: white;
+    box-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
+  }
+  
+  .seat-button.booked {
+    background-color: #333333;
+    border-color: #444444;
+    color: #666666;
+    cursor: not-allowed;
+    opacity: 0.5;
+    position: relative;
+  }
+  
+  .seat-button.booked::after {
+    content: '✕';
+    position: absolute;
+    color: #666;
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+  
+  /* Legend */
+  .legend-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #1a1a1a;
+    border-radius: 50px;
+    flex-wrap: wrap;
+  }
+  
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .legend-box {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+  }
+  
+  .legend-box.available {
+    background-color: #2a2a2a;
+    border: 2px solid #3a3a3a;
+  }
+  
+  .legend-box.selected {
+    background-color: #e50914;
+    border: 2px solid #e50914;
+  }
+  
+  .legend-box.booked {
+    background-color: #333333;
+    border: 2px solid #444444;
+    position: relative;
+  }
+  
+  .legend-box.booked::after {
+    content: '✕';
+    position: absolute;
+    color: #666;
+    font-size: 1.2rem;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .legend-item span {
+    color: #cccccc;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  /* Summary Card */
+  .summary-card {
+    position: sticky;
+    bottom: 20px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #121212 100%);
+    border: 2px solid #2a2a2a;
+    border-radius: 60px;
+    padding: 20px 30px;
+    box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.5), 0 5px 20px rgba(229, 9, 20, 0.2);
+    backdrop-filter: blur(10px);
+    margin-top: 30px;
+  }
+  
+  .summary-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .summary-info p {
+    color: #cccccc;
+    font-size: 1.1rem;
+    margin: 5px 0;
+  }
+  
+  .summary-info strong {
+    color: #e50914;
+    font-size: 1.2rem;
+  }
+  
+  .total-price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #e50914;
+    text-shadow: 0 0 20px rgba(229, 9, 20, 0.3);
+  }
+  
+  .continue-button {
+    background: #e50914;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 5px 15px rgba(229, 9, 20, 0.4);
+  }
+  
+  .continue-button:hover {
+    background: #b2070d;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(229, 9, 20, 0.6);
+  }
+  
+  .continue-button:active {
+    transform: translateY(0);
+  }
+  
+  /* Loading State */
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    background: #0f0f0f;
+  }
+  
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #2a2a2a;
+    border-top-color: #e50914;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Alert */
+  .alert-message {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e50914;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 500;
+    box-shadow: 0 5px 20px rgba(229, 9, 20, 0.4);
+    z-index: 1000;
+    animation: slideDown 0.3s ease;
+  }
+  
+  @keyframes slideDown {
+    from {
+      top: -100px;
+      opacity: 0;
+    }
+    to {
+      top: 20px;
+      opacity: 1;
+    }
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .seat-selection-container {
+      padding: 20px 15px;
+    }
+  
+    .selection-header h2 {
+      font-size: 1.8rem;
+    }
+  
+    .movie-info-card {
+      padding: 20px;
+    }
+  
+    .movie-info-card h3 {
+      font-size: 1.5rem;
+    }
+  
+    .movie-info-details {
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+  
+    .seat-button {
+      width: 35px;
+      height: 35px;
+      font-size: 0.8rem;
+    }
+  
+    .row-label {
+      width: 30px;
+      font-size: 1rem;
+    }
+  
+    .legend-container {
+      gap: 15px;
+      padding: 15px;
+    }
+  
+    .legend-box {
+      width: 25px;
+      height: 25px;
+    }
+  
+    .summary-card {
+      border-radius: 30px;
+      padding: 15px 20px;
+    }
+  
+    .summary-content {
+      flex-direction: column;
+      text-align: center;
+    }
+  
+    .total-price {
+      font-size: 1.5rem;
+    }
+  
+    .continue-button {
+      padding: 12px 30px;
+      font-size: 1rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .seat-button {
+      width: 28px;
+      height: 28px;
+      font-size: 0.7rem;
+    }
+  
+    .row-label {
+      width: 25px;
+      font-size: 0.9rem;
+    }
+  
+    .seats-container {
+      padding: 15px;
+    }
+  }
+  
+  /* Utility Classes */
+  .text-gradient {
+    background: linear-gradient(135deg, #e50914 0%, #ff4d4d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }

@@ -4,16 +4,6 @@ function Contact() {
   return (
     <div className="contact-container">
       {/* Header dengan logo dan navigasi */}
-      <div className="contact-header">
-        <h1 className="logo">FilmOut</h1>
-        <nav className="navbar">
-          <a href="/">HOME</a>
-          <a href="/about">ABOUT US</a>
-          <a href="/contact" className="active">
-            CONTACT US
-          </a>
-        </nav>
-      </div>
 
       {/* Konten utama: form dan informasi kontak */}
       <div className="contact-main">

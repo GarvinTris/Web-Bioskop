@@ -1,112 +1,114 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "../style/SeatSelection.css"
 
 function SeatSelection() {
   const navigate = useNavigate();
   const [selectedJadwal, setSelectedJadwal] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [bookedSeats, setBookedSeats] = useState([]);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
   
   // Data kursi contoh (biasanya dari database)
   const rows = ['A', 'B', 'C', 'D', 'E'];
   const seatsPerRow = 8;
 
   useEffect(() => {
-    // Ambil data jadwal yang dipilih dari localStorage
     const jadwalData = localStorage.getItem("selectedJadwal");
     if (jadwalData) {
       setSelectedJadwal(JSON.parse(jadwalData));
     } else {
-      // Kalau tidak ada, kembali ke halaman sebelumnya
       navigate(-1);
     }
+  }, [navigate]);
 
-    // Ambil data kursi yang sudah dipesan (dari API nanti)
-    // fetchBookedSeats();
-  }, []);
+  const showAlertMessage = (message) => {
+    setAlertMessage(message);
+    setShowAlert(true);
+    setTimeout(() => setShowAlert(false), 3000);
+  };
 
   const toggleSeat = (seatId) => {
     if (selectedSeats.includes(seatId)) {
       setSelectedSeats(selectedSeats.filter(s => s !== seatId));
     } else {
-      if (selectedSeats.length < 5) { // Maksimal 5 kursi
+      if (selectedSeats.length < 5) {
         setSelectedSeats([...selectedSeats, seatId]);
       } else {
-        alert("Maksimal 5 kursi per transaksi");
+        showAlertMessage("Maksimal 5 kursi per transaksi");
       }
     }
   };
 
   const handleContinue = () => {
     if (selectedSeats.length === 0) {
-      alert("Pilih kursi terlebih dahulu");
+      showAlertMessage("Pilih kursi terlebih dahulu");
       return;
     }
 
-    // Simpan kursi yang dipilih
     localStorage.setItem("selectedSeats", JSON.stringify(selectedSeats));
-    
-    // Lanjut ke halaman payment
     navigate("/payment");
   };
 
   const getSeatPrice = () => {
-    // Harga bisa beda per studio/jadwal
-    return 50000; // Contoh harga Rp 50.000
+    return 50000;
   };
 
   const totalPrice = selectedSeats.length * getSeatPrice();
 
-  if (!selectedJadwal) return <div>Loading...</div>;
+  if (!selectedJadwal) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="seat-selection-container" style={{ maxWidth: "800px", margin: "0 auto", padding: "20px" }}>
-      <h2>Pilih Kursi</h2>
+    <div className="seat-selection-container">
+      {showAlert && <div className="alert-message">{alertMessage}</div>}
+      
+      <div className="selection-header">
+        <h2>Pilih Kursi</h2>
+      </div>
       
       {/* Info Film dan Jadwal */}
-      <div style={{ backgroundColor: "#f5f5f5", padding: "15px", borderRadius: "5px", marginBottom: "20px" }}>
+      <div className="movie-info-card">
         <h3>{selectedJadwal.Judul_Film || "Film"}</h3>
-        <p>Tanggal: {selectedJadwal.Tanggal} | Jam: {selectedJadwal.Jam_Mulai}</p>
-        <p>Studio: {selectedJadwal.No_Studio || "Studio 1"}</p>
+        <div className="movie-info-details">
+          <p><strong>Tanggal:</strong> {selectedJadwal.Tanggal}</p>
+          <p><strong>Jam:</strong> {selectedJadwal.Jam_Mulai}</p>
+          <p><strong>Studio:</strong> {selectedJadwal.No_Studio || "Studio 1"}</p>
+        </div>
       </div>
 
       {/* Screen */}
-      <div style={{ 
-        backgroundColor: "#333", 
-        color: "white", 
-        textAlign: "center", 
-        padding: "10px",
-        marginBottom: "30px",
-        borderRadius: "5px"
-      }}>
-        LAYAR
+      <div className="screen-container">
+        <div className="screen">LAYAR</div>
       </div>
 
       {/* Kursi */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "30px" }}>
+      <div className="seats-container">
         {rows.map(row => (
-          <div key={row} style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
-            <span style={{ width: "30px", fontWeight: "bold" }}>{row}</span>
+          <div key={row} className="seat-row">
+            <span className="row-label">{row}</span>
             {[...Array(seatsPerRow)].map((_, i) => {
               const seatNumber = i + 1;
               const seatId = `${row}${seatNumber}`;
               const isBooked = bookedSeats.includes(seatId);
               const isSelected = selectedSeats.includes(seatId);
               
+              let seatClass = "seat-button";
+              if (isBooked) seatClass += " booked";
+              if (isSelected) seatClass += " selected";
+              
               return (
                 <button
                   key={seatId}
                   onClick={() => !isBooked && toggleSeat(seatId)}
                   disabled={isBooked}
-                  style={{
-                    width: "40px",
-                    height: "40px",
-                    backgroundColor: isBooked ? "#ccc" : isSelected ? "#4CAF50" : "#fff",
-                    border: `2px solid ${isBooked ? "#999" : "#ddd"}`,
-                    borderRadius: "5px",
-                    cursor: isBooked ? "not-allowed" : "pointer",
-                    color: isBooked ? "#666" : "#000"
-                  }}
+                  className={seatClass}
                 >
                   {seatNumber}
                 </button>
@@ -117,46 +119,35 @@ function SeatSelection() {
       </div>
 
       {/* Legend */}
-      <div style={{ display: "flex", gap: "20px", justifyContent: "center", marginBottom: "20px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <div style={{ width: "20px", height: "20px", backgroundColor: "#fff", border: "2px solid #ddd" }}></div>
+      <div className="legend-container">
+        <div className="legend-item">
+          <div className="legend-box available"></div>
           <span>Tersedia</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <div style={{ width: "20px", height: "20px", backgroundColor: "#4CAF50", border: "2px solid #4CAF50" }}></div>
+        <div className="legend-item">
+          <div className="legend-box selected"></div>
           <span>Dipilih</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <div style={{ width: "20px", height: "20px", backgroundColor: "#ccc", border: "2px solid #999" }}></div>
+        <div className="legend-item">
+          <div className="legend-box booked"></div>
           <span>Terpesan</span>
         </div>
       </div>
 
       {/* Ringkasan & Tombol */}
-      <div style={{ 
-        position: "sticky", 
-        bottom: "20px", 
-        backgroundColor: "white", 
-        padding: "20px",
-        boxShadow: "0 -2px 10px rgba(0,0,0,0.1)",
-        borderRadius: "5px"
-      }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <p><strong>Kursi dipilih:</strong> {selectedSeats.join(", ") || "Belum ada"}</p>
-            <p><strong>Total:</strong> Rp {totalPrice.toLocaleString()}</p>
+      <div className="summary-card">
+        <div className="summary-content">
+          <div className="summary-info">
+            <p>
+              <strong>Kursi dipilih:</strong> {selectedSeats.join(", ") || "Belum ada"}
+            </p>
+            <p>
+              <strong>Total:</strong> <span className="total-price">Rp {totalPrice.toLocaleString()}</span>
+            </p>
           </div>
           <button
             onClick={handleContinue}
-            style={{
-              backgroundColor: "#28a745",
-              color: "white",
-              border: "none",
-              padding: "10px 30px",
-              fontSize: "16px",
-              borderRadius: "5px",
-              cursor: "pointer"
-            }}
+            className="continue-button"
           >
             Lanjut ke Pembayaran
           </button>

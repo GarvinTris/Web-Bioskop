@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import "../style/Payment.css";
 
 function Payment() {
   const navigate = useNavigate();
@@ -18,9 +19,9 @@ function Payment() {
     } else {
       navigate("/");
     }
-  }, []);
+  }, [navigate]);
 
-  const ticketPrice = 50000; // Harga per tiket
+  const ticketPrice = 50000;
   const totalPrice = selectedSeats.length * ticketPrice;
   const adminFee = 2000;
   const grandTotal = totalPrice + adminFee;
@@ -33,12 +34,9 @@ function Payment() {
 
     setIsProcessing(true);
 
-    // Simulasi proses payment
     setTimeout(() => {
-      // Generate ID Transaksi
       const transactionId = "TRX" + Date.now();
       
-      // Simpan data transaksi
       const transactionData = {
         id: transactionId,
         jadwal: selectedJadwal,
@@ -49,7 +47,12 @@ function Payment() {
         status: "success"
       };
       
+      // 🔴 SIMPAN DI DUA TEMPAT
       localStorage.setItem("lastTransaction", JSON.stringify(transactionData));
+      
+      // 🔴 JUGA SIMPAN DENGAN KEY transaction_ UNTUK RIWAYAT
+      const transactionKey = `transaction_${transactionId}`;
+      localStorage.setItem(transactionKey, JSON.stringify(transactionData));
       
       setIsProcessing(false);
       navigate("/payment-success");
@@ -57,53 +60,109 @@ function Payment() {
   };
 
   if (!selectedJadwal || selectedSeats.length === 0) {
-    return <div>Loading...</div>;
+    return (
+      <div className="payment-loading">
+        <div className="loading-spinner"></div>
+      </div>
+    );
   }
 
+  const paymentMethods = [
+    { id: "bank", name: "Transfer Bank", icon: "🏦", desc: "BCA, Mandiri, BNI, BRI" },
+    { id: "ovo", name: "OVO", icon: "🟣", desc: "Cashback 5%" },
+    { id: "gopay", name: "GoPay", icon: "🔵", desc: "PayLater tersedia" },
+    { id: "dana", name: "DANA", icon: "🟢", desc: "Promo khusus" },
+    { id: "credit", name: "Credit Card", icon: "💳", desc: "Visa/Mastercard/JCB" }
+  ];
+
   return (
-    <div className="payment-container" style={{ maxWidth: "600px", margin: "0 auto", padding: "20px" }}>
-      <h2>Pembayaran</h2>
+    <div className="payment-container">
+      <div className="payment-header">
+        <h2>Pembayaran</h2>
+      </div>
       
       {/* Ringkasan Pesanan */}
-      <div style={{ backgroundColor: "#f8f9fa", padding: "20px", borderRadius: "5px", marginBottom: "20px" }}>
+      <div className="order-summary">
         <h3>Ringkasan Pesanan</h3>
-        <p><strong>Film:</strong> {selectedJadwal.Judul_Film || "Film"}</p>
-        <p><strong>Tanggal:</strong> {selectedJadwal.Tanggal}</p>
-        <p><strong>Jam:</strong> {selectedJadwal.Jam_Mulai}</p>
-        <p><strong>Kursi:</strong> {selectedSeats.join(", ")}</p>
-        <p><strong>Jumlah Tiket:</strong> {selectedSeats.length}</p>
-        
-        <hr />
-        
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span>Harga Tiket ({selectedSeats.length} x Rp {ticketPrice.toLocaleString()})</span>
-          <span>Rp {totalPrice.toLocaleString()}</span>
+        <div className="summary-details">
+          <div className="summary-row">
+            <span className="summary-label">
+              <i>🎬</i> Film
+            </span>
+            <span className="summary-value">{selectedJadwal.Judul_Film || "Film"}</span>
+          </div>
+          
+          <div className="summary-row">
+            <span className="summary-label">
+              <i>📅</i> Tanggal
+            </span>
+            <span className="summary-value">{selectedJadwal.Tanggal}</span>
+          </div>
+          
+          <div className="summary-row">
+            <span className="summary-label">
+              <i>⏰</i> Jam
+            </span>
+            <span className="summary-value">{selectedJadwal.Jam_Mulai}</span>
+          </div>
+          
+          <div className="summary-row">
+            <span className="summary-label">
+              <i>💺</i> Kursi
+            </span>
+            <span className="summary-value">
+              {selectedSeats.map(seat => (
+                <span key={seat} className="seat-badge">{seat}</span>
+              ))}
+            </span>
+          </div>
+          
+          <div className="summary-row">
+            <span className="summary-label">
+              <i>🎟️</i> Jumlah Tiket
+            </span>
+            <span className="summary-value">{selectedSeats.length} tiket</span>
+          </div>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span>Biaya Admin</span>
-          <span>Rp {adminFee.toLocaleString()}</span>
-        </div>
-        <hr />
-        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold", fontSize: "18px" }}>
-          <span>Total</span>
-          <span>Rp {grandTotal.toLocaleString()}</span>
+        
+        <div className="summary-divider"></div>
+        
+        <div className="price-breakdown">
+          <div className="price-item">
+            <span>Harga Tiket ({selectedSeats.length} x Rp {ticketPrice.toLocaleString()})</span>
+            <span>Rp {totalPrice.toLocaleString()}</span>
+          </div>
+          <div className="price-item">
+            <span>Biaya Admin</span>
+            <span>Rp {adminFee.toLocaleString()}</span>
+          </div>
+          <div className="price-item total">
+            <span>Total</span>
+            <span className="amount">Rp {grandTotal.toLocaleString()}</span>
+          </div>
         </div>
       </div>
 
       {/* Metode Pembayaran */}
-      <div style={{ marginBottom: "20px" }}>
+      <div className="payment-methods">
         <h3>Metode Pembayaran</h3>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {["Transfer Bank", "OVO", "GoPay", "DANA", "Credit Card"].map(method => (
-            <label key={method} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px", border: "1px solid #ddd", borderRadius: "5px" }}>
+        <div className="methods-grid">
+          {paymentMethods.map(method => (
+            <label key={method.id} className="method-card">
               <input
                 type="radio"
                 name="payment"
-                value={method}
-                checked={paymentMethod === method}
+                value={method.name}
+                checked={paymentMethod === method.name}
                 onChange={(e) => setPaymentMethod(e.target.value)}
               />
-              {method}
+              <div className="method-label">
+                <span className={`method-icon ${method.id}`}>{method.icon}</span>
+                <div className="method-info">
+                  <div className="method-name">{method.name}</div>
+                  <div className="method-desc">{method.desc}</div>
+                </div>
+              </div>
             </label>
           ))}
         </div>
@@ -113,19 +172,9 @@ function Payment() {
       <button
         onClick={handlePayment}
         disabled={isProcessing || !paymentMethod}
-        style={{
-          width: "100%",
-          padding: "15px",
-          backgroundColor: "#28a745",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          fontSize: "16px",
-          cursor: isProcessing ? "not-allowed" : "pointer",
-          opacity: isProcessing ? 0.7 : 1
-        }}
+        className="payment-button"
       >
-        {isProcessing ? "Memproses..." : "Bayar Sekarang"}
+        {isProcessing ? "Memproses Pembayaran..." : "Bayar Sekarang"}
       </button>
     </div>
   );

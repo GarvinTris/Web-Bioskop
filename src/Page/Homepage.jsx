@@ -31,9 +31,9 @@ function Movie() {
   function Jumbotron() {
     return (
         <div className="jumbotron">
-            <h1>Welcome to Movie Theater</h1>
-            <p>Find your favorite movies here!</p>
-            <input type="text" placeholder="Search Right Here!"/>
+            <h1>Experience the Magic of Cinema</h1>
+            <p>Discover the latest blockbusters, book your seat, and enjoy the ultimate movie experience.</p>
+            <input type="text" placeholder="Search your favorite movie..." />
             <img src="/Backgrounds.jpg" alt="Movie BG" />
         </div>
     );

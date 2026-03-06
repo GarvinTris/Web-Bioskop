@@ -1,4 +1,4 @@
-/* Contact.css */
+Contact.css
 
 * {
   margin: 0;
@@ -105,10 +105,10 @@ body {
 .form-group textarea {
   width: 100%;
   padding: 12px 16px;
-  background: #1e1e1e;
+  /* background: #1e1e1e; */
   border: 1px solid #333;
   border-radius: 12px;
-  color: white;
+  /* color: white; */
   font-size: 1rem;
   transition: border-color 0.2s;
 }
