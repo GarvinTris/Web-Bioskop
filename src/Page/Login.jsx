@@ -2,7 +2,6 @@ import "../style/Login.css";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-
 function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -11,66 +10,68 @@ function Login() {
     const handleLogin = (e) => {
         e.preventDefault();
         
-        // Simulasi login sederhana
-        // Dalam implementasi nyata, ini akan panggil API
         if (email && password) {
-            // Simpan data login
             localStorage.setItem("isLoggedIn", "true");
             localStorage.setItem("isAdmin", "false");
             localStorage.setItem("user", JSON.stringify({ 
                 email: email,
-                name: email.split('@')[0] // ambil nama dari email
+                name: email.split('@')[0]
             }));
             
             alert("Berhasil login!");
             
             const redirectTo = localStorage.getItem("redirectAfterLogin") || "/";
-            localStorage.removeItem("redirectAfterLogin"); // Hapus setelah dipakai
+            localStorage.removeItem("redirectAfterLogin");
             
-            navigate(redirectTo); // Redirect ke halaman yang dimaksud
+            navigate(redirectTo);
         } else {
             alert("Email dan password harus diisi!");
         }
     };
 
     return (
-        <div className="login-format">
-            <h2>Login Page</h2>
-            <p>Let's get started!</p>
-            <form onSubmit={handleLogin} className="group-input">
-                <label htmlFor="email">Email or Mobile Number</label>
-                <input 
-                    type="text" 
-                    id="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                />
+        <div className="auth-layout">
+            <div className="login-card">
+                <h2>Login</h2>
+                <p className="subtitle">Let's get started</p>
                 
-                <label htmlFor="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                />
-                
-                <Link to="/Forgot-password">Forgot Password</Link>
-                
-                <button type="submit">Login</button>
-                
-                <p>or sign up with</p>
-                <div className="shortcut-login">
-                    <button className="google" type="button"></button>
-                    <button className="facebook" type="button"></button>
-                    <button className="biometrik" type="button"></button>
-                </div>
-                
-                <p>
-                    Don't have an account? <Link to="/Register">Sign up</Link>
-                </p>
-            </form>
+                <form onSubmit={handleLogin} className="login-form">
+                    <div className="form-group">
+                        <label>Email or Mobile Number</label>
+                        <input 
+                            type="text" 
+                            placeholder="example@email.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    
+                    <div className="form-group">
+                        <label>Password</label>
+                        <input 
+                            type="password" 
+                            placeholder="··········"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    
+                    <div className="forgot-password">
+                        <Link to="/forgot-password">Forgot Password?</Link>
+                    </div>
+                    
+                    <button type="submit" className="btn-login">
+                        Log In
+                    </button>
+                    
+                    <p className="signup-text">
+                        Don't have an account? 
+                        <Link to="/Register">Sign Up</Link>
+                    </p>
+                </form>
+            </div>
         </div>
     );
 }

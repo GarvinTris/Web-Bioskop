@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../style/Payment.css";
 
 function PaymentSuccess() {
   const navigate = useNavigate();
@@ -9,10 +10,14 @@ function PaymentSuccess() {
   useEffect(() => {
     const lastTrx = localStorage.getItem("lastTransaction");
     if (lastTrx) {
-      setTransaction(JSON.parse(lastTrx));
+      const trxData = JSON.parse(lastTrx);
+      setTransaction(trxData);
+      
+      // 🔴 SIMPAN JUGA DENGAN FORMAT transaction_ UNTUK RIWAYAT
+      const transactionKey = `transaction_${trxData.id}`;
+      localStorage.setItem(transactionKey, lastTrx);
     }
 
-    // 🔴 AUTO REDIRECT setelah 5 detik
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
@@ -44,156 +49,113 @@ function PaymentSuccess() {
     });
   };
 
+  if (!transaction) {
+    return (
+      <div className="payment-loading">
+        <div className="loading-spinner"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="success-container" style={{ 
-      maxWidth: "600px", 
-      margin: "50px auto", 
-      textAlign: "center", 
-      padding: "40px", 
-      backgroundColor: "#f8f9fa", 
-      borderRadius: "20px",
-      boxShadow: "0 10px 40px rgba(0,0,0,0.1)"
-    }}>
-      <div style={{ fontSize: "80px", color: "#28a745", marginBottom: "20px" }}>✅</div>
-      <h2 style={{ color: "#333", marginBottom: "10px" }}>Pembayaran Berhasil!</h2>
-      <p style={{ color: "#666", marginBottom: "30px" }}>
+    <div className="success-container">
+      <div className="success-icon">✅</div>
+      <h2>Pembayaran Berhasil!</h2>
+      <p className="success-subtitle">
         Terima kasih telah memesan tiket di bioskop kami.
       </p>
       
-      {transaction && (
-        <div style={{ 
-          textAlign: "left", 
-          marginTop: "20px", 
-          padding: "25px", 
-          backgroundColor: "white", 
-          borderRadius: "15px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.05)"
-        }}>
-          <h3 style={{ marginTop: 0, marginBottom: "20px", color: "#007bff" }}>
-            Detail Transaksi
-          </h3>
-          
-          <div style={{ display: "grid", gap: "12px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "#666" }}>ID Transaksi:</span>
-              <strong>{transaction.id}</strong>
-            </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "#666" }}>Film:</span>
-              <strong>{transaction.jadwal?.Judul_Film || "-"}</strong>
-            </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "#666" }}>Tanggal:</span>
-              <strong>{formatTanggal(transaction.jadwal?.Tanggal)}</strong>
-            </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "#666" }}>Jam:</span>
-              <strong>{transaction.jadwal?.Jam_Mulai?.substring(0, 5)} WIB</strong>
-            </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "#666" }}>Studio:</span>
-              <strong>{transaction.jadwal?.Nama_Studio || `Studio ${transaction.jadwal?.No_Studio}`}</strong>
-            </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "#666" }}>Kursi:</span>
-              <strong>{transaction.seats?.join(", ") || "-"}</strong>
-            </div>
-            
-            <div style={{ 
-              display: "flex", 
-              justifyContent: "space-between", 
-              borderTop: "2px dashed #ddd",
-              paddingTop: "15px",
-              marginTop: "10px"
-            }}>
-              <span style={{ color: "#666", fontWeight: "bold" }}>Total:</span>
-              <strong style={{ color: "#28a745", fontSize: "18px" }}>
-                {formatRupiah(transaction.total)}
-              </strong>
-            </div>
-            
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "#666" }}>Metode:</span>
-              <strong>{transaction.paymentMethod || "Transfer Bank"}</strong>
-            </div>
-          </div>
+      <div className="transaction-card">
+        <h3>Detail Transaksi</h3>
+        
+        <div className="transaction-detail">
+          <span className="detail-label">
+            <i>🆔</i> ID Transaksi
+          </span>
+          <span className="detail-value transaction-id">{transaction.id}</span>
         </div>
-      )}
+        
+        <div className="transaction-detail">
+          <span className="detail-label">
+            <i>🎬</i> Film
+          </span>
+          <span className="detail-value">{transaction.jadwal?.Judul_Film || "-"}</span>
+        </div>
+        
+        <div className="transaction-detail">
+          <span className="detail-label">
+            <i>📅</i> Tanggal
+          </span>
+          <span className="detail-value">{formatTanggal(transaction.jadwal?.Tanggal)}</span>
+        </div>
+        
+        <div className="transaction-detail">
+          <span className="detail-label">
+            <i>⏰</i> Jam
+          </span>
+          <span className="detail-value">{transaction.jadwal?.Jam_Mulai?.substring(0, 5)} WIB</span>
+        </div>
+        
+        <div className="transaction-detail">
+          <span className="detail-label">
+            <i>🎥</i> Studio
+          </span>
+          <span className="detail-value">
+            {transaction.jadwal?.Nama_Studio || `Studio ${transaction.jadwal?.No_Studio}`}
+          </span>
+        </div>
+        
+        <div className="transaction-detail">
+          <span className="detail-label">
+            <i>💺</i> Kursi
+          </span>
+          <span className="detail-value">
+            {transaction.seats?.join(", ") || "-"}
+          </span>
+        </div>
+        
+        <div className="transaction-detail">
+          <span className="detail-label">
+            <i>💰</i> Total
+          </span>
+          <span className="detail-value total-amount">
+            {formatRupiah(transaction.total)}
+          </span>
+        </div>
+        
+        <div className="transaction-detail">
+          <span className="detail-label">
+            <i>💳</i> Metode
+          </span>
+          <span className="detail-value">{transaction.paymentMethod || "Transfer Bank"}</span>
+        </div>
+      </div>
 
-      <div style={{ 
-        marginTop: "30px", 
-        display: "flex", 
-        gap: "15px", 
-        justifyContent: "center" 
-      }}>
+      <div className="success-actions">
         <button
           onClick={() => navigate("/riwayat-tiket")}
-          style={{
-            padding: "12px 25px",
-            backgroundColor: "#007bff",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "bold",
-            transition: "all 0.3s"
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = "#0056b3"}
-          onMouseLeave={(e) => e.target.style.backgroundColor = "#007bff"}
+          className="success-button primary"
         >
           📋 Lihat Riwayat Tiket
         </button>
         
         <button
           onClick={() => window.print()}
-          style={{
-            padding: "12px 25px",
-            backgroundColor: "#28a745",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontSize: "14px",
-            fontWeight: "bold",
-            transition: "all 0.3s"
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = "#218838"}
-          onMouseLeave={(e) => e.target.style.backgroundColor = "#28a745"}
+          className="success-button secondary"
         >
           🖨️ Cetak Tiket
         </button>
       </div>
 
-      <p style={{ marginTop: "20px", color: "#999", fontSize: "14px" }}>
-        Akan dialihkan ke halaman riwayat dalam {countdown} detik...
-      </p>
+      <div className="countdown-timer">
+        Akan dialihkan ke halaman riwayat dalam 
+        <span className="countdown-number">{countdown}</span> 
+        detik...
+      </div>
 
       <button
         onClick={() => navigate("/")}
-        style={{
-          marginTop: "15px",
-          padding: "8px 20px",
-          backgroundColor: "transparent",
-          color: "#666",
-          border: "1px solid #ddd",
-          borderRadius: "5px",
-          cursor: "pointer",
-          fontSize: "13px"
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = "#f8f9fa";
-          e.target.style.color = "#333";
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = "transparent";
-          e.target.style.color = "#666";
-        }}
+        className="back-button"
       >
         ← Kembali ke Beranda
       </button>

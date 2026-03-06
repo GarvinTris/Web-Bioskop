@@ -1,67 +1,396 @@
+/* ===== RESET & DASAR ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0a0a0a;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+/* ===== CONTAINER UTAMA ===== */
 .reservasi-container {
-    height: 100vh;
-    display: grid;
-    justify-content: center;
-    align-items: center;
-    background-color: white;
+  min-height: 100vh;
+  background-color: #0f0f0f;
+  color: #ffffff;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
+.reservasi-container > * {
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* ===== SHOWCASE FILM ===== */
 .reservasi-showcase {
-    display: flex;
+  display: flex;
+  gap: 50px;
+  margin-bottom: 50px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
+
 .reservasi-showcase img {
-    width: 400px;
-    height: 600px;
-    border-radius: 15px;
-    box-shadow: 0 0 20px rgba(255,0,0,0.3);
-    object-fit: cover;
+  width: 320px;
+  height: 480px;
+  object-fit: cover;
+  border-radius: 16px;
+  box-shadow: 0 20px 30px rgba(255, 0, 0, 0.2);
+  transition: transform 0.3s;
 }
+
+.reservasi-showcase img:hover {
+  transform: scale(1.02);
+}
+
 .reservasi-info {
-    display: grid;
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.reservasi-info h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.rating-container {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: #1e1e1e;
+  padding: 6px 12px;
+  border-radius: 30px;
+  font-weight: 600;
+}
+
+.rating span {
+  color: #ffb83b;
+  font-size: 1.2rem;
+}
+
+.age-rating {
+  background: #d32f2f;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.movie-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px 20px;
+  margin-bottom: 25px;
+  color: #cccccc;
+}
+
+.movie-meta .label {
+  color: #999;
+  font-weight: 500;
+}
+
+.movie-meta .value {
+  color: white;
+}
+
+.trailer-btn {
+  background: #e50914;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 40px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: fit-content;
+}
+
+.trailer-btn:hover {
+  background: #b2070d;
+}
+
+.trailer-btn i {
+  font-size: 1.3rem;
+}
+
+/* ===== TAB NAVIGASI ===== */
+.tab-navigation {
+  display: flex;
+  gap: 30px;
+  border-bottom: 2px solid #2a2a2a;
+  margin-bottom: 30px;
+}
+
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: #aaa;
+  font-size: 1.3rem;
+  font-weight: 600;
+  padding: 10px 0;
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+}
+
+.tab-btn.active {
+  color: #e50914;
+}
+
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #e50914;
+  border-radius: 3px 3px 0 0;
+}
+
+/* ===== KONTEN TAB ===== */
+.tab-content {
+  min-height: 400px;
+}
+
+/* SYNOPSIS */
+.synopsis-content {
+  background: #1a1a1a;
+  padding: 30px;
+  border-radius: 16px;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  color: #dddddd;
+  text-align: justify;
+  border-left: 5px solid #e50914;
+}
+
+/* SCHEDULE */
+.schedule-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* FILTER TANGGAL */
+.date-filter h3 {
+  color: #aaa;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.date-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.date-btn {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 40px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.date-btn:hover {
+  background: #2a2a2a;
+  border-color: #e50914;
+}
+
+.date-btn.active {
+  background: #e50914;
+  border-color: #e50914;
+  color: white;
+}
+
+/* JADWAL SECTION */
+.jadwal-section {
+  background: #121212;
+  border-radius: 24px;
+  padding: 30px;
+}
+
+.jadwal-section h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #fff;
+}
+
+.result-count {
+  color: #aaa;
+  margin-bottom: 25px;
+  font-size: 0.95rem;
+}
+
+/* HEADER STUDIO TYPE (2D) */
+.studio-type-header {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #e50914;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #2a2a2a;
+}
+
+/* LIST JADWAL */
+.jadwal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.jadwal-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1e1e1e;
+  padding: 18px 24px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.jadwal-item:hover {
+  background: #2a2a2a;
+  transform: translateY(-2px);
+}
+
+.jadwal-item.selected {
+  background: #3a1e1e;
+  border-color: #e50914;
+}
+
+.jam {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: white;
+}
+
+.harga {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #e50914;
+}
+
+/* TOMBOL BUY TICKET */
+.buy-ticket-btn {
+  background: #e50914;
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 18px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 10px 20px rgba(229, 9, 20, 0.3);
+}
+
+.buy-ticket-btn:hover:not(:disabled) {
+  background: #b2070d;
+  transform: scale(1.02);
+}
+
+.buy-ticket-btn:disabled {
+  background: #4a4a4a;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+/* PESAN KETIKA TIDAK ADA JADWAL */
+.no-result {
+  text-align: center;
+  padding: 60px 20px;
+  background: #1a1a1a;
+  border-radius: 16px;
+  color: #aaa;
+  font-size: 1.2rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .reservasi-showcase {
     flex-direction: column;
     align-items: center;
-    gap: 30px;
-}
-.reservasi-card {
-    background: #1c1c1c;
-    padding: 40px;
-    border-radius: 15px;
     text-align: center;
-    width: 400px;
-    box-shadow: 0 0 20px rgba(255,0,0,0.3);
-}
+  }
 
-.judul-movie {
-    color: white;
-    font-size: 32px;
-    margin-bottom: 20px;
-}
+  .reservasi-info h1 {
+    font-size: 2rem;
+  }
 
-.jadwal button {
-    margin: 5px;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    background-color: red;
-    color: white;
-    cursor: pointer;
-    transition: 0.3s;
-}
+  .movie-meta {
+    grid-template-columns: 1fr;
+    text-align: left;
+  }
 
-.jadwal button:hover {
-    background-color: darkred;
-}
-.synopsis {
-    max-width: 400px;
-    text-align: justify;
-}
-.btn-pesan {
-    margin-top: 20px;
-    padding: 12px 25px;
-    border: none;
-    border-radius: 10px;
-    background-color: #ff3c3c;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-}
+  .trailer-btn {
+    margin: 0 auto;
+  }
 
+  .tab-navigation {
+    justify-content: center;
+  }
+
+  .date-buttons {
+    justify-content: center;
+  }
+
+  .jadwal-item {
+    padding: 14px 18px;
+  }
+
+  .jam {
+    font-size: 1.1rem;
+  }
+
+  .harga {
+    font-size: 1rem;
+  }
+
+  .buy-ticket-btn {
+    font-size: 1.2rem;
+    padding: 15px;
+  }
+}
