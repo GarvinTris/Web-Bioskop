@@ -21,7 +21,7 @@ function Reservasi() {
   // Ambil data film
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost/24SI1_PHP/bioskop.php?judul=${encodeURIComponent(decodedTitle)}`)
+    fetch(`http://localhost/Web_Bioskop/API_PHP/bioskop.php?judul=${encodeURIComponent(decodedTitle)}`)
       .then((res) => res.json())
       .then((data) => {
         if (data && data.length > 0) {
@@ -108,7 +108,7 @@ function Reservasi() {
     <div className="reservasi-container">
       {/* Bagian atas: poster dan info film */}
       <div className="reservasi-showcase">
-        <img src={`http://localhost/24SI1_PHP/uploads/${movie.image}`} alt={movie.Judul_Film} onError={(e) => (e.target.src = "http://localhost/24SI1_PHP/uploads/placeholder.jpg")} />
+        <img src={`http://localhost/Web_Bioskop/API_PHP/uploads/${movie.image}`} alt={movie.Judul_Film} onError={(e) => (e.target.src = "http://localhost/Web_Bioskop/API_PHP/uploads/placeholder.jpg")} />
         <div className="reservasi-info">
           <h1>{movie.Judul_Film}</h1>
           <div className="rating-container">

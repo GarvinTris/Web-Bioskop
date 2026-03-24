@@ -36,7 +36,7 @@ function Admin() {
   const fetchKategori = async () => {
     try {
       // Gunakan file yang sudah ada: getKategori.php (bukan kategori.php)
-      const response = await fetch("http://localhost/24SI1_PHP/getKategori.php");
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/getKategori.php");
       const data = await response.json();
       setKategori(data);
     } catch (error) {
@@ -49,7 +49,7 @@ function Admin() {
   const fetchFilms = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost/24SI1_PHP/Bioskop.php");
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php");
       const data = await response.json();
       setFilms(data);
     } catch (error) {
@@ -63,7 +63,7 @@ function Admin() {
   // Fetch data jadwal dari database
   const fetchSchedules = async () => {
     try {
-      const response = await fetch("http://localhost/24SI1_PHP/jadwal.php");
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/jadwal.php");
       const data = await response.json();
       setSchedules(data);
     } catch (error) {
@@ -131,13 +131,13 @@ function Admin() {
       if (filmForm.id_film) {
         // Update film (PERLU MEMBUAT FILE update_film.php)
         formData.append("ID_Film", filmForm.id_film);
-        response = await fetch("http://localhost/24SI1_PHP/update_film.php", {
+        response = await fetch("http://localhost/Web_Bioskop/API_PHP/update_film.php", {
           method: "POST",
           body: formData
         });
       } else {
         // Tambah film baru
-        response = await fetch("http://localhost/24SI1_PHP/tambah_film.php", {
+        response = await fetch("http://localhost/Web_Bioskop/API_PHP/tambah_film.php", {
           method: "POST",
           body: formData
         });
@@ -209,7 +209,7 @@ function Admin() {
     formData.append("No_Studio", jadwalForm.no_studio);
 
     try {
-      const url = "http://localhost/24SI1_PHP/tambah_jadwal.php"; // File yang sudah Anda buat
+      const url = "http://localhost/Web_Bioskop/API_PHP/tambah_jadwal.php"; // File yang sudah Anda buat
 
       const response = await fetch(url, {
         method: "POST",
@@ -247,7 +247,7 @@ function Admin() {
     if (window.confirm("Yakin ingin menghapus film ini?")) {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost/24SI1_PHP/hapus_film.php?id=${id}&confirm=1`);
+        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_film.php?id=${id}&confirm=1`);
         const result = await response.json();
         
         if (result.success) {
@@ -271,7 +271,7 @@ function Admin() {
     if (window.confirm("Yakin ingin menghapus jadwal ini?")) {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost/24SI1_PHP/hapus_jadwal.php?id=${id}`);
+        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_jadwal.php?id=${id}`);
         const result = await response.json();
         
         if (result.success) {
@@ -546,7 +546,7 @@ function Admin() {
                   <td>
                     {film.image && (
                       <img 
-                        src={`http://localhost/24SI1_PHP/uploads/${film.image}`} 
+                        src={`http://localhost/Web_Bioskop/API_PHP/uploads/${film.image}`} 
                         alt={film.Judul_Film}
                         style={{ width: "50px", height: "70px", objectFit: "cover" }}
                         onError={(e) => {
