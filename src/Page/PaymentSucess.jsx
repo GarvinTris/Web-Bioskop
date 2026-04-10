@@ -7,30 +7,72 @@ function PaymentSuccess() {
   const [transaction, setTransaction] = useState(null);
   const [countdown, setCountdown] = useState(5);
 
-  useEffect(() => {
-    const lastTrx = localStorage.getItem("lastTransaction");
-    if (lastTrx) {
+  // PaymentSuccess.jsx - update useEffect
+useEffect(() => {
+  const lastTrx = localStorage.getItem("lastTransaction");
+  console.log("Last transaction from localStorage:", lastTrx);
+  
+  if (lastTrx) {
       const trxData = JSON.parse(lastTrx);
+      console.log("Transaction data:", trxData);
       setTransaction(trxData);
       
-      // 🔴 SIMPAN JUGA DENGAN FORMAT transaction_ UNTUK RIWAYAT
-      const transactionKey = `transaction_${trxData.id}`;
-      localStorage.setItem(transactionKey, lastTrx);
-    }
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
+      // Pastikan transaksi tersimpan dengan benar
+      const userId = localStorage.getItem("userId");
+      if (userId && trxData.id) {
+          const transactionKey = `transaction_${userId}_${trxData.id}`;
+          const existingTrx = localStorage.getItem(transactionKey);
+          
+          if (!existingTrx) {
+              // Jika belum tersimpan, simpan sekarang
+              localStorage.setItem(transactionKey, lastTrx);
+              console.log("Transaction saved on success page:", transactionKey);
+          } else {
+              console.log("Transaction already exists:", transactionKey);
+          }
+      }
+  } else {
+      // Jika tidak ada lastTransaction, coba cari transaksi terbaru
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+          let latestTransaction = null;
+          let latestKey = null;
+          
+          for (let i = 0; i < localStorage.length; i++) {
+              const key = localStorage.key(i);
+              if (key && key.startsWith(`transaction_${userId}_`)) {
+                  const trx = JSON.parse(localStorage.getItem(key));
+                  if (!latestTransaction || new Date(trx.date) > new Date(latestTransaction.date)) {
+                      latestTransaction = trx;
+                      latestKey = key;
+                  }
+              }
+          }
+          
+          if (latestTransaction) {
+              console.log("Found latest transaction:", latestKey);
+              setTransaction(latestTransaction);
+          } else {
+              navigate("/riwayat-tiket");
+          }
+      } else {
           navigate("/riwayat-tiket");
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+      }
+  }
 
-    return () => clearInterval(timer);
-  }, [navigate]);
+  const timer = setInterval(() => {
+      setCountdown((prev) => {
+          if (prev <= 1) {
+              clearInterval(timer);
+              navigate("/riwayat-tiket");
+              return 0;
+          }
+          return prev - 1;
+      });
+  }, 1000);
+
+  return () => clearInterval(timer);
+}, [navigate]);
 
   const formatRupiah = (angka) => {
     return new Intl.NumberFormat('id-ID', {
@@ -75,12 +117,15 @@ function PaymentSuccess() {
           <span className="detail-value transaction-id">{transaction.id}</span>
         </div>
         
-        <div className="transaction-detail">
-          <span className="detail-label">
-            <i>🎬</i> Film
-          </span>
-          <span className="detail-value">{transaction.jadwal?.Judul_Film || "-"}</span>
-        </div>
+        
+      <div className="transaction-detail">
+        <span className="detail-label">
+          <i>🎬</i> Film
+        </span>
+        <span className="detail-value">
+          {transaction.jadwal?.Judul_Film || transaction.jadwal?.judul_film || "Film Tidak Diketahui"}
+        </span>
+      </div>
         
         <div className="transaction-detail">
           <span className="detail-label">

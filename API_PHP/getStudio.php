@@ -8,8 +8,8 @@ if ($conn->connect_error) {
     die(json_encode(["error" => "Database gagal konek: " . $conn->connect_error]));
 }
 
-// Ambil semua data studio, urut berdasarkan nomor studio
-$sql = "SELECT No_Studio, Nama_Studio FROM studio ORDER BY No_Studio";
+// Ambil semua data studio
+$sql = "SELECT No_Studio, Nama_Studio, Harga_Tiket FROM studio ORDER BY No_Studio";
 $result = $conn->query($sql);
 
 $studio = [];

@@ -11,14 +11,14 @@ function Reservasi() {
   const [filteredJadwal, setFilteredJadwal] = useState([]);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedJadwal, setSelectedJadwal] = useState(null);
-  const [activeTab, setActiveTab] = useState("synopsis"); // 'synopsis' atau 'schedule'
+  const [activeTab, setActiveTab] = useState("synopsis");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem("loggedIn");
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
-  // Ambil data film
+  
   useEffect(() => {
     setLoading(true);
     fetch(`http://localhost/Web_Bioskop/API_PHP/bioskop.php?judul=${encodeURIComponent(decodedTitle)}`)
@@ -50,7 +50,6 @@ function Reservasi() {
       filtered = filtered.filter((j) => j.Tanggal === selectedDate);
     }
     setFilteredJadwal(filtered);
-    // Reset pilihan jadwal jika filter berubah
     setSelectedJadwal(null);
   }, [selectedDate, jadwal]);
 
@@ -69,18 +68,53 @@ function Reservasi() {
     return date.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
   };
 
-  // Pilih jadwal
-  const handleSelectJadwal = (item) => {
-    setSelectedJadwal(item);
+  // Kelompokkan jadwal berdasarkan studio
+  const groupJadwalByStudio = (jadwalList) => {
+    const groups = {};
+    jadwalList.forEach(item => {
+      const studioName = item.Nama_Studio || `Studio ${item.No_Studio}`;
+      if (!groups[studioName]) {
+        groups[studioName] = [];
+      }
+      groups[studioName].push(item);
+    });
+    return groups;
   };
 
-  // Beli tiket
+  // Pilih jadwal
+  // Di bagian pilih jadwal
+  const handleSelectJadwal = (item) => {
+    console.log("Selected jadwal item:", item);
+    console.log("Movie title from item:", item.Judul_Film);
+    
+    // Ambil judul film dari movie state
+    const movieTitle = movie?.Judul_Film || "Film Tidak Diketahui";
+    
+    const selectedWithPrice = {
+      ...item,
+      Judul_Film: item.Judul_Film || item.judul_film || movieTitle,
+      Harga: item.Harga || 50000
+    };
+    
+    console.log("Selected jadwal with title:", selectedWithPrice);
+    setSelectedJadwal(selectedWithPrice);
+  };
+  
   const handleBuyTicket = () => {
     if (!isLoggedIn) {
       localStorage.setItem("redirectAfterLogin", window.location.pathname);
       navigate("/Login");
     } else if (selectedJadwal) {
-      localStorage.setItem("selectedJadwal", JSON.stringify(selectedJadwal));
+      // Pastikan judul film ada
+      const movieTitle = movie?.Judul_Film || "Film Tidak Diketahui";
+      
+      const jadwalToSave = {
+        ...selectedJadwal,
+        Judul_Film: selectedJadwal.Judul_Film || selectedJadwal.judul_film || movieTitle
+      };
+      
+      console.log("Saving to localStorage:", jadwalToSave);
+      localStorage.setItem("selectedJadwal", JSON.stringify(jadwalToSave));
       navigate("/seat-selection");
     }
   };
@@ -103,6 +137,8 @@ function Reservasi() {
         <h2>Film tidak ditemukan</h2>
       </div>
     );
+
+  const groupedJadwal = groupJadwalByStudio(filteredJadwal);
 
   return (
     <div className="reservasi-container">
@@ -176,7 +212,7 @@ function Reservasi() {
 
             {/* Daftar jadwal */}
             <div className="jadwal-section">
-              <h2>FIVE NIGHTS AT FREDDY'S 2 SCHEDULE IN CINEMAS</h2>
+              <h2>{movie.Judul_Film} SCHEDULE IN CINEMAS</h2>
               <p className="result-count">{filteredJadwal.length} jadwal tersedia</p>
 
               {filteredJadwal.length === 0 ? (
@@ -185,24 +221,39 @@ function Reservasi() {
                 </div>
               ) : (
                 <>
-                  {/* Header tipe studio (2D) */}
-                  <div className="studio-type-header">2D</div>
-
-                  {/* List jadwal */}
-                  <div className="jadwal-list">
-                    {filteredJadwal.map((item, index) => {
-                      const isSelected = selectedJadwal && selectedJadwal.Tanggal === item.Tanggal && selectedJadwal.Jam_Mulai === item.Jam_Mulai && selectedJadwal.No_Studio === item.No_Studio;
-                      return (
-                        <div key={index} className={`jadwal-item ${isSelected ? "selected" : ""}`} onClick={() => handleSelectJadwal(item)}>
-                          <span className="jam">{item.Jam_Mulai.substring(0, 5)} WIB</span>
-                          <span className="harga">Rp {item.Harga?.toLocaleString()}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
+                  {/* Loop setiap studio */}
+                  {Object.keys(groupedJadwal).map((studioName) => (
+                    <div key={studioName} className="studio-section">
+                      <div className="studio-type-header">{studioName}</div>
+                      
+                      <div className="jadwal-list">
+                        {groupedJadwal[studioName].map((item, index) => {
+                          const isSelected = selectedJadwal && 
+                            selectedJadwal.Tanggal === item.Tanggal && 
+                            selectedJadwal.Jam_Mulai === item.Jam_Mulai && 
+                            selectedJadwal.No_Studio === item.No_Studio;
+                          
+                          return (
+                            <div 
+                              key={index} 
+                              className={`jadwal-item ${isSelected ? "selected" : ""}`} 
+                              onClick={() => handleSelectJadwal(item)}
+                            >
+                              <span className="jam">{item.Jam_Mulai?.substring(0, 5)} WIB</span>
+                              <span className="harga">Rp {item.Harga?.toLocaleString()}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                  
                   {/* Tombol BUY TICKET */}
-                  <button className="buy-ticket-btn" onClick={handleBuyTicket} disabled={!selectedJadwal}>
+                  <button 
+                    className="buy-ticket-btn" 
+                    onClick={handleBuyTicket} 
+                    disabled={!selectedJadwal}
+                  >
                     BUY TICKET
                   </button>
                 </>

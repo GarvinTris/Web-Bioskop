@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Layout from "./component/Layout.jsx";
-import { Movie, Jumbotron } from "./Page/Homepage";
+import Homepage from "./Page/Homepage";
 import Admin from "./Page/Admin.jsx";
 import Reservasi from "./Page/Reservasi.jsx";
 import Login from "./Page/Login.jsx";
@@ -11,15 +11,9 @@ import PaymentSuccess from "./Page/PaymentSucess.jsx";
 import RiwayatTiket from "./Page/RiwayatTiket.jsx";
 import About from "./Page/About.jsx";
 import Contact from "./Page/Contact.jsx";
+import ForgotPassword from "./Page/ForgotPassword.jsx";
+import DetailTiket from "./Page/DetailTiket.jsx";
 
-function HomePage() {
-  return (
-    <>
-      <Jumbotron />
-      <Movie />
-    </>
-  )
-}
 
 function App() {
   return (
@@ -27,14 +21,21 @@ function App() {
       <Routes>
         <Route path="/" element={
           <Layout>
-            <HomePage />
+            <Homepage />
           </Layout>
         } />
+        
         <Route path="/admin" element={<Admin />}/>
         
         <Route path="/Reservasi/:Judul_Film" element={
           <Layout>
             <Reservasi />
+          </Layout>
+        } />
+
+        <Route path="/Forgot-Password" element={
+          <Layout>
+            <ForgotPassword/>
           </Layout>
         } />
         
@@ -73,14 +74,22 @@ function App() {
             <RiwayatTiket />
           </Layout>
         } />
+        
         <Route path="/about" element={
           <Layout>
             <About />
           </Layout>
         } />
+        
         <Route path="/contact" element={
           <Layout>
             <Contact />
+          </Layout>
+        } />
+        
+        <Route path="/detail-tiket" element={
+          <Layout>
+            <DetailTiket />
           </Layout>
         } />
       </Routes>
