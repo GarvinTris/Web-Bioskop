@@ -16,7 +16,7 @@ nav {
   justify-content: space-between;
   gap: var(--gap-default);
   padding: var(--gap-default) 1.8rem;
-  background-color: #000940;
+  background-color: #0a1a5e; /* Lebih terang dari #000940 */
   color: aliceblue;
   font-family: 'Poppins',sans-serif;
   font-size: var(--text-body);
@@ -323,7 +323,7 @@ a {
 
 /* Promo Section */
 .promo-section {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #2a2a4e 0%, #26355e 100%); /* Lebih terang */
   color: white;
   padding: var(--pad-3) var(--pad-1);
 }
@@ -341,7 +341,7 @@ a {
 }
 
 .promo-card {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.15);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   padding: 1.5rem;
@@ -557,7 +557,7 @@ a {
 }
 
 .faq-question.active {
-  background: #e50914;
+  background: #0a1a5e; /* Lebih terang dari sebelumnya */
   color: white;
 }
 
@@ -584,7 +584,7 @@ a {
 
 /* Newsletter Section Home */
 .newsletter-section-home {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(135deg, #0a1a5e 0%, #1a2a6e 100%); /* Lebih terang */
   color: white;
   padding: var(--pad-3) var(--pad-1);
 }
@@ -672,7 +672,7 @@ a {
 
 /* Popular Section */
 .popular-section {
-  background: linear-gradient(135deg, #000940 0%, #001a5e 100%);
+  background: linear-gradient(135deg, #0a1a5e 0%, #1a2a6e 100%); /* Lebih terang */
   padding: var(--pad-3) var(--pad-1);
   color: white;
   margin: 0;
@@ -692,13 +692,13 @@ a {
 }
 
 .popular-card {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.12);
   backdrop-filter: blur(10px);
   border-radius: 16px;
   overflow: hidden;
   position: relative;
   transition: transform 0.3s, box-shadow 0.3s;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.25);
 }
 
 .popular-card:hover {
@@ -867,7 +867,7 @@ a {
 }
 
 .notify-me-btn {
-  background: #000940;
+  background: #0a1a5e; /* Lebih terang */
   color: white;
   border: none;
   padding: 8px 20px;
@@ -939,7 +939,7 @@ a {
 }
 
 .faq-question.active {
-  background: #000940;
+  background: #0a1a5e; /* Lebih terang */
   color: white;
 }
 
@@ -968,7 +968,7 @@ a {
 
 /* Newsletter Section */
 .newsletter-section-home {
-  background: linear-gradient(135deg, #000940 0%, #001a5e 100%);
+  background: linear-gradient(135deg, #0a1a5e 0%, #1a2a6e 100%); /* Lebih terang */
   color: white;
   padding: var(--pad-3) var(--pad-1);
   text-align: center;
@@ -1037,8 +1037,8 @@ a {
 
 /* Footer */
 .home-footer {
-  background: #0a0a0a;
-  color: #999;
+  background: #1a1a2a; /* Lebih terang dari #0a0a0a */
+  color: #aaa;
   margin-top: 0;
 }
 
@@ -1065,7 +1065,7 @@ a {
 .footer-brand p {
   line-height: 1.6;
   margin-bottom: 1.5rem;
-  color: #aaa;
+  color: #bbb;
 }
 
 .footer-contact p {
@@ -1109,7 +1109,7 @@ a {
 }
 
 .footer-col ul li a {
-  color: #aaa;
+  color: #bbb;
   text-decoration: none;
   transition: color 0.3s;
   display: flex;
@@ -1126,9 +1126,9 @@ a {
 }
 
 .footer-bottom {
-  border-top: 1px solid #1a1a1a;
+  border-top: 1px solid #2a2a3a;
   padding: 1.5rem;
-  background: #050505;
+  background: #14142a;
 }
 
 .footer-bottom-content {

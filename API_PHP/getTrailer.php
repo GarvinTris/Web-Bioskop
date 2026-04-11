@@ -21,10 +21,9 @@ if ($table_check->num_rows == 0) {
     exit;
 }
 
-// Query dengan pengecekan kolom
+// HAPUS kolom Genre dari query (karena sudah dihapus dari tabel film)
 $query = "SELECT t.*, 
           f.Judul_Film, 
-          f.Genre, 
           f.Deskripsi, 
           f.Rating_Usia,
           f.Durasi,

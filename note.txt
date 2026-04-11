@@ -91,16 +91,17 @@ CREATE TABLE web_bioskop_transaksi (
     FOREIGN KEY (ID_Penonton) REFERENCES web_bioskop_penonton(ID_Penonton) ON DELETE CASCADE
 );
 
-INSERT INTO web_bioskop_film (ID_Film, Judul_Film, Genre, Durasi, ID_Kategori, image, Director, Deskripsi, Rating_Usia, Trailer_URL, Rating) VALUES
-(43, 'Mission: Impossible - The Final Reckoning', 'AKSI', '02:43:00', 'AKSI', '17757696709_69d881e58b43e.jpg', 'Christopher McQuarrie', 'Ethan Hunt dan tim IMF-nya kembali untuk menghadap...', 'R', 'https://youtu.be/fsQgc9pCyDU?si=mSgsab1DE2dLso83', 8.4),
-(44, 'The Fantastic Four: First Steps', 'AKSI', '02:00:00', 'AKSI', '17757698222_69d882567a02e.jpg', 'Matt Shakman', 'Berlatar di versi alternatif tahun 1960-an, film i...', 'R', 'https://youtu.be/18QQWa5c7aO?si=Jbw7nvnn22bNgNISD', 7.5),
-(45, 'Eddington', 'DRAMA', '02:30:00', 'DRAMA', '17757697619_69d882b6397c1.jpg', 'Ari Aster', 'Sebuah komedi gelap yang mengambil latar di kota k...', 'D', 'https://youtu.be/oL6jZqExlIk?si=VFui82XmxxzwNoBF', 7.8),
-(46, 'Nuremberg', 'DRAMA', '01:40:00', 'DRAMA', '17757697140_69d8839424433.jpg', 'Richard Linklater', 'Tentang satu malam dalam kehidupan penulis lirik B...', 'D', 'https://youtu.be/qo7gRHip0II?si=iadAog1CQMifHsh', 7.4),
-(47, 'Blue Moon', 'HOROR', '02:20:00', 'HOROR', '17757682568_69d87403a95f3.jpg', 'Coralie Fargeat', 'Film horor tubuh yang eksperimental tentang kecant...', 'D', 'https://youtu.be/jBkloU5PhyQ?si=4_tXu3OdhQLgu-md', 7.6),
-(48, 'The Substance', 'ANIM', '01:45:00', 'ANIM', '17757682568_69d87403a95f3.jpg', 'Coralie Fargeat', 'Judy Hoops dan Nick Wilde harus melacak Gary, seek...', 'SU', 'https://youtu.be/BjkLOU5PhyQ?si=4_tXu3OdhQLgu-md', 7.6),
-(49, 'Zootopia 2', 'HOROR', '01:50:00', 'HOROR', '17757682568_69d87403a95f3.jpg', 'Kevin Rahardjo', 'Seorang pemain yang selamat dari kecelakaan, hidup...', 'D', 'https://youtu.be/wzqkVJfnzv0?si=gOVomkc938HsdU5i', 7.3),
-(50, 'Legenda Kelam Mendidik (The Verdict)', 'DRAMA', '02:00:00', 'DRAMA', '17757682592_69d87ce786af.jpg', 'Lee Chang Hee', 'Seorang pemain yang mendidik kelam mendidik...', 'D', 'https://youtu.be/oXVWmB0csH6U?si=FW_awk1W1Wd7-pTK', 7.3),
-(51, 'Keadilan (The Verdict)', 'KOMEDI', '01:55:00', 'KOMEDI', '17757682600_69d84f50b0d68.jpg', 'Muhadkhly Acho', 'Empat detektif yang terus gagal dalam misi harus m...', 'R', 'https://youtu.be/fYjJ6zP2Cp0?si=Zp2Bnrofm66VO481', 8.5);
+INSERT INTO web_bioskop_film (Judul_Film, Durasi, ID_Kategori, image, Director, Deskripsi, Rating_Usia, Trailer_URL, Rating) VALUES
+('Mission: Impossible - The Final Reckoning', '02:43:00', 'AKSI', '17757696709_69d881e58b43e.jpg', 'Christopher McQuarrie', 'Ethan Hunt dan tim IMF-nya kembali untuk menghadap...', 'R', 'https://youtu.be/fsQgc9pCyDU?si=mSgsab1DE2dLso83', 8.4),
+('The Fantastic Four: First Steps', '02:00:00', 'AKSI', '17757698222_69d882567a02e.jpg', 'Matt Shakman', 'Berlatar di versi alternatif tahun 1960-an, film i...', 'R', 'https://youtu.be/18QQWa5c7aO?si=Jbw7nvnn22bNgNISD', 7.5),
+('Eddington', '02:30:00', 'DRAMA', '17757697619_69d882b6397c1.jpg', 'Ari Aster', 'Sebuah komedi gelap yang mengambil latar di kota k...', 'D', 'https://youtu.be/oL6jZqExlIk?si=VFui82XmxxzwNoBF', 7.8),
+('Nuremberg', '01:40:00', 'DRAMA', '17757697140_69d8839424433.jpg', 'Richard Linklater', 'Tentang satu malam dalam kehidupan penulis lirik B...', 'D', 'https://youtu.be/qo7gRHip0II?si=iadAog1CQMifHsh', 7.4),
+('Blue Moon', '02:20:00', 'HOROR', '17757682568_69d87403a95f3.jpg', 'Coralie Fargeat', 'Film horor tubuh yang eksperimental tentang kecant...', 'D', 'https://youtu.be/jBkloU5PhyQ?si=4_tXu3OdhQLgu-md', 7.6),
+('The Substance', '01:45:00', 'ANIM', '17757682568_69d87403a95f3.jpg', 'Coralie Fargeat', 'Judy Hoops dan Nick Wilde harus melacak Gary, seek...', 'SU', 'https://youtu.be/BjkLOU5PhyQ?si=4_tXu3OdhQLgu-md', 7.6),
+('Zootopia 2', '01:50:00', 'HOROR', '17757682568_69d87403a95f3.jpg', 'Kevin Rahardjo', 'Seorang pemain yang selamat dari kecelakaan, hidup...', 'D', 'https://youtu.be/wzqkVJfnzv0?si=gOVomkc938HsdU5i', 7.3),
+('Legenda Kelam Mendidik (The Verdict)', '02:00:00', 'DRAMA', '17757682592_69d87ce786af.jpg', 'Lee Chang Hee', 'Seorang pemain yang mendidik kelam mendidik...', 'D', 'https://youtu.be/oXVWmB0csH6U?si=FW_awk1W1Wd7-pTK', 7.3),
+('Keadilan (The Verdict)', '01:55:00', 'KOMEDI', '17757682600_69d84f50b0d68.jpg', 'Muhadkhly Acho', 'Empat detektif yang terus gagal dalam misi harus m...', 'R', 'https://youtu.be/fYjJ6zP2Cp0?si=Zp2Bnrofm66VO481', 8.5);
+
 
 INSERT INTO web_bioskop_kategori (ID_Kategori, Nama_Kategori) VALUES
 ('AKSI', 'Action'),
