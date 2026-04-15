@@ -1,24 +1,11 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: *"); // Izinkan semua header
-header("Content-Type: application/json");
-header("Cache-Control: no-cache, no-store, must-revalidate");
+// jadwal.php
+require_once 'database.php';
 
-// Handle preflight
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
+// 🔴 JANGAN TAMBAHKAN HEADER MANUAL APAPUN!
+// Karena database.php sudah mengatur semua header CORS
 
-// Rest of your code remains the same...
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    echo json_encode(["error" => "Database gagal konek: " . $conn->connect_error, "data" => []]);
-    exit;
-}
-
+// Langsung ke kode
 $sql = "SELECT 
             j.ID_Jadwal,
             j.ID_Film,
@@ -35,7 +22,6 @@ $result = $conn->query($sql);
 
 if (!$result) {
     echo json_encode(["error" => "Query error: " . $conn->error, "data" => []]);
-    $conn->close();
     exit;
 }
 
@@ -67,5 +53,5 @@ while ($row = $result->fetch_assoc()) {
 }
 
 echo json_encode($data);
-$conn->close();
+exit;
 ?>

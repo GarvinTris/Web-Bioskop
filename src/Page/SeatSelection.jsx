@@ -26,29 +26,21 @@ function SeatSelection() {
   // Fetch booked seats from database
   const fetchBookedSeats = async (idJadwal) => {
     try {
-      const timestamp = new Date().getTime();
-      const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/get_booked_seats.php?id_jadwal=${idJadwal}&t=${timestamp}`);
-      const data = await response.json();
-      
-      if (data.success) {
-        const bookedDisplaySeats = data.booked_seats.map(seatId => {
-          // Parse ID_Kursi format: KRS1A01 -> Baris A, Kursi 01
-          const match = seatId.match(/KRS\d+([A-E])(\d+)/);
-          if (match) {
-            const baris = match[1];
-            const nomor = parseInt(match[2]);
-            return getSeatDisplayName(baris, nomor);
-          }
-          return seatId;
+        const timestamp = new Date().getTime();
+        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/get_booked_seats.php?id_jadwal=${idJadwal}&t=${timestamp}`, {
+            credentials: 'include'
         });
+        const data = await response.json();
         
-        setBookedSeats(bookedDisplaySeats);
-        console.log("Booked seats loaded:", bookedDisplaySeats);
-      }
+        if (data.success) {
+            // Data sudah dalam format ["A1", "B2", ...] dari API
+            setBookedSeats(data.booked_seats || []);
+            console.log("Booked seats loaded:", data.booked_seats);
+        }
     } catch (error) {
-      console.error("Error fetching booked seats:", error);
+        console.error("Error fetching booked seats:", error);
     }
-  };
+};
 
   // Fetch studio name from database
   const fetchStudioName = async (noStudio) => {

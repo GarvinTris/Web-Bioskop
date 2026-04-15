@@ -1,20 +1,20 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+// bioskop.php
+require_once 'database.php';
+
+// 🔴 HAPUS SEMUA INI:
+// header("Access-Control-Allow-Origin: *");
+// header("Content-Type: application/json");
+// $conn = new mysqli(...);
+
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    echo json_encode(["error" => "Database gagal konek: " . $conn->connect_error]);
-    exit;
-}
+// 🔴 LANGSUNG PAKAI $conn dari database.php
 
 if (isset($_GET['judul'])) {
     $judul = $conn->real_escape_string($_GET['judul']);
     
-    // Ambil data film dengan JOIN kategori - HAPUS Rating_Usia
     $sqlFilm = "SELECT f.*, k.Nama_Kategori 
                 FROM film f
                 LEFT JOIN kategori k ON f.ID_Kategori = k.ID_Kategori
@@ -33,7 +33,6 @@ if (isset($_GET['judul'])) {
     $data = [];
     if ($film = $resultFilm->fetch_assoc()) {
         
-        // Ambil jadwal film ini
         $sqlJadwal = "SELECT 
                         j.ID_Jadwal,
                         j.ID_Film,
@@ -78,7 +77,6 @@ if (isset($_GET['judul'])) {
     echo json_encode($data);
     
 } else {
-    // Ambil semua film - HAPUS Rating_Usia
     $sql = "SELECT f.*, k.Nama_Kategori 
             FROM film f
             LEFT JOIN kategori k ON f.ID_Kategori = k.ID_Kategori
@@ -99,5 +97,6 @@ if (isset($_GET['judul'])) {
     echo json_encode($data);
 }
 
-$conn->close();
+// Jangan tutup koneksi karena sudah di database.php
+// $conn->close();
 ?>

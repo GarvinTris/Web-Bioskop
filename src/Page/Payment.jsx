@@ -72,6 +72,7 @@ function Payment() {
 // Payment.jsx - bagian handlePayment
 // Payment.jsx - update handlePayment function
 // Payment.jsx - bagian handlePayment
+// Payment.jsx - Update handlePayment function
 const handlePayment = () => {
   if (!paymentMethod) {
       alert("Pilih metode pembayaran");
@@ -91,13 +92,9 @@ const handlePayment = () => {
           return;
       }
       
-      // 🔴 PASTIKAN URL INI BENAR
       const apiUrl = "http://localhost/Web_Bioskop/API_PHP/saveTransaction.php";
-      // ATAU jika pakai huruf kecil:
-      // const apiUrl = "http://localhost/Web_bioskop/API_PHP/saveTransaction.php";
       
-      console.log("Sending to URL:", apiUrl);
-      console.log("Data being sent:", {
+      const requestData = {
           id_transaksi: transactionId,
           id_penonton: userId,
           id_jadwal: selectedJadwal.ID_Jadwal,
@@ -105,33 +102,35 @@ const handlePayment = () => {
           total_harga: grandTotal,
           metode_pembayaran: paymentMethod,
           tanggal: new Date().toISOString().slice(0, 19).replace('T', ' ')
-      });
+      };
+      
+      console.log("Sending to URL:", apiUrl);
+      console.log("Data being sent:", requestData);
       
       try {
           const response = await fetch(apiUrl, {
               method: "POST",
+              credentials: "include",
               headers: {
                   "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                  id_transaksi: transactionId,
-                  id_penonton: userId,
-                  id_jadwal: selectedJadwal.ID_Jadwal,
-                  kursi: selectedSeats.join(","),
-                  total_harga: grandTotal,
-                  metode_pembayaran: paymentMethod,
-                  tanggal: new Date().toISOString().slice(0, 19).replace('T', ' ')
-              })
+              body: JSON.stringify(requestData)
           });
           
           console.log("Response status:", response.status);
           
-          if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-          }
+          // 🔴 BACA RESPONSE SEBAGAI TEXT DULU
+          const textResponse = await response.text();
+          console.log("Raw response:", textResponse);
           
-          const result = await response.json();
-          console.log("Save transaction result:", result);
+          // 🔴 COBA PARSE JSON
+          let result;
+          try {
+              result = JSON.parse(textResponse);
+          } catch (e) {
+              console.error("Response is not valid JSON:", textResponse);
+              throw new Error("Server error: " + textResponse.substring(0, 200));
+          }
           
           if (result.success) {
               // Simpan ke localStorage untuk backup
@@ -145,11 +144,9 @@ const handlePayment = () => {
                   date: new Date().toISOString()
               };
               
-              const transactionKey = `transaction_${userId}_${transactionId}`;
-              localStorage.setItem(transactionKey, JSON.stringify(transactionData));
+              localStorage.setItem(`transaction_${userId}_${transactionId}`, JSON.stringify(transactionData));
               localStorage.setItem("lastTransaction", JSON.stringify(transactionData));
               
-              // Simpan daftar transaksi user
               const existingTransactions = JSON.parse(localStorage.getItem(`user_transactions_${userId}`) || "[]");
               existingTransactions.push(transactionId);
               localStorage.setItem(`user_transactions_${userId}`, JSON.stringify(existingTransactions));
@@ -164,7 +161,7 @@ const handlePayment = () => {
           }
       } catch (error) {
           console.error("Error saving transaction:", error);
-          alert("Terjadi kesalahan saat menyimpan transaksi: " + error.message + ". Silakan coba lagi.");
+          alert("Terjadi kesalahan saat menyimpan transaksi: " + error.message);
           setIsProcessing(false);
       }
   };

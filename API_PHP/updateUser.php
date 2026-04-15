@@ -1,14 +1,18 @@
 <?php
 // updateUser.php
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
+require_once 'database.php';
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, GET, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 $conn = new mysqli("localhost", "root", "", "web_bioskop");
 
@@ -17,76 +21,56 @@ if ($conn->connect_error) {
     exit;
 }
 
-$input = file_get_contents("php://input");
-$data = json_decode($input, true);
+// Ambil data dari GET (karena frontend pakai GET)
+$id = $_GET['id_penonton'] ?? $_POST['id_penonton'] ?? null;
+$nama = $_GET['nama_lengkap'] ?? $_POST['nama_lengkap'] ?? null;
+$email = $_GET['email'] ?? $_POST['email'] ?? null;
+$no_hp = $_GET['no_hp'] ?? $_POST['no_hp'] ?? null;
+$password = $_GET['password'] ?? $_POST['password'] ?? null;
 
-if (!$data) {
-    echo json_encode(["success" => false, "error" => "Invalid JSON data"]);
-    $conn->close();
-    exit;
-}
-
-if (!isset($data['id_penonton']) || empty($data['id_penonton'])) {
+if (!$id) {
     echo json_encode(["success" => false, "error" => "ID user tidak ditemukan"]);
     $conn->close();
     exit;
 }
 
-$id = $conn->real_escape_string($data['id_penonton']);
-$nama = $conn->real_escape_string($data['nama_lengkap']);
-$email = $conn->real_escape_string($data['email']);
-$no_hp = $conn->real_escape_string($data['no_hp']);
-
-if (empty($nama) || empty($email) || empty($no_hp)) {
-    echo json_encode(["success" => false, "error" => "Nama, Email, dan No HP harus diisi"]);
+if (!$nama || !$email || !$no_hp) {
+    echo json_encode([
+        "success" => false, 
+        "error" => "Data tidak lengkap",
+        "received" => compact('id', 'nama', 'email', 'no_hp')
+    ]);
     $conn->close();
     exit;
 }
 
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(["success" => false, "error" => "Format email tidak valid"]);
+$id = mysqli_real_escape_string($conn, $id);
+$nama = mysqli_real_escape_string($conn, $nama);
+$email = mysqli_real_escape_string($conn, $email);
+$no_hp = mysqli_real_escape_string($conn, $no_hp);
+
+// Cek apakah user ada
+$check = $conn->query("SELECT ID_Penonton FROM penonton WHERE ID_Penonton = '$id'");
+if (!$check || $check->num_rows == 0) {
+    echo json_encode(["success" => false, "error" => "User dengan ID $id tidak ditemukan"]);
     $conn->close();
     exit;
 }
 
-// Cek email duplikat
-$checkEmail = "SELECT ID_Penonton FROM penonton WHERE Email = '$email' AND ID_Penonton != '$id'";
-$result = $conn->query($checkEmail);
-if ($result && $result->num_rows > 0) {
-    echo json_encode(["success" => false, "error" => "Email sudah digunakan user lain"]);
-    $conn->close();
-    exit;
-}
-
-// Update password jika diisi
-if (isset($data['password']) && !empty($data['password'])) {
-    if (strlen($data['password']) < 6) {
-        echo json_encode(["success" => false, "error" => "Password minimal 6 karakter"]);
-        $conn->close();
-        exit;
-    }
-    $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
-    $hashedPassword = $conn->real_escape_string($hashedPassword);
-    
-    $sql = "UPDATE penonton SET 
-            Nama_Lengkap = '$nama',
-            Email = '$email',
-            No_HP = '$no_hp',
-            Password = '$hashedPassword'
-            WHERE ID_Penonton = '$id'";
+// Update data
+if (!empty($password) && strlen($password) >= 6) {
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    $hashedPassword = mysqli_real_escape_string($conn, $hashedPassword);
+    $sql = "UPDATE penonton SET Nama_Lengkap='$nama', Email='$email', No_HP='$no_hp', Password='$hashedPassword' WHERE ID_Penonton='$id'";
 } else {
-    $sql = "UPDATE penonton SET 
-            Nama_Lengkap = '$nama',
-            Email = '$email',
-            No_HP = '$no_hp'
-            WHERE ID_Penonton = '$id'";
+    $sql = "UPDATE penonton SET Nama_Lengkap='$nama', Email='$email', No_HP='$no_hp' WHERE ID_Penonton='$id'";
 }
 
-if ($conn->query($sql)) {
+if (mysqli_query($conn, $sql)) {
     echo json_encode(["success" => true, "message" => "User berhasil diupdate"]);
 } else {
-    echo json_encode(["success" => false, "error" => "Update gagal: " . $conn->error]);
+    echo json_encode(["success" => false, "error" => "Gagal update: " . mysqli_error($conn)]);
 }
 
-$conn->close();
+mysqli_close($conn);
 ?>

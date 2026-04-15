@@ -1,4 +1,5 @@
 <?php
+require_once 'database.php';
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
@@ -10,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-// Koneksi database langsung
+// Koneksi database
 $conn = new mysqli("localhost", "root", "", "web_bioskop");
 
 if ($conn->connect_error) {
@@ -32,7 +33,18 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $id = $conn->real_escape_string($_GET['id']);
 
-// Query user
+// Cek dulu apakah tabel penonton ada
+$table_check = $conn->query("SHOW TABLES LIKE 'penonton'");
+if ($table_check->num_rows == 0) {
+    echo json_encode([
+        "success" => false, 
+        "error" => "Tabel penonton tidak ditemukan di database web_bioskop"
+    ]);
+    $conn->close();
+    exit;
+}
+
+// Query user - gunakan kolom yang ada di tabel penonton
 $sql = "SELECT ID_Penonton, Nama_Lengkap, Email, No_HP, Tanggal_Daftar 
         FROM penonton WHERE ID_Penonton = '$id'";
 $result = $conn->query($sql);
@@ -49,7 +61,7 @@ if (!$result) {
 if ($result->num_rows == 0) {
     echo json_encode([
         "success" => false, 
-        "error" => "User tidak ditemukan"
+        "error" => "User tidak ditemukan dengan ID: " . $id
     ]);
     $conn->close();
     exit;
@@ -57,8 +69,8 @@ if ($result->num_rows == 0) {
 
 $user = $result->fetch_assoc();
 
-// Ambil statistik transaksi user
-$transaksiSql = "SELECT COUNT(*) as total_transaksi, COALESCE(SUM(Harga), 0) as total_pengeluaran
+// Ambil statistik transaksi dari tabel transaksi (kolom: ID_Transaksi, ID_Penonton, Total_Harga)
+$transaksiSql = "SELECT COUNT(*) as total_transaksi, COALESCE(SUM(Total_Harga), 0) as total_pengeluaran
                  FROM transaksi WHERE ID_Penonton = '$id'";
 $transResult = $conn->query($transaksiSql);
 

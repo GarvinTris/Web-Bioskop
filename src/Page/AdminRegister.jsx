@@ -1,42 +1,26 @@
-// Page/Register.jsx
+// Page/AdminRegister.jsx
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "../style/Login.css";
 
-function Register() {
+function AdminRegister() {
     const [namaLengkap, setNamaLengkap] = useState("");
     const [email, setEmail] = useState("");
-    const [noHp, setNoHp] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
-        return emailRegex.test(email);
-    };
-
-    const validatePhoneNumber = (phone) => {
-        const phoneRegex = /^(08|8|\+62|62)(\d{8,12})$/;
-        return phoneRegex.test(phone);
-    };
-
     const handleRegister = async (e) => {
         e.preventDefault();
         
-        if (!namaLengkap || !email || !noHp || !password || !confirmPassword) {
+        if (!namaLengkap || !email || !password || !confirmPassword) {
             alert("Semua field harus diisi!");
             return;
         }
         
-        if (!validateEmail(email)) {
-            alert("Format email tidak valid! Contoh: nama@email.com");
-            return;
-        }
-        
-        if (!validatePhoneNumber(noHp)) {
-            alert("Format nomor HP tidak valid! Contoh: 081234567890");
+        if (!email.includes('@')) {
+            alert("Format email tidak valid!");
             return;
         }
         
@@ -53,7 +37,7 @@ function Register() {
         setLoading(true);
         
         try {
-            const response = await fetch('http://localhost/Web_Bioskop/API_PHP/penonton_register.php', {
+            const response = await fetch('http://localhost/Web_Bioskop/API_PHP/admin_register.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -61,7 +45,6 @@ function Register() {
                 body: JSON.stringify({
                     nama_lengkap: namaLengkap,
                     email: email,
-                    no_hp: noHp,
                     password: password
                 })
             });
@@ -69,8 +52,8 @@ function Register() {
             const data = await response.json();
             
             if (data.success) {
-                alert("Pendaftaran berhasil! Silakan login.");
-                navigate("/login"); // Balik ke halaman login
+                alert("Registrasi admin berhasil! Silakan login.");
+                navigate("/admin-login"); // Balik ke halaman login admin
             } else {
                 alert(data.message);
             }
@@ -84,13 +67,13 @@ function Register() {
 
     return (
         <div className="auth-layout">
-            <div className="login-card user-card">
-                <h2>Daftar Akun Penonton</h2>
-                <p className="subtitle">Mulai pengalaman menonton Anda</p>
+            <div className="login-card admin-card">
+                <h2>Registrasi Admin</h2>
+                <p className="subtitle">Buat akun administrator baru</p>
                 
                 <form onSubmit={handleRegister} className="login-form">
                     <div className="form-group">
-                        <label>Nama Lengkap *</label>
+                        <label>Nama Lengkap</label>
                         <input 
                             type="text" 
                             placeholder="Masukkan nama lengkap"
@@ -101,10 +84,10 @@ function Register() {
                     </div>
                     
                     <div className="form-group">
-                        <label>Email *</label>
+                        <label>Email Admin</label>
                         <input 
                             type="email" 
-                            placeholder="contoh: nama@email.com"
+                            placeholder="admin@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -112,21 +95,7 @@ function Register() {
                     </div>
                     
                     <div className="form-group">
-                        <label>Nomor HP *</label>
-                        <input 
-                            type="tel" 
-                            placeholder="contoh: 081234567890"
-                            value={noHp}
-                            onChange={(e) => setNoHp(e.target.value)}
-                            required
-                        />
-                        <small style={{ fontSize: '12px', color: '#666', marginTop: '5px', display: 'block' }}>
-                            Nomor HP juga bisa digunakan untuk login
-                        </small>
-                    </div>
-                    
-                    <div className="form-group">
-                        <label>Password *</label>
+                        <label>Password</label>
                         <input 
                             type="password" 
                             placeholder="Minimal 8 karakter"
@@ -137,7 +106,7 @@ function Register() {
                     </div>
                     
                     <div className="form-group">
-                        <label>Konfirmasi Password *</label>
+                        <label>Konfirmasi Password</label>
                         <input 
                             type="password" 
                             placeholder="··········"
@@ -148,17 +117,20 @@ function Register() {
                     </div>
                     
                     <button type="submit" className="btn-login" disabled={loading}>
-                        {loading ? "Memproses..." : "Daftar"}
+                        {loading ? "Memproses..." : "Daftar sebagai Admin"}
                     </button>
                     
                     <p className="signup-text">
-                        Sudah punya akun? 
-                        <Link to="/login">Login</Link>
+                        Sudah punya akun admin? 
+                        <Link to="/admin-login">Login Admin</Link>
                     </p>
+                    
+                    <hr />
+                    
                 </form>
             </div>
         </div>
     );
 }
 
-export default Register;
+export default AdminRegister;

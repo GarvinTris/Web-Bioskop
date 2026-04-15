@@ -1,11 +1,36 @@
 <?php
-// database.php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Max-Age: 3600");
+// database.php - Core keamanan lengkap
 
-// Handle preflight requests
+// ==================== KONFIGURASI SESSION ====================
+ini_set('session.cookie_httponly', 1);
+ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', 0);
+ini_set('session.gc_maxlifetime', 1800);
+ini_set('session.cookie_lifetime', 1800);
+ini_set('session.cookie_samesite', 'Strict');
+
+// Matikan error display
+error_reporting(E_ALL);
+ini_set('display_errors', 0);
+
+// ==================== START SESSION ====================
+session_start();
+
+// ==================== HEADER KEAMANAN ====================
+$allowed_origin = "http://localhost:5173";
+header("Access-Control-Allow-Origin: $allowed_origin");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+// 🔴 TAMBAHKAN cache-control ke Allow-Headers
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma");
+header("Access-Control-Allow-Credentials: true");
+header("Access-Control-Max-Age: 3600");
+header("Content-Type: application/json");
+
+header("X-Frame-Options: DENY");
+header("X-Content-Type-Options: nosniff");
+header("X-XSS-Protection: 1; mode=block");
+header("Referrer-Policy: strict-origin-when-cross-origin");
+
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -19,13 +44,109 @@ $database = 'web_bioskop';
 
 $conn = mysqli_connect($host, $user, $password, $database);
 
-// Set charset
-if ($conn) {
-    mysqli_set_charset($conn, "utf8");
+if (!$conn) {
+    echo json_encode(['success' => false, 'error' => 'Database connection failed: ' . mysqli_connect_error()]);
+    exit;
 }
 
-// FUNGSI RESPONSE - WAJIB ADA!
-function sendResponse($success, $data = [], $message = '') {
+mysqli_set_charset($conn, "utf8mb4");
+
+// ==================== FUNGSI KEAMANAN ====================
+
+function isAdmin() {
+    return isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'admin';
+}
+
+function checkRateLimit($key, $limit = 100, $window = 60) {
+    $cacheFile = __DIR__ . '/rate_cache.json';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $requestKey = md5($ip . '_' . $key);
+    
+    $cache = [];
+    if (file_exists($cacheFile)) {
+        $cache = json_decode(file_get_contents($cacheFile), true) ?: [];
+    }
+    
+    $now = time();
+    foreach ($cache as $k => $data) {
+        if ($data['timestamp'] < $now - $window) {
+            unset($cache[$k]);
+        }
+    }
+    
+    if (!isset($cache[$requestKey])) {
+        $cache[$requestKey] = ['count' => 1, 'timestamp' => $now];
+    } else {
+        $cache[$requestKey]['count']++;
+    }
+    
+    file_put_contents($cacheFile, json_encode($cache));
+    
+    if ($cache[$requestKey]['count'] > $limit) {
+        http_response_code(429);
+        echo json_encode(['success' => false, 'error' => 'Too many requests. Silakan coba lagi nanti.']);
+        exit;
+    }
+    return true;
+}
+
+function checkLoginAttempts($identifier) {
+    $cacheFile = __DIR__ . '/login_attempts.json';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $key = md5($ip . '_' . $identifier);
+    
+    $attempts = [];
+    if (file_exists($cacheFile)) {
+        $attempts = json_decode(file_get_contents($cacheFile), true) ?: [];
+    }
+    
+    $now = time();
+    if (isset($attempts[$key])) {
+        if ($attempts[$key]['timestamp'] < $now - 900) {
+            unset($attempts[$key]);
+        } elseif ($attempts[$key]['count'] >= 5) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function recordLoginAttempt($identifier, $success = false) {
+    $cacheFile = __DIR__ . '/login_attempts.json';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $key = md5($ip . '_' . $identifier);
+    
+    $attempts = [];
+    if (file_exists($cacheFile)) {
+        $attempts = json_decode(file_get_contents($cacheFile), true) ?: [];
+    }
+    
+    $now = time();
+    if ($success) {
+        unset($attempts[$key]);
+    } else {
+        if (!isset($attempts[$key])) {
+            $attempts[$key] = ['count' => 1, 'timestamp' => $now];
+        } else {
+            $attempts[$key]['count']++;
+        }
+    }
+    file_put_contents($cacheFile, json_encode($attempts));
+}
+
+function checkSessionTimeout() {
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
+        session_unset();
+        session_destroy();
+        sendResponse(false, ['expired' => true], 'Session expired, silakan login kembali', 401);
+        return false;
+    }
+    $_SESSION['last_activity'] = time();
+    return true;
+}
+
+function sendResponse($success, $data = [], $message = '', $statusCode = 200) {
+    http_response_code($statusCode);
     header('Content-Type: application/json');
     $response = ['success' => $success];
     if (!empty($data)) {
@@ -38,5 +159,24 @@ function sendResponse($success, $data = [], $message = '') {
     exit();
 }
 
-// Catatan: Jangan tutup koneksi di sini
+function isLoggedIn() {
+    if (!checkSessionTimeout()) {
+        return false;
+    }
+    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+}
+
+function requireLogin() {
+    if (!isLoggedIn()) {
+        sendResponse(false, [], 'Silakan login terlebih dahulu', 401);
+    }
+}
+
+function logSecurityEvent($event, $details = '') {
+    $logFile = __DIR__ . '/security.log';
+    $timestamp = date('Y-m-d H:i:s');
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $logEntry = "[$timestamp] [$event] IP: $ip - $details" . PHP_EOL;
+    file_put_contents($logFile, $logEntry, FILE_APPEND);
+}
 ?>

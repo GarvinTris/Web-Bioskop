@@ -1,4 +1,5 @@
 <?php
+require_once 'database.php';
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: DELETE, GET, POST");
 header("Access-Control-Allow-Headers: Content-Type");

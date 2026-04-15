@@ -1,19 +1,16 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
+// get_booked_seats.php
+require_once 'database.php';
 
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    echo json_encode(["success" => false, "error" => "Database gagal konek"]);
-    exit;
-}
+// 🔴 HAPUS semua header manual! database.php sudah mengatur CORS
+// HAPUS: header("Access-Control-Allow-Origin: *");
+// HAPUS: header("Content-Type: application/json");
+// HAPUS: $conn = new mysqli(...);
 
 if (isset($_GET['id_jadwal'])) {
     $id_jadwal = $_GET['id_jadwal'];
     
-    // Ambil kursi yang sudah dipesan dari tabel tiket (status = terjual/terpesan)
-    $query = "SELECT k.ID_Kursi, k.Baris, k.Nomor_Kursi 
+    $query = "SELECT k.Baris, k.Nomor_Kursi 
               FROM tiket t
               JOIN kursi k ON t.ID_Kursi = k.ID_Kursi
               WHERE t.ID_Jadwal = ? AND t.Status = 'terjual'";
@@ -25,7 +22,6 @@ if (isset($_GET['id_jadwal'])) {
     
     $bookedSeats = [];
     while ($row = $result->fetch_assoc()) {
-        // Format kursi seperti "A1", "B2", dll
         $bookedSeats[] = $row['Baris'] . $row['Nomor_Kursi'];
     }
     
@@ -34,5 +30,5 @@ if (isset($_GET['id_jadwal'])) {
     echo json_encode(["success" => false, "error" => "ID Jadwal tidak ditemukan"]);
 }
 
-$conn->close();
+// Jangan tutup koneksi karena sudah di database.php
 ?>

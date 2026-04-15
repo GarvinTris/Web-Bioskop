@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Schedule.css";
+import "../style/Schedule.css";
 
 function Schedule() {
   const navigate = useNavigate();
@@ -19,31 +19,30 @@ function Schedule() {
 
   const fetchSchedules = async () => {
     try {
-      setLoading(true);
-      const timestamp = new Date().getTime();
-      const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/jadwal.php?t=${timestamp}`);
-      const data = await response.json();
-      
-      console.log("Schedules data:", data);
-      
-      setSchedules(data);
-      
-      // Extract unique dates from schedules
-      const uniqueDates = [...new Set(data.map(schedule => schedule.Tanggal))];
-      setAvailableDates(uniqueDates);
-      
-      // Set default selected date to the first available date
-      if (uniqueDates.length > 0) {
-        setSelectedDate(uniqueDates[0]);
-      }
-      
-      setLoading(false);
+        setLoading(true);
+        const timestamp = new Date().getTime();
+        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/jadwal.php?t=${timestamp}`, {
+            credentials: 'include'
+        });
+        const data = await response.json();
+        
+        console.log("Schedules data:", data);
+        
+        if (Array.isArray(data)) {
+            setSchedules(data);
+            const uniqueDates = [...new Set(data.map(schedule => schedule.Tanggal))];
+            setAvailableDates(uniqueDates);
+            if (uniqueDates.length > 0) setSelectedDate(uniqueDates[0]);
+        } else {
+            setSchedules([]);
+        }
+        setLoading(false);
     } catch (error) {
-      console.error("Error fetching schedules:", error);
-      setError("Gagal memuat jadwal");
-      setLoading(false);
+        console.error("Error fetching schedules:", error);
+        setError("Gagal memuat jadwal");
+        setLoading(false);
     }
-  };
+};
 
   // Group schedules by studio for selected date
   useEffect(() => {

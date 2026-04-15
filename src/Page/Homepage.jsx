@@ -116,18 +116,18 @@ function Jumbotron() {
     return (
         <div className="jumbotron">
             <iframe 
-                src={embedWithParams}
-                title={activeTrailer.Judul_Film}
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                referrerPolicy="strict-origin-when-cross-origin" 
-                allowFullScreen
-            />
+  src={`${activeTrailer.Embed_URL}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&modestbranding=1&rel=0`}
+  title={activeTrailer.Judul_Film}
+  frameBorder="0" 
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+  referrerPolicy="strict-origin-when-cross-origin" 
+  allowFullScreen
+/>
             <div className="jumbotron-text">
                 <h1>{activeTrailer.Judul_Film}</h1>
                 <div className="jumbotron-badges">
-                    <span className="badge">{activeTrailer.Rating_Usia}</span>
-                    <span className="badge">{activeTrailer.Genre || 'Action'}</span>
+                    <span className="badge">{activeTrailer.Rating_Usia || 'SU'}</span>
+                    <span className="badge">{activeTrailer.Nama_Kategori || 'Film'}</span>
                 </div>
                 <p>{activeTrailer.Deskripsi?.substring(0, 150)}...</p>
                 <button onClick={handleBookNow}>Book Now!</button>
@@ -145,7 +145,6 @@ function Popular() {
         fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php")
             .then(response => response.json())
             .then(data => {
-                // Sort by rating (highest first) or by most booked
                 const sorted = [...data].sort((a, b) => (b.Rating || 0) - (a.Rating || 0));
                 setPopularFilms(sorted.slice(0, 4));
                 setLoading(false);
@@ -364,6 +363,10 @@ function NewsletterSection() {
 function Footer() {
     const currentYear = new Date().getFullYear();
     
+    // 🔴 CEK APAKAH USER ADALAH ADMIN
+    const isAdmin = localStorage.getItem("isAdmin") === "true";
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    
     const footerLinks = {
         perusahaan: [
             { name: "Tentang Kami", link: "/about" },
@@ -446,12 +449,27 @@ function Footer() {
                     </div>
                 </div>
             </div>
+            
+            {/* 🔴 ADMIN LINK - HANYA TAMPIL JIKA LOGIN SEBAGAI ADMIN */}
+            {isLoggedIn && isAdmin && (
+                <div style={{ 
+                    textAlign: "center", 
+                    padding: "10px", 
+                    backgroundColor: "#1e293b", 
+                    marginTop: "10px" 
+                }}>
+                    <Link to="/admin" style={{ color: "#4f46e5", textDecoration: "none", fontWeight: "bold" }}>
+                        🛠️ Admin Dashboard
+                    </Link>
+                </div>
+            )}
         </footer>
     );
 }
+
 export { Movie, Jumbotron, Popular, ComingSoon, FAQSection, NewsletterSection, Footer };
 
-// Export default untuk Homepage (ini yang akan digunakan di App.jsx)
+// Export default untuk Homepage
 export default function Homepage() {
     return (
         <>

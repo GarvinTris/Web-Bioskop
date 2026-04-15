@@ -1,0 +1,1892 @@
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TixID - Pesan Tiket Bioskop Mudah</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Outfit', sans-serif; }
+    html, body { height: 100%; margin: 0; }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    
+    .glass-card {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    
+    .movie-card {
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+    
+    .movie-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      transition: all 0.3s ease;
+      z-index: 1;
+    }
+    
+    .movie-card:hover::before {
+      background: rgba(0, 0, 0, 0.3);
+    }
+    
+    .movie-card:hover {
+      transform: translateY(-12px) scale(1.02);
+      box-shadow: 0 20px 50px rgba(229, 9, 20, 0.4);
+    }
+    
+    .seat {
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border-radius: 6px;
+      border: 2px solid transparent;
+    }
+    
+    .seat:hover:not(.occupied):not(.selected) {
+      background: #fbbf24;
+      transform: scale(1.15);
+      border-color: #f59e0b;
+    }
+    
+    .seat.selected {
+      background: #e50914;
+      transform: scale(1.15);
+      border-color: #dc2626;
+      box-shadow: 0 0 12px rgba(229, 9, 20, 0.6);
+    }
+    
+    .seat.occupied {
+      background: #4b5563;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+    
+    .neon-glow {
+      box-shadow: 0 0 25px rgba(229, 9, 20, 0.6), 0 0 50px rgba(229, 9, 20, 0.3);
+    }
+    
+    .neon-button {
+      position: relative;
+      background: linear-gradient(135deg, #e50914 0%, #d41f0f 100%);
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .neon-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(229, 9, 20, 0.5);
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideInLeft {
+      from { opacity: 0; transform: translateX(-30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes slideInRight {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(229, 9, 20, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(229, 9, 20, 0.8); }
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 0.6s ease forwards;
+    }
+    
+    .animate-slideInLeft {
+      animation: slideInLeft 0.6s ease forwards;
+    }
+    
+    .animate-slideInRight {
+      animation: slideInRight 0.6s ease forwards;
+    }
+    
+    .pulse-glow {
+      animation: pulse-glow 2.5s infinite;
+    }
+    
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .star-rating { color: #fbbf24; }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #e50914;
+      box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.2);
+    }
+    
+    .theater-screen {
+      background: linear-gradient(90deg, transparent, rgba(229, 9, 20, 0.3), transparent);
+      border-radius: 50% 50% 20px 20px;
+    }
+    
+    .badge-premium {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: #1a1a2e;
+    }
+    
+    .movie-rating-badge {
+      background: linear-gradient(135deg, #e50914 0%, #d41f0f 100%);
+    }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full gradient-bg text-white overflow-auto scrollbar-hide">
+  <div id="app" class="min-h-full w-full"><!-- Loading Screen -->
+   <div id="loading-screen" class="fixed inset-0 gradient-bg flex items-center justify-center z-50">
+    <div class="text-center">
+     <div class="text-5xl font-extrabold text-red-600 mb-4 pulse-glow inline-block px-6 py-2 rounded-lg">
+      🎬 CinemaMax
+     </div>
+     <div class="flex items-center justify-center gap-2">
+      <div class="w-3 h-3 bg-red-600 rounded-full animate-bounce" style="animation-delay: 0s;"></div>
+      <div class="w-3 h-3 bg-red-600 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+      <div class="w-3 h-3 bg-red-600 rounded-full animate-bounce" style="animation-delay: 0.2s;"></div>
+     </div>
+    </div>
+   </div><!-- Main Content -->
+   <div id="main-content" class="hidden"><!-- Navigation -->
+    <nav id="navbar" class="fixed top-0 left-0 right-0 z-40 glass-card">
+     <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')"><span class="text-4xl font-black bg-gradient-to-r from-red-500 via-orange-500 to-red-500 bg-clip-text text-transparent">TixID</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8"><a onclick="navigateTo('home')" class="cursor-pointer hover:text-red-500 transition">Beranda</a> <a onclick="navigateTo('movies')" class="cursor-pointer hover:text-red-500 transition">Film</a> <a onclick="navigateTo('schedule')" class="cursor-pointer hover:text-red-500 transition">Jadwal</a>
+       <div id="nav-user-section"></div>
+      </div><button onclick="toggleMobileMenu()" class="md:hidden text-2xl">☰</button>
+     </div><!-- Mobile Menu -->
+     <div id="mobile-menu" class="hidden md:hidden glass-card border-t border-white/10">
+      <div class="px-4 py-4 flex flex-col gap-4"><a onclick="navigateTo('home'); toggleMobileMenu();" class="cursor-pointer hover:text-red-500 transition">Beranda</a> <a onclick="navigateTo('movies'); toggleMobileMenu();" class="cursor-pointer hover:text-red-500 transition">Film</a> <a onclick="navigateTo('schedule'); toggleMobileMenu();" class="cursor-pointer hover:text-red-500 transition">Jadwal</a>
+       <div id="mobile-nav-user-section"></div>
+      </div>
+     </div>
+    </nav><!-- Pages Container -->
+    <div id="pages-container" class="pt-20"><!-- Home Page -->
+     <div id="page-home" class="page hidden"><!-- Hero Section -->
+      <section class="relative h-[500px] overflow-hidden">
+       <div class="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black z-10"></div>
+       <div class="absolute inset-0 bg-gradient-to-t from-[#0f3460] via-transparent to-transparent z-10"></div>
+       <div id="hero-backdrop" class="absolute inset-0 bg-cover bg-center" style="background-image: linear-gradient(135deg, #0f3460, #1a1a2e);"></div>
+       <div class="relative z-20 h-full flex items-center">
+        <div class="max-w-7xl mx-auto px-4 w-full">
+         <div class="max-w-2xl animate-fadeIn"><span class="inline-block px-4 py-1 bg-red-600 rounded-full text-sm font-medium mb-4">🔥 Sedang Tayang</span>
+          <h1 id="hero-title" class="text-5xl md:text-6xl font-extrabold mb-4">Dune: Part Two</h1>
+          <p id="hero-tagline" class="text-xl text-gray-300 mb-6">Pengalaman sinema premium dengan teknologi terkini</p>
+          <div class="flex items-center gap-4 mb-6"><span class="flex items-center gap-1 star-rating">⭐ 8.8</span> <span class="px-2 py-1 bg-yellow-600 rounded text-xs font-bold">13+</span> <span class="text-gray-400">166 menit</span>
+          </div>
+          <div class="flex gap-4"><button onclick="showTrailer('dune2')" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition flex items-center gap-2 neon-glow"> ▶ Tonton Trailer </button> <button onclick="navigateTo('booking', 'dune2')" class="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold transition border border-white/20"> 🎟️ Beli Tiket </button>
+          </div>
+         </div>
+        </div>
+       </div>
+      </section><!-- Now Showing -->
+      <section class="max-w-7xl mx-auto px-4 py-12">
+       <div class="flex items-center justify-between mb-8">
+        <h2 class="text-3xl font-bold">🎬 Sedang Tayang</h2><button onclick="navigateTo('movies')" class="text-red-500 hover:text-red-400 transition">Lihat Semua →</button>
+       </div>
+       <div id="now-showing-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+      </section><!-- Coming Soon -->
+      <section class="max-w-7xl mx-auto px-4 py-12">
+       <h2 class="text-3xl font-bold mb-8">🎯 Segera Tayang</h2>
+       <div id="coming-soon-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+      </section><!-- Promo Section -->
+      <section class="max-w-7xl mx-auto px-4 py-12">
+       <div class="glass-card rounded-2xl p-8 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-red-600/20 rounded-full blur-3xl"></div>
+        <div class="relative z-10"><span class="inline-block px-4 py-1 bg-red-600 rounded-full text-sm font-medium mb-4">🎉 Promo Spesial</span>
+         <h3 class="text-3xl font-bold mb-4">Diskon 50% Setiap Selasa!</h3>
+         <p class="text-gray-400 mb-6">Nikmati pengalaman menonton premium dengan harga spesial setiap hari Selasa.</p><button onclick="navigateTo('movies')" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition"> Pesan Sekarang </button>
+        </div>
+       </div>
+      </section>
+     </div><!-- Movies Page -->
+     <div id="page-movies" class="page hidden">
+      <section class="max-w-7xl mx-auto px-4 py-8">
+       <h1 class="text-4xl font-bold mb-8">🎬 Semua Film</h1><!-- Filter -->
+       <div class="glass-card rounded-xl p-4 mb-8 flex flex-wrap gap-4"><select id="filter-genre" onchange="filterMovies()" class="bg-white/10 border border-white/20 rounded-lg px-4 py-2"> <option value="">Semua Genre</option> <option value="action">Action</option> <option value="comedy">Comedy</option> <option value="drama">Drama</option> <option value="horror">Horror</option> <option value="scifi">Sci-Fi</option> <option value="animation">Animation</option> </select> <select id="filter-rating" onchange="filterMovies()" class="bg-white/10 border border-white/20 rounded-lg px-4 py-2"> <option value="">Semua Umur</option> <option value="SU">Semua Umur</option> <option value="13+">13+</option> <option value="17+">17+</option> <option value="21+">21+</option> </select>
+       </div>
+       <div id="all-movies-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>
+      </section>
+     </div><!-- Schedule Page -->
+     <div id="page-schedule" class="page hidden">
+      <section class="max-w-7xl mx-auto px-4 py-8">
+       <h1 class="text-4xl font-bold mb-8">📅 Jadwal Tayang</h1><!-- Date Selector -->
+       <div class="flex gap-4 mb-8 overflow-x-auto pb-4 scrollbar-hide">
+        <div id="date-selector" class="flex gap-3"></div>
+       </div>
+       <div id="schedule-list" class="space-y-6"></div>
+      </section>
+     </div><!-- Movie Detail Page -->
+     <div id="page-movie-detail" class="page hidden">
+      <div id="movie-detail-content"></div>
+     </div><!-- Booking Page -->
+     <div id="page-booking" class="page hidden">
+      <section class="max-w-7xl mx-auto px-4 py-8">
+       <div id="booking-content"></div>
+      </section>
+     </div><!-- Seat Selection Page -->
+     <div id="page-seats" class="page hidden">
+      <section class="max-w-7xl mx-auto px-4 py-8">
+       <div id="seats-content"></div>
+      </section>
+     </div><!-- Payment Page -->
+     <div id="page-payment" class="page hidden">
+      <section class="max-w-7xl mx-auto px-4 py-8">
+       <div id="payment-content"></div>
+      </section>
+     </div><!-- Confirmation Page -->
+     <div id="page-confirmation" class="page hidden">
+      <section class="max-w-7xl mx-auto px-4 py-8">
+       <div id="confirmation-content"></div>
+      </section>
+     </div><!-- Login Page -->
+     <div id="page-login" class="page hidden">
+      <section class="min-h-[80vh] flex items-center justify-center px-4">
+       <div class="glass-card rounded-2xl p-8 w-full max-w-md animate-fadeIn">
+        <div class="text-center mb-8"><span class="text-5xl mb-4 block">🎭</span>
+         <h1 class="text-3xl font-bold">Masuk ke TixID</h1>
+         <p class="text-gray-400 mt-2">Pesan tiket bioskop favorit Anda sekarang</p>
+        </div>
+        <form id="login-form" onsubmit="handleLogin(event)" class="space-y-6">
+         <div><label class="block text-sm font-medium mb-2">Email</label> <input type="email" id="login-email" required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-500" placeholder="email@example.com">
+         </div>
+         <div><label class="block text-sm font-medium mb-2">Password</label> <input type="password" id="login-password" required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-500" placeholder="••••••••">
+         </div>
+         <div id="login-error" class="hidden text-red-500 text-sm"></div><button type="submit" id="login-btn" class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition"> Masuk </button>
+        </form>
+        <div class="mt-6 text-center">
+         <p class="text-gray-400">Belum punya akun? <a onclick="navigateTo('signup')" class="text-red-500 cursor-pointer hover:underline">Daftar Sekarang</a></p>
+        </div>
+        <div class="mt-6 pt-6 border-t border-white/10">
+         <p class="text-gray-500 text-sm text-center mb-4">Demo Accounts:</p>
+         <div class="grid grid-cols-2 gap-4 text-xs">
+          <div class="glass-card rounded-lg p-3">
+           <p class="font-semibold text-red-500">👨‍💼 Admin</p>
+           <p class="text-gray-400 text-xs">admin@tixid.com</p>
+           <p class="text-gray-400 text-xs">admin123</p>
+          </div>
+          <div class="glass-card rounded-lg p-3">
+           <p class="font-semibold text-blue-500">👤 User</p>
+           <p class="text-gray-400 text-xs">user@tixid.com</p>
+           <p class="text-gray-400 text-xs">user123</p>
+          </div>
+         </div>
+        </div>
+       </div>
+      </section>
+     </div><!-- Sign Up Page -->
+     <div id="page-signup" class="page hidden">
+      <section class="min-h-[80vh] flex items-center justify-center px-4 py-8">
+       <div class="glass-card rounded-2xl p-8 w-full max-w-md animate-fadeIn">
+        <div class="text-center mb-8"><span class="text-5xl mb-4 block">🎟️</span>
+         <h1 class="text-3xl font-bold">Daftar di TixID</h1>
+         <p class="text-gray-400 mt-2">Mulai pesan tiket favorit Anda</p>
+        </div>
+        <form id="signup-form" onsubmit="handleSignup(event)" class="space-y-6">
+         <div><label class="block text-sm font-medium mb-2">Nama Lengkap</label> <input type="text" id="signup-name" required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-500" placeholder="Nama Anda">
+         </div>
+         <div><label class="block text-sm font-medium mb-2">Email</label> <input type="email" id="signup-email" required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-500" placeholder="email@example.com">
+         </div>
+         <div><label class="block text-sm font-medium mb-2">Password</label> <input type="password" id="signup-password" required minlength="6" class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-500" placeholder="Minimal 6 karakter">
+         </div>
+         <div><label class="block text-sm font-medium mb-2">Konfirmasi Password</label> <input type="password" id="signup-confirm" required class="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-gray-500" placeholder="Ulangi password">
+         </div>
+         <div id="signup-error" class="hidden text-red-500 text-sm"></div><button type="submit" id="signup-btn" class="w-full py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition"> Daftar </button>
+        </form>
+        <div class="mt-6 text-center">
+         <p class="text-gray-400">Sudah punya akun? <a onclick="navigateTo('login')" class="text-red-500 cursor-pointer hover:underline">Masuk</a></p>
+        </div>
+       </div>
+      </section>
+     </div><!-- Profile Page -->
+     <div id="page-profile" class="page hidden">
+      <section class="max-w-7xl mx-auto px-4 py-8">
+       <div id="profile-content"></div>
+      </section>
+     </div><!-- Admin Dashboard -->
+     <div id="page-admin" class="page hidden">
+      <section class="max-w-7xl mx-auto px-4 py-8">
+       <div id="admin-content"></div>
+      </section>
+     </div>
+    </div><!-- Trailer Modal -->
+    <div id="trailer-modal" class="fixed inset-0 z-50 hidden">
+     <div class="absolute inset-0 bg-black/90" onclick="closeTrailer()"></div>
+     <div class="relative z-10 flex items-center justify-center min-h-full p-4">
+      <div class="glass-card rounded-2xl overflow-hidden w-full max-w-4xl animate-fadeIn">
+       <div class="flex items-center justify-between p-4 border-b border-white/10">
+        <h3 id="trailer-title" class="text-xl font-bold">Trailer</h3><button onclick="closeTrailer()" class="text-2xl hover:text-red-500 transition">✕</button>
+       </div>
+       <div class="aspect-video bg-black flex items-center justify-center">
+        <div class="text-center">
+         <div class="text-6xl mb-4">
+          🎬
+         </div>
+         <p class="text-gray-400">Trailer tidak dapat diputar di preview ini</p>
+         <p class="text-sm text-gray-500 mt-2">Di produksi, video akan diputar di sini</p>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div><!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+   </div>
+  </div>
+  <script>
+    // ============================================
+    // CONFIGURATION & STATE
+    // ============================================
+    
+    const defaultConfig = {
+      platform_name: 'TixID',
+      tagline: 'Pesan Tiket Bioskop Mudah',
+      primary_color: '#e50914',
+      secondary_color: '#0f3460',
+      text_color: '#ffffff',
+      accent_color: '#fbbf24',
+      surface_color: '#16213e',
+      font_family: 'Outfit',
+      font_size: 16
+    };
+
+    let currentUser = null;
+    let selectedMovie = null;
+    let selectedShowtime = null;
+    let selectedSeats = [];
+    let allData = [];
+    let currentPage = 'home';
+    let selectedDate = new Date().toISOString().split('T')[0];
+
+    // ============================================
+    // MOVIES DATA (Reference Content - Paradigm A)
+    // ============================================
+    
+    const moviesData = [
+      {
+        id: 'dune2',
+        title: 'Dune: Part Two',
+        genre: 'scifi',
+        rating: 8.8,
+        ageRating: '13+',
+        duration: 166,
+        year: 2024,
+        director: 'Denis Villeneuve',
+        cast: ['Timothée Chalamet', 'Zendaya', 'Rebecca Ferguson'],
+        synopsis: 'Paul Atreides bersatu dengan Chani dan Fremen untuk membalas dendam terhadap mereka yang menghancurkan keluarganya.',
+        poster: '🏜️',
+        backdrop: 'linear-gradient(135deg, #c2a065 0%, #5c4033 50%, #2c1810 100%)',
+        status: 'now_showing',
+        showtimes: ['10:00', '13:30', '17:00', '20:30']
+      },
+      {
+        id: 'godzilla',
+        title: 'Godzilla x Kong',
+        genre: 'action',
+        rating: 7.5,
+        ageRating: '13+',
+        duration: 115,
+        year: 2024,
+        director: 'Adam Wingard',
+        cast: ['Rebecca Hall', 'Brian Tyree Henry', 'Dan Stevens'],
+        synopsis: 'Dua titan ikonik bersatu melawan ancaman kolosal tersembunyi yang mengancam keberadaan mereka.',
+        poster: '🦖',
+        backdrop: 'linear-gradient(135deg, #1a5c3a 0%, #0d2818 50%, #051208 100%)',
+        status: 'now_showing',
+        showtimes: ['11:00', '14:00', '17:30', '21:00']
+      },
+      {
+        id: 'kungfupanda4',
+        title: 'Kung Fu Panda 4',
+        genre: 'animation',
+        rating: 7.0,
+        ageRating: 'SU',
+        duration: 94,
+        year: 2024,
+        director: 'Mike Mitchell',
+        cast: ['Jack Black', 'Awkwafina', 'Viola Davis'],
+        synopsis: 'Po harus melatih pejuang naga baru sementara menghadapi penyihir jahat yang mengancam Valley of Peace.',
+        poster: '🐼',
+        backdrop: 'linear-gradient(135deg, #2d5a27 0%, #1a3518 50%, #0d1a0c 100%)',
+        status: 'now_showing',
+        showtimes: ['09:30', '12:00', '14:30', '17:00']
+      },
+      {
+        id: 'ghostbusters',
+        title: 'Ghostbusters: Frozen Empire',
+        genre: 'comedy',
+        rating: 6.8,
+        ageRating: '13+',
+        duration: 115,
+        year: 2024,
+        director: 'Gil Kenan',
+        cast: ['Paul Rudd', 'Carrie Coon', 'Finn Wolfhard'],
+        synopsis: 'Ghostbusters baru dan lama bersatu untuk menghentikan Zaman Es kedua yang mengancam dunia.',
+        poster: '👻',
+        backdrop: 'linear-gradient(135deg, #4a90a4 0%, #2c5d6e 50%, #152d37 100%)',
+        status: 'now_showing',
+        showtimes: ['10:30', '13:00', '16:00', '19:30']
+      },
+      {
+        id: 'oppenheimer',
+        title: 'Oppenheimer',
+        genre: 'drama',
+        rating: 8.9,
+        ageRating: '17+',
+        duration: 180,
+        year: 2023,
+        director: 'Christopher Nolan',
+        cast: ['Cillian Murphy', 'Emily Blunt', 'Robert Downey Jr.'],
+        synopsis: 'Kisah J. Robert Oppenheimer dan perannya dalam pengembangan bom atom.',
+        poster: '💣',
+        backdrop: 'linear-gradient(135deg, #ff6b35 0%, #8b4513 50%, #2c1810 100%)',
+        status: 'now_showing',
+        showtimes: ['12:00', '16:00', '20:00']
+      },
+      {
+        id: 'deadpool3',
+        title: 'Deadpool & Wolverine',
+        genre: 'action',
+        rating: 0,
+        ageRating: '17+',
+        duration: 127,
+        year: 2024,
+        director: 'Shawn Levy',
+        cast: ['Ryan Reynolds', 'Hugh Jackman', 'Emma Corrin'],
+        synopsis: 'Deadpool dan Wolverine bersatu dalam petualangan multiverse yang penuh aksi dan humor.',
+        poster: '⚔️',
+        backdrop: 'linear-gradient(135deg, #8b0000 0%, #4a0000 50%, #1a0000 100%)',
+        status: 'coming_soon',
+        releaseDate: '2024-07-26',
+        showtimes: []
+      },
+      {
+        id: 'insideout2',
+        title: 'Inside Out 2',
+        genre: 'animation',
+        rating: 0,
+        ageRating: 'SU',
+        duration: 96,
+        year: 2024,
+        director: 'Kelsey Mann',
+        cast: ['Amy Poehler', 'Maya Hawke', 'Ayo Edebiri'],
+        synopsis: 'Riley memasuki masa remaja dan emosi-emosi baru mulai mengambil alih.',
+        poster: '🧠',
+        backdrop: 'linear-gradient(135deg, #9b59b6 0%, #5b2c6f 50%, #2c1445 100%)',
+        status: 'coming_soon',
+        releaseDate: '2024-06-14',
+        showtimes: []
+      },
+      {
+        id: 'furiosa',
+        title: 'Furiosa: A Mad Max Saga',
+        genre: 'action',
+        rating: 0,
+        ageRating: '17+',
+        duration: 148,
+        year: 2024,
+        director: 'George Miller',
+        cast: ['Anya Taylor-Joy', 'Chris Hemsworth', 'Tom Burke'],
+        synopsis: 'Kisah asal-usul Furiosa sebelum dia menjadi pejuang ikonik di dunia pasca-apokaliptik.',
+        poster: '🔥',
+        backdrop: 'linear-gradient(135deg, #d35400 0%, #7f3300 50%, #3d1900 100%)',
+        status: 'coming_soon',
+        releaseDate: '2024-05-24',
+        showtimes: []
+      },
+      {
+        id: 'quiet3',
+        title: 'A Quiet Place: Day One',
+        genre: 'horror',
+        rating: 0,
+        ageRating: '17+',
+        duration: 99,
+        year: 2024,
+        director: 'Michael Sarnoski',
+        cast: ['Lupita Nyong\'o', 'Joseph Quinn', 'Alex Wolff'],
+        synopsis: 'Hari pertama invasi alien di New York City yang memaksa semua orang untuk tetap diam.',
+        poster: '🤫',
+        backdrop: 'linear-gradient(135deg, #1a1a2e 0%, #0d0d15 50%, #050508 100%)',
+        status: 'coming_soon',
+        releaseDate: '2024-06-28',
+        showtimes: []
+      },
+      {
+        id: 'bad4',
+        title: 'Bad Boys: Ride or Die',
+        genre: 'action',
+        rating: 0,
+        ageRating: '17+',
+        duration: 115,
+        year: 2024,
+        director: 'Adil & Bilall',
+        cast: ['Will Smith', 'Martin Lawrence', 'Vanessa Hudgens'],
+        synopsis: 'Mike dan Marcus kembali dalam misi berbahaya untuk membersihkan nama mendiang kapten mereka.',
+        poster: '🚔',
+        backdrop: 'linear-gradient(135deg, #1e3a5f 0%, #0f1d30 50%, #050c15 100%)',
+        status: 'coming_soon',
+        releaseDate: '2024-06-07',
+        showtimes: []
+      }
+    ];
+
+    // Default users for demo
+    const defaultUsers = [
+      { email: 'admin@tixid.com', password: 'admin123', name: 'Admin TixID', role: 'admin' },
+      { email: 'user@tixid.com', password: 'user123', name: 'User TixID', role: 'user' }
+    ];
+
+    // ============================================
+    // SDK INITIALIZATION
+    // ============================================
+    
+    const dataHandler = {
+      onDataChanged(data) {
+        allData = data;
+        updateUIWithData();
+      }
+    };
+
+    async function initializeApp() {
+      // Initialize Element SDK
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            applyConfig(config);
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.secondary_color || defaultConfig.secondary_color,
+                set: (value) => window.elementSdk.setConfig({ secondary_color: value })
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => window.elementSdk.setConfig({ surface_color: value })
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => window.elementSdk.setConfig({ text_color: value })
+              },
+              {
+                get: () => config.primary_color || defaultConfig.primary_color,
+                set: (value) => window.elementSdk.setConfig({ primary_color: value })
+              },
+              {
+                get: () => config.accent_color || defaultConfig.accent_color,
+                set: (value) => window.elementSdk.setConfig({ accent_color: value })
+              }
+            ],
+            borderables: [],
+            fontEditable: {
+              get: () => config.font_family || defaultConfig.font_family,
+              set: (value) => window.elementSdk.setConfig({ font_family: value })
+            },
+            fontSizeable: {
+              get: () => config.font_size || defaultConfig.font_size,
+              set: (value) => window.elementSdk.setConfig({ font_size: value })
+            }
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ['platform_name', config.platform_name || defaultConfig.platform_name],
+            ['tagline', config.tagline || defaultConfig.tagline]
+          ])
+        });
+      }
+
+      // Initialize Data SDK
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (!result.isOk) {
+          console.error('Failed to initialize Data SDK');
+        }
+      }
+
+      // Hide loading screen
+      setTimeout(() => {
+        document.getElementById('loading-screen').classList.add('hidden');
+        document.getElementById('main-content').classList.remove('hidden');
+        navigateTo('home');
+        applyConfig(window.elementSdk?.config || defaultConfig);
+      }, 1500);
+    }
+
+    function applyConfig(config) {
+      const cfg = { ...defaultConfig, ...config };
+      
+      // Update platform name
+      document.getElementById('nav-cinema-name') ? (document.getElementById('nav-cinema-name').textContent = cfg.platform_name) : null;
+      
+      // Update hero tagline
+      const heroTagline = document.getElementById('hero-tagline');
+      if (heroTagline) heroTagline.textContent = cfg.tagline;
+      
+      // Apply colors via CSS variables
+      document.documentElement.style.setProperty('--primary-color', cfg.primary_color);
+      document.documentElement.style.setProperty('--secondary-color', cfg.secondary_color);
+      document.documentElement.style.setProperty('--text-color', cfg.text_color);
+      document.documentElement.style.setProperty('--accent-color', cfg.accent_color);
+      document.documentElement.style.setProperty('--surface-color', cfg.surface_color);
+      
+      // Apply font
+      document.body.style.fontFamily = `${cfg.font_family}, sans-serif`;
+      document.body.style.fontSize = `${cfg.font_size}px`;
+    }
+
+    // ============================================
+    // NAVIGATION
+    // ============================================
+    
+    function navigateTo(page, data = null) {
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
+      
+      currentPage = page;
+      
+      // Show requested page
+      const pageEl = document.getElementById(`page-${page}`);
+      if (pageEl) {
+        pageEl.classList.remove('hidden');
+      }
+      
+      // Scroll to top
+      window.scrollTo(0, 0);
+      
+      // Page-specific logic
+      switch(page) {
+        case 'home':
+          renderHome();
+          break;
+        case 'movies':
+          renderMovies();
+          break;
+        case 'schedule':
+          renderSchedule();
+          break;
+        case 'movie-detail':
+          renderMovieDetail(data);
+          break;
+        case 'booking':
+          renderBooking(data);
+          break;
+        case 'seats':
+          renderSeatSelection();
+          break;
+        case 'payment':
+          renderPayment();
+          break;
+        case 'confirmation':
+          renderConfirmation(data);
+          break;
+        case 'profile':
+          renderProfile();
+          break;
+        case 'admin':
+          renderAdminDashboard();
+          break;
+      }
+      
+      updateNavigation();
+    }
+
+    function toggleMobileMenu() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    function updateNavigation() {
+      const navSection = document.getElementById('nav-user-section');
+      const mobileNavSection = document.getElementById('mobile-nav-user-section');
+      
+      let navHTML = '';
+      
+      if (currentUser) {
+        navHTML = `
+          <div class="flex items-center gap-4">
+            <span class="text-gray-300">Halo, ${currentUser.name.split(' ')[0]}</span>
+            ${currentUser.role === 'admin' ? 
+              `<button onclick="navigateTo('admin')" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm font-medium transition">Admin</button>` : 
+              `<button onclick="navigateTo('profile')" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition">Profil</button>`
+            }
+            <button onclick="handleLogout()" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition">Keluar</button>
+          </div>
+        `;
+      } else {
+        navHTML = `
+          <div class="flex items-center gap-3">
+            <button onclick="navigateTo('login')" class="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm font-medium transition">Masuk</button>
+            <button onclick="navigateTo('signup')" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-sm font-medium transition">Daftar</button>
+          </div>
+        `;
+      }
+      
+      navSection.innerHTML = navHTML;
+      mobileNavSection.innerHTML = navHTML;
+    }
+
+    // ============================================
+    // RENDER FUNCTIONS
+    // ============================================
+    
+    function renderHome() {
+      renderNowShowing();
+      renderComingSoon();
+    }
+
+    function renderNowShowing() {
+      const grid = document.getElementById('now-showing-grid');
+      const nowShowing = moviesData.filter(m => m.status === 'now_showing');
+      
+      grid.innerHTML = nowShowing.map(movie => createMovieCard(movie)).join('');
+    }
+
+    function renderComingSoon() {
+      const grid = document.getElementById('coming-soon-grid');
+      const comingSoon = moviesData.filter(m => m.status === 'coming_soon');
+      
+      grid.innerHTML = comingSoon.map(movie => createMovieCard(movie, true)).join('');
+    }
+
+    function createMovieCard(movie, isComingSoon = false) {
+      const ratingColor = movie.ageRating === 'SU' ? 'bg-green-600' : 
+                          movie.ageRating === '13+' ? 'bg-yellow-600' : 
+                          movie.ageRating === '17+' ? 'bg-orange-600' : 'bg-red-600';
+      
+      return `
+        <div class="movie-card glass-card rounded-xl overflow-hidden cursor-pointer transition-all duration-300" onclick="navigateTo('movie-detail', '${movie.id}')">
+          <div class="aspect-[2/3] relative overflow-hidden" style="background: ${movie.backdrop};">
+            <div class="absolute inset-0 flex items-center justify-center text-7xl">${movie.poster}</div>
+            <div class="absolute top-2 right-2 ${ratingColor} px-2 py-1 rounded text-xs font-bold">${movie.ageRating}</div>
+            ${isComingSoon ? `<div class="absolute bottom-2 left-2 bg-blue-600 px-2 py-1 rounded text-xs font-bold">Segera</div>` : ''}
+          </div>
+          <div class="p-4">
+            <h3 class="font-bold text-sm mb-2 line-clamp-2">${movie.title}</h3>
+            <div class="flex items-center justify-between text-xs text-gray-400">
+              <span class="flex items-center gap-1">
+                ${movie.rating > 0 ? `<span class="star-rating">⭐</span> ${movie.rating}` : '<span class="text-blue-400">Coming Soon</span>'}
+              </span>
+              <span>${movie.duration} min</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMovies() {
+      filterMovies();
+    }
+
+    function filterMovies() {
+      const genre = document.getElementById('filter-genre').value;
+      const rating = document.getElementById('filter-rating').value;
+      
+      let filtered = moviesData;
+      
+      if (genre) {
+        filtered = filtered.filter(m => m.genre === genre);
+      }
+      
+      if (rating) {
+        filtered = filtered.filter(m => m.ageRating === rating);
+      }
+      
+      const grid = document.getElementById('all-movies-grid');
+      grid.innerHTML = filtered.map(movie => createMovieCard(movie, movie.status === 'coming_soon')).join('');
+    }
+
+    function renderSchedule() {
+      // Render date selector
+      const dateSelector = document.getElementById('date-selector');
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        dates.push(date);
+      }
+      
+      dateSelector.innerHTML = dates.map(date => {
+        const dateStr = date.toISOString().split('T')[0];
+        const dayName = date.toLocaleDateString('id-ID', { weekday: 'short' });
+        const dayNum = date.getDate();
+        const isSelected = dateStr === selectedDate;
+        
+        return `
+          <button onclick="selectDate('${dateStr}')" 
+                  class="flex flex-col items-center px-6 py-3 rounded-xl transition ${isSelected ? 'bg-red-600' : 'glass-card hover:bg-white/10'}">
+            <span class="text-sm text-gray-400">${dayName}</span>
+            <span class="text-2xl font-bold">${dayNum}</span>
+          </button>
+        `;
+      }).join('');
+      
+      // Render schedule
+      renderScheduleList();
+    }
+
+    function selectDate(date) {
+      selectedDate = date;
+      renderSchedule();
+    }
+
+    function renderScheduleList() {
+      const scheduleList = document.getElementById('schedule-list');
+      const nowShowing = moviesData.filter(m => m.status === 'now_showing');
+      
+      scheduleList.innerHTML = nowShowing.map(movie => `
+        <div class="glass-card rounded-xl p-6">
+          <div class="flex gap-6">
+            <div class="w-24 h-36 rounded-lg flex items-center justify-center text-5xl flex-shrink-0" style="background: ${movie.backdrop};">
+              ${movie.poster}
+            </div>
+            <div class="flex-1">
+              <h3 class="text-xl font-bold mb-2">${movie.title}</h3>
+              <div class="flex items-center gap-4 text-sm text-gray-400 mb-4">
+                <span class="star-rating">⭐ ${movie.rating}</span>
+                <span class="px-2 py-1 ${movie.ageRating === 'SU' ? 'bg-green-600' : movie.ageRating === '13+' ? 'bg-yellow-600' : 'bg-orange-600'} rounded text-xs font-bold">${movie.ageRating}</span>
+                <span>${movie.duration} menit</span>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                ${movie.showtimes.map(time => `
+                  <button onclick="selectShowtimeFromSchedule('${movie.id}', '${time}')" 
+                          class="px-4 py-2 glass-card hover:bg-red-600 rounded-lg text-sm font-medium transition">
+                    ${time}
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectShowtimeFromSchedule(movieId, time) {
+      if (!currentUser) {
+        showToast('Silakan masuk terlebih dahulu', 'warning');
+        navigateTo('login');
+        return;
+      }
+      selectedMovie = moviesData.find(m => m.id === movieId);
+      selectedShowtime = { date: selectedDate, time };
+      navigateTo('seats');
+    }
+
+    function renderMovieDetail(movieId) {
+      const movie = moviesData.find(m => m.id === movieId);
+      if (!movie) return;
+      
+      selectedMovie = movie;
+      
+      const content = document.getElementById('movie-detail-content');
+      const ratingColor = movie.ageRating === 'SU' ? 'bg-green-600' : 
+                          movie.ageRating === '13+' ? 'bg-yellow-600' : 
+                          movie.ageRating === '17+' ? 'bg-orange-600' : 'bg-red-600';
+      
+      content.innerHTML = `
+        <div class="relative">
+          <!-- Backdrop -->
+          <div class="h-[400px] relative overflow-hidden" style="background: ${movie.backdrop};">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0f0f1a] via-transparent to-transparent"></div>
+            <div class="absolute inset-0 flex items-center justify-center text-[200px] opacity-30">${movie.poster}</div>
+          </div>
+          
+          <!-- Content -->
+          <div class="max-w-7xl mx-auto px-4 -mt-32 relative z-10">
+            <div class="flex flex-col md:flex-row gap-8">
+              <!-- Poster -->
+              <div class="w-64 h-96 flex-shrink-0 rounded-2xl overflow-hidden neon-glow flex items-center justify-center text-8xl mx-auto md:mx-0" style="background: ${movie.backdrop};">
+                ${movie.poster}
+              </div>
+              
+              <!-- Info -->
+              <div class="flex-1">
+                <h1 class="text-4xl md:text-5xl font-extrabold mb-4">${movie.title}</h1>
+                
+                <div class="flex flex-wrap items-center gap-4 mb-6">
+                  ${movie.rating > 0 ? `<span class="flex items-center gap-2 text-xl"><span class="star-rating">⭐</span> ${movie.rating}/10</span>` : ''}
+                  <span class="${ratingColor} px-3 py-1 rounded-lg font-bold">${movie.ageRating}</span>
+                  <span class="text-gray-400">${movie.duration} menit</span>
+                  <span class="text-gray-400">${movie.year}</span>
+                  <span class="px-3 py-1 bg-white/10 rounded-lg capitalize">${movie.genre}</span>
+                </div>
+                
+                <p class="text-gray-300 text-lg mb-6">${movie.synopsis}</p>
+                
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                  <div>
+                    <span class="text-gray-500">Sutradara</span>
+                    <p class="font-medium">${movie.director}</p>
+                  </div>
+                  <div>
+                    <span class="text-gray-500">Pemeran</span>
+                    <p class="font-medium">${movie.cast.join(', ')}</p>
+                  </div>
+                </div>
+                
+                <div class="flex gap-4">
+                  <button onclick="showTrailer('${movie.id}')" class="px-6 py-3 bg-white/10 hover:bg-white/20 rounded-lg font-semibold transition flex items-center gap-2 border border-white/20">
+                    ▶ Tonton Trailer
+                  </button>
+                  ${movie.status === 'now_showing' ? 
+                    `<button onclick="navigateTo('booking', '${movie.id}')" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-semibold transition neon-glow">
+                      🎟️ Beli Tiket
+                    </button>` :
+                    `<button class="px-6 py-3 bg-gray-600 rounded-lg font-semibold cursor-not-allowed">
+                      Segera Tayang: ${movie.releaseDate}
+                    </button>`
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderBooking(movieId) {
+      const movie = moviesData.find(m => m.id === movieId);
+      if (!movie) return;
+      
+      selectedMovie = movie;
+      
+      if (!currentUser) {
+        showToast('Silakan masuk terlebih dahulu untuk memesan tiket', 'warning');
+        navigateTo('login');
+        return;
+      }
+      
+      const content = document.getElementById('booking-content');
+      
+      // Generate dates
+      const dates = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        dates.push(date);
+      }
+      
+      content.innerHTML = `
+        <div class="mb-8">
+          <button onclick="navigateTo('movie-detail', '${movie.id}')" class="text-gray-400 hover:text-white transition mb-4 inline-flex items-center gap-2">
+            ← Kembali ke Detail Film
+          </button>
+          <h1 class="text-3xl font-bold">Pesan Tiket: ${movie.title}</h1>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+          <!-- Movie Info -->
+          <div class="glass-card rounded-xl p-6">
+            <div class="aspect-[2/3] rounded-xl mb-4 flex items-center justify-center text-6xl" style="background: ${movie.backdrop};">
+              ${movie.poster}
+            </div>
+            <h3 class="font-bold text-lg mb-2">${movie.title}</h3>
+            <div class="text-sm text-gray-400">
+              <p>${movie.duration} menit • ${movie.ageRating}</p>
+            </div>
+          </div>
+          
+          <!-- Date & Time Selection -->
+          <div class="md:col-span-2">
+            <div class="glass-card rounded-xl p-6 mb-6">
+              <h3 class="font-bold text-lg mb-4">📅 Pilih Tanggal</h3>
+              <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                ${dates.map((date, i) => {
+                  const dateStr = date.toISOString().split('T')[0];
+                  const dayName = date.toLocaleDateString('id-ID', { weekday: 'short' });
+                  const dayNum = date.getDate();
+                  const monthName = date.toLocaleDateString('id-ID', { month: 'short' });
+                  
+                  return `
+                    <button onclick="selectBookingDate('${dateStr}')" 
+                            id="date-btn-${dateStr}"
+                            class="flex flex-col items-center px-6 py-3 rounded-xl transition glass-card hover:bg-red-600 ${i === 0 ? 'bg-red-600' : ''}">
+                      <span class="text-xs text-gray-400">${dayName}</span>
+                      <span class="text-2xl font-bold">${dayNum}</span>
+                      <span class="text-xs text-gray-400">${monthName}</span>
+                    </button>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+            
+            <div class="glass-card rounded-xl p-6">
+              <h3 class="font-bold text-lg mb-4">🕐 Pilih Jam Tayang</h3>
+              <div id="showtime-buttons" class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                ${movie.showtimes.map(time => `
+                  <button onclick="selectBookingTime('${time}')" 
+                          id="time-btn-${time.replace(':', '')}"
+                          class="px-6 py-4 glass-card hover:bg-red-600 rounded-xl text-center transition">
+                    <span class="text-xl font-bold">${time}</span>
+                    <span class="block text-xs text-gray-400 mt-1">Regular</span>
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+            
+            <div id="booking-action" class="mt-6 hidden">
+              <button onclick="navigateTo('seats')" class="w-full py-4 bg-red-600 hover:bg-red-700 rounded-xl font-bold text-lg transition neon-glow">
+                Pilih Kursi →
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Set default date
+      selectedShowtime = { date: dates[0].toISOString().split('T')[0], time: null };
+    }
+
+    function selectBookingDate(date) {
+      document.querySelectorAll('[id^="date-btn-"]').forEach(btn => btn.classList.remove('bg-red-600'));
+      document.getElementById(`date-btn-${date}`).classList.add('bg-red-600');
+      selectedShowtime = { ...selectedShowtime, date };
+      checkBookingSelection();
+    }
+
+    function selectBookingTime(time) {
+      document.querySelectorAll('[id^="time-btn-"]').forEach(btn => btn.classList.remove('bg-red-600'));
+      document.getElementById(`time-btn-${time.replace(':', '')}`).classList.add('bg-red-600');
+      selectedShowtime = { ...selectedShowtime, time };
+      checkBookingSelection();
+    }
+
+    function checkBookingSelection() {
+      const actionDiv = document.getElementById('booking-action');
+      if (selectedShowtime?.date && selectedShowtime?.time) {
+        actionDiv.classList.remove('hidden');
+      }
+    }
+
+    function renderSeatSelection() {
+      if (!selectedMovie || !selectedShowtime) {
+        navigateTo('movies');
+        return;
+      }
+      
+      selectedSeats = [];
+      
+      const content = document.getElementById('seats-content');
+      const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      const seatsPerRow = 12;
+      
+      // Get existing bookings for this showtime
+      const existingBookings = allData.filter(d => 
+        d.type === 'booking' && 
+        d.movie_id === selectedMovie.id && 
+        d.showtime === `${selectedShowtime.date} ${selectedShowtime.time}` &&
+        d.status === 'confirmed'
+      );
+      
+      const occupiedSeats = new Set();
+      existingBookings.forEach(b => {
+        if (b.seats) {
+          b.seats.split(',').forEach(s => occupiedSeats.add(s.trim()));
+        }
+      });
+      
+      content.innerHTML = `
+        <div class="mb-6">
+          <button onclick="navigateTo('booking', '${selectedMovie.id}')" class="text-gray-400 hover:text-white transition mb-4 inline-flex items-center gap-2">
+            ← Kembali
+          </button>
+          <h1 class="text-3xl font-bold">Pilih Kursi</h1>
+          <p class="text-gray-400">${selectedMovie.title} • ${formatDate(selectedShowtime.date)} • ${selectedShowtime.time}</p>
+        </div>
+        
+        <div class="glass-card rounded-xl p-6 mb-6">
+          <!-- Screen -->
+          <div class="text-center mb-8">
+            <div class="w-3/4 h-2 bg-gradient-to-r from-transparent via-red-600 to-transparent mx-auto rounded-full mb-2"></div>
+            <span class="text-xs text-gray-500">LAYAR</span>
+          </div>
+          
+          <!-- Seats Grid -->
+          <div class="flex flex-col items-center gap-2 mb-8">
+            ${rows.map(row => `
+              <div class="flex items-center gap-2">
+                <span class="w-6 text-center text-gray-500 text-sm">${row}</span>
+                <div class="flex gap-2">
+                  ${Array.from({length: seatsPerRow}, (_, i) => {
+                    const seatId = `${row}${i + 1}`;
+                    const isOccupied = occupiedSeats.has(seatId);
+                    const isAisle = i === 5;
+                    
+                    return `
+                      ${isAisle ? '<div class="w-4"></div>' : ''}
+                      <button 
+                        onclick="toggleSeat('${seatId}')" 
+                        id="seat-${seatId}"
+                        class="seat w-8 h-8 rounded-t-lg ${isOccupied ? 'occupied bg-gray-700' : 'bg-emerald-600 hover:bg-yellow-500'} text-xs font-medium transition"
+                        ${isOccupied ? 'disabled' : ''}>
+                        ${i + 1}
+                      </button>
+                    `;
+                  }).join('')}
+                </div>
+                <span class="w-6 text-center text-gray-500 text-sm">${row}</span>
+              </div>
+            `).join('')}
+          </div>
+          
+          <!-- Legend -->
+          <div class="flex justify-center gap-6 text-sm">
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-t-lg bg-emerald-600"></div>
+              <span class="text-gray-400">Tersedia</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-t-lg bg-red-600"></div>
+              <span class="text-gray-400">Dipilih</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-t-lg bg-gray-700"></div>
+              <span class="text-gray-400">Terisi</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Selection Summary -->
+        <div class="glass-card rounded-xl p-6">
+          <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 class="font-bold text-lg">Kursi Dipilih</h3>
+              <p id="selected-seats-display" class="text-gray-400">Belum ada kursi dipilih</p>
+            </div>
+            <div class="text-right">
+              <p class="text-gray-400">Total</p>
+              <p id="total-price" class="text-2xl font-bold text-red-500">Rp 0</p>
+            </div>
+            <button id="proceed-payment-btn" onclick="proceedToPayment()" disabled class="px-8 py-3 bg-gray-600 rounded-xl font-bold transition cursor-not-allowed">
+              Lanjut ke Pembayaran
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    const TICKET_PRICE = 50000;
+
+    function toggleSeat(seatId) {
+      const seatBtn = document.getElementById(`seat-${seatId}`);
+      
+      if (selectedSeats.includes(seatId)) {
+        selectedSeats = selectedSeats.filter(s => s !== seatId);
+        seatBtn.classList.remove('selected', 'bg-red-600');
+        seatBtn.classList.add('bg-emerald-600');
+      } else {
+        if (selectedSeats.length >= 6) {
+          showToast('Maksimal 6 kursi per pemesanan', 'warning');
+          return;
+        }
+        selectedSeats.push(seatId);
+        seatBtn.classList.remove('bg-emerald-600');
+        seatBtn.classList.add('selected', 'bg-red-600');
+      }
+      
+      updateSeatSummary();
+    }
+
+    function updateSeatSummary() {
+      const display = document.getElementById('selected-seats-display');
+      const totalEl = document.getElementById('total-price');
+      const proceedBtn = document.getElementById('proceed-payment-btn');
+      
+      if (selectedSeats.length === 0) {
+        display.textContent = 'Belum ada kursi dipilih';
+        totalEl.textContent = 'Rp 0';
+        proceedBtn.disabled = true;
+        proceedBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'neon-glow', 'cursor-pointer');
+        proceedBtn.classList.add('bg-gray-600', 'cursor-not-allowed');
+      } else {
+        display.textContent = selectedSeats.sort().join(', ');
+        totalEl.textContent = `Rp ${(selectedSeats.length * TICKET_PRICE).toLocaleString('id-ID')}`;
+        proceedBtn.disabled = false;
+        proceedBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'neon-glow', 'cursor-pointer');
+        proceedBtn.classList.remove('bg-gray-600', 'cursor-not-allowed');
+      }
+    }
+
+    function proceedToPayment() {
+      if (selectedSeats.length === 0) return;
+      navigateTo('payment');
+    }
+
+    function renderPayment() {
+      if (!selectedMovie || !selectedShowtime || selectedSeats.length === 0) {
+        navigateTo('movies');
+        return;
+      }
+      
+      const content = document.getElementById('payment-content');
+      const total = selectedSeats.length * TICKET_PRICE;
+      
+      content.innerHTML = `
+        <div class="max-w-2xl mx-auto">
+          <h1 class="text-3xl font-bold mb-8 text-center">💳 Pembayaran</h1>
+          
+          <div class="glass-card rounded-xl p-6 mb-6">
+            <h3 class="font-bold text-lg mb-4">Ringkasan Pesanan</h3>
+            <div class="flex gap-4 mb-4">
+              <div class="w-20 h-28 rounded-lg flex items-center justify-center text-4xl" style="background: ${selectedMovie.backdrop};">
+                ${selectedMovie.poster}
+              </div>
+              <div>
+                <h4 class="font-bold">${selectedMovie.title}</h4>
+                <p class="text-gray-400 text-sm">${formatDate(selectedShowtime.date)}</p>
+                <p class="text-gray-400 text-sm">${selectedShowtime.time}</p>
+                <p class="text-gray-400 text-sm">Kursi: ${selectedSeats.sort().join(', ')}</p>
+              </div>
+            </div>
+            <div class="border-t border-white/10 pt-4">
+              <div class="flex justify-between mb-2">
+                <span class="text-gray-400">${selectedSeats.length}x Tiket Regular</span>
+                <span>Rp ${total.toLocaleString('id-ID')}</span>
+              </div>
+              <div class="flex justify-between font-bold text-lg">
+                <span>Total</span>
+                <span class="text-red-500">Rp ${total.toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass-card rounded-xl p-6 mb-6">
+            <h3 class="font-bold text-lg mb-4">Metode Pembayaran</h3>
+            <p class="text-center text-gray-400 mb-4">🎮 Demo Mode - Klik bayar untuk simulasi</p>
+            <div class="grid grid-cols-2 gap-4">
+              <button onclick="selectPaymentMethod('gopay')" id="pay-gopay" class="p-4 glass-card hover:border-red-600 border-2 border-transparent rounded-xl transition text-center">
+                <span class="text-2xl">💚</span>
+                <p class="mt-2">GoPay</p>
+              </button>
+              <button onclick="selectPaymentMethod('ovo')" id="pay-ovo" class="p-4 glass-card hover:border-red-600 border-2 border-transparent rounded-xl transition text-center">
+                <span class="text-2xl">💜</span>
+                <p class="mt-2">OVO</p>
+              </button>
+              <button onclick="selectPaymentMethod('dana')" id="pay-dana" class="p-4 glass-card hover:border-red-600 border-2 border-transparent rounded-xl transition text-center">
+                <span class="text-2xl">💙</span>
+                <p class="mt-2">DANA</p>
+              </button>
+              <button onclick="selectPaymentMethod('card')" id="pay-card" class="p-4 glass-card hover:border-red-600 border-2 border-transparent rounded-xl transition text-center">
+                <span class="text-2xl">💳</span>
+                <p class="mt-2">Kartu</p>
+              </button>
+            </div>
+          </div>
+          
+          <button id="confirm-payment-btn" onclick="confirmPayment()" disabled class="w-full py-4 bg-gray-600 rounded-xl font-bold text-lg transition cursor-not-allowed">
+            Pilih Metode Pembayaran
+          </button>
+        </div>
+      `;
+    }
+
+    let selectedPaymentMethod = null;
+
+    function selectPaymentMethod(method) {
+      document.querySelectorAll('[id^="pay-"]').forEach(btn => btn.classList.remove('border-red-600'));
+      document.getElementById(`pay-${method}`).classList.add('border-red-600');
+      selectedPaymentMethod = method;
+      
+      const confirmBtn = document.getElementById('confirm-payment-btn');
+      confirmBtn.disabled = false;
+      confirmBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'neon-glow', 'cursor-pointer');
+      confirmBtn.classList.remove('bg-gray-600', 'cursor-not-allowed');
+      confirmBtn.textContent = 'Bayar Sekarang';
+    }
+
+    async function confirmPayment() {
+      if (!selectedPaymentMethod) return;
+      
+      const confirmBtn = document.getElementById('confirm-payment-btn');
+      confirmBtn.disabled = true;
+      confirmBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Memproses...';
+      
+      // Check data limit
+      if (allData.length >= 999) {
+        showToast('Maaf, kapasitas penyimpanan penuh', 'error');
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Bayar Sekarang';
+        return;
+      }
+      
+      // Create booking
+      const bookingId = `BK${Date.now()}`;
+      const bookingData = {
+        type: 'booking',
+        booking_id: bookingId,
+        user_email: currentUser.email,
+        user_name: currentUser.name,
+        movie_id: selectedMovie.id,
+        movie_title: selectedMovie.title,
+        showtime: `${selectedShowtime.date} ${selectedShowtime.time}`,
+        seats: selectedSeats.join(', '),
+        total_price: selectedSeats.length * TICKET_PRICE,
+        booking_date: new Date().toISOString(),
+        status: 'confirmed'
+      };
+      
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(bookingData);
+        if (result.isOk) {
+          showToast('Pembayaran berhasil!', 'success');
+          navigateTo('confirmation', bookingData);
+        } else {
+          showToast('Gagal menyimpan pemesanan', 'error');
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = 'Bayar Sekarang';
+        }
+      } else {
+        // Demo mode without SDK
+        showToast('Pembayaran berhasil! (Demo)', 'success');
+        navigateTo('confirmation', bookingData);
+      }
+    }
+
+    function renderConfirmation(booking) {
+      if (!booking) {
+        navigateTo('home');
+        return;
+      }
+      
+      const content = document.getElementById('confirmation-content');
+      
+      content.innerHTML = `
+        <div class="max-w-lg mx-auto text-center">
+          <div class="text-6xl mb-6 animate-bounce">🎉</div>
+          <h1 class="text-3xl font-bold mb-4">Pemesanan Berhasil!</h1>
+          <p class="text-gray-400 mb-8">Tiket Anda telah dikonfirmasi</p>
+          
+          <div class="glass-card rounded-xl p-6 mb-6 text-left">
+            <div class="flex justify-between items-center mb-4 pb-4 border-b border-white/10">
+              <span class="text-gray-400">Kode Booking</span>
+              <span class="font-mono font-bold text-red-500">${booking.booking_id}</span>
+            </div>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Film</span>
+                <span class="font-medium">${booking.movie_title}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Tanggal & Waktu</span>
+                <span class="font-medium">${booking.showtime}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Kursi</span>
+                <span class="font-medium">${booking.seats}</span>
+              </div>
+              <div class="flex justify-between text-lg font-bold pt-3 border-t border-white/10">
+                <span>Total</span>
+                <span class="text-red-500">Rp ${booking.total_price.toLocaleString('id-ID')}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="glass-card rounded-xl p-4 mb-6">
+            <p class="text-sm text-gray-400">Tunjukkan kode booking ini di loket untuk mendapatkan tiket Anda</p>
+          </div>
+          
+          <div class="flex gap-4 justify-center">
+            <button onclick="navigateTo('profile')" class="px-6 py-3 glass-card hover:bg-white/10 rounded-xl font-semibold transition">
+              Lihat Riwayat
+            </button>
+            <button onclick="navigateTo('home')" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-xl font-semibold transition">
+              Kembali ke Beranda
+            </button>
+          </div>
+        </div>
+      `;
+      
+      // Reset selection
+      selectedMovie = null;
+      selectedShowtime = null;
+      selectedSeats = [];
+      selectedPaymentMethod = null;
+    }
+
+    function renderProfile() {
+      if (!currentUser) {
+        navigateTo('login');
+        return;
+      }
+      
+      const content = document.getElementById('profile-content');
+      const userBookings = allData.filter(d => d.type === 'booking' && d.user_email === currentUser.email);
+      
+      content.innerHTML = `
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold">👤 Profil Saya</h1>
+        </div>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+          <!-- User Info -->
+          <div class="glass-card rounded-xl p-6">
+            <div class="text-center">
+              <div class="w-24 h-24 bg-gradient-to-br from-red-500 to-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl">
+                ${currentUser.name.charAt(0).toUpperCase()}
+              </div>
+              <h3 class="font-bold text-xl">${currentUser.name}</h3>
+              <p class="text-gray-400">${currentUser.email}</p>
+              <span class="inline-block mt-2 px-3 py-1 bg-blue-600 rounded-full text-xs font-medium">Member</span>
+            </div>
+            
+            <div class="mt-6 pt-6 border-t border-white/10">
+              <div class="text-center">
+                <p class="text-3xl font-bold text-red-500">${userBookings.length}</p>
+                <p class="text-gray-400 text-sm">Total Pemesanan</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Booking History -->
+          <div class="md:col-span-2">
+            <h3 class="font-bold text-xl mb-4">📜 Riwayat Pemesanan</h3>
+            
+            ${userBookings.length === 0 ? `
+              <div class="glass-card rounded-xl p-8 text-center">
+                <span class="text-4xl mb-4 block">🎬</span>
+                <p class="text-gray-400">Belum ada pemesanan</p>
+                <button onclick="navigateTo('movies')" class="mt-4 px-6 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition">
+                  Pesan Tiket Sekarang
+                </button>
+              </div>
+            ` : `
+              <div class="space-y-4">
+                ${userBookings.map(booking => {
+                  const movie = moviesData.find(m => m.id === booking.movie_id);
+                  return `
+                    <div class="glass-card rounded-xl p-4">
+                      <div class="flex gap-4">
+                        <div class="w-16 h-24 rounded-lg flex items-center justify-center text-3xl flex-shrink-0" style="background: ${movie?.backdrop || 'linear-gradient(135deg, #333, #111)'};">
+                          ${movie?.poster || '🎬'}
+                        </div>
+                        <div class="flex-1">
+                          <div class="flex items-start justify-between">
+                            <div>
+                              <h4 class="font-bold">${booking.movie_title}</h4>
+                              <p class="text-sm text-gray-400">${booking.showtime}</p>
+                              <p class="text-sm text-gray-400">Kursi: ${booking.seats}</p>
+                            </div>
+                            <div class="text-right">
+                              <span class="px-2 py-1 bg-green-600 rounded text-xs font-bold">${booking.status}</span>
+                              <p class="mt-2 font-bold text-red-500">Rp ${booking.total_price.toLocaleString('id-ID')}</p>
+                            </div>
+                          </div>
+                          <p class="text-xs text-gray-500 mt-2">Kode: ${booking.booking_id}</p>
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAdminDashboard() {
+      if (!currentUser || currentUser.role !== 'admin') {
+        showToast('Akses ditolak', 'error');
+        navigateTo('home');
+        return;
+      }
+      
+      const content = document.getElementById('admin-content');
+      const allBookings = allData.filter(d => d.type === 'booking');
+      const allUsers = allData.filter(d => d.type === 'user');
+      const totalRevenue = allBookings.reduce((sum, b) => sum + (b.total_price || 0), 0);
+      
+      // Group bookings by movie
+      const movieStats = {};
+      allBookings.forEach(b => {
+        if (!movieStats[b.movie_id]) {
+          movieStats[b.movie_id] = { count: 0, revenue: 0 };
+        }
+        movieStats[b.movie_id].count++;
+        movieStats[b.movie_id].revenue += b.total_price || 0;
+      });
+      
+      content.innerHTML = `
+        <div class="mb-8">
+          <h1 class="text-3xl font-bold">🛠️ Admin Dashboard</h1>
+          <p class="text-gray-400">Kelola CinemaMax</p>
+        </div>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div class="glass-card rounded-xl p-6">
+            <span class="text-3xl">🎬</span>
+            <p class="text-3xl font-bold mt-2">${moviesData.length}</p>
+            <p class="text-gray-400 text-sm">Total Film</p>
+          </div>
+          <div class="glass-card rounded-xl p-6">
+            <span class="text-3xl">🎟️</span>
+            <p class="text-3xl font-bold mt-2">${allBookings.length}</p>
+            <p class="text-gray-400 text-sm">Pemesanan</p>
+          </div>
+          <div class="glass-card rounded-xl p-6">
+            <span class="text-3xl">👥</span>
+            <p class="text-3xl font-bold mt-2">${allUsers.length + defaultUsers.length}</p>
+            <p class="text-gray-400 text-sm">Pengguna</p>
+          </div>
+          <div class="glass-card rounded-xl p-6">
+            <span class="text-3xl">💰</span>
+            <p class="text-2xl font-bold mt-2">Rp ${(totalRevenue / 1000000).toFixed(1)}M</p>
+            <p class="text-gray-400 text-sm">Pendapatan</p>
+          </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+          <button onclick="showAdminTab('bookings')" id="tab-bookings" class="px-4 py-2 bg-red-600 rounded-lg font-medium transition">Pemesanan</button>
+          <button onclick="showAdminTab('movies')" id="tab-movies" class="px-4 py-2 glass-card hover:bg-white/10 rounded-lg font-medium transition">Film</button>
+          <button onclick="showAdminTab('users')" id="tab-users" class="px-4 py-2 glass-card hover:bg-white/10 rounded-lg font-medium transition">Pengguna</button>
+        </div>
+        
+        <div id="admin-tab-content">
+          <!-- Default: Bookings -->
+          <div class="glass-card rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-white/5">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Kode</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Pengguna</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Film</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Jadwal</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Kursi</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Total</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  ${allBookings.length === 0 ? `
+                    <tr>
+                      <td colspan="7" class="px-4 py-8 text-center text-gray-500">Belum ada pemesanan</td>
+                    </tr>
+                  ` : allBookings.map(b => `
+                    <tr class="hover:bg-white/5">
+                      <td class="px-4 py-3 font-mono text-sm">${b.booking_id}</td>
+                      <td class="px-4 py-3">${b.user_name}</td>
+                      <td class="px-4 py-3">${b.movie_title}</td>
+                      <td class="px-4 py-3 text-sm">${b.showtime}</td>
+                      <td class="px-4 py-3 text-sm">${b.seats}</td>
+                      <td class="px-4 py-3 font-medium">Rp ${(b.total_price || 0).toLocaleString('id-ID')}</td>
+                      <td class="px-4 py-3"><span class="px-2 py-1 bg-green-600 rounded text-xs">${b.status}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function showAdminTab(tab) {
+      // Update tab buttons
+      document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+        btn.classList.remove('bg-red-600');
+        btn.classList.add('glass-card', 'hover:bg-white/10');
+      });
+      document.getElementById(`tab-${tab}`).classList.add('bg-red-600');
+      document.getElementById(`tab-${tab}`).classList.remove('glass-card', 'hover:bg-white/10');
+      
+      const contentDiv = document.getElementById('admin-tab-content');
+      const allBookings = allData.filter(d => d.type === 'booking');
+      const allUsers = allData.filter(d => d.type === 'user');
+      
+      if (tab === 'bookings') {
+        contentDiv.innerHTML = `
+          <div class="glass-card rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-white/5">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Kode</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Pengguna</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Film</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Jadwal</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Kursi</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Total</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  ${allBookings.length === 0 ? `
+                    <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Belum ada pemesanan</td></tr>
+                  ` : allBookings.map(b => `
+                    <tr class="hover:bg-white/5">
+                      <td class="px-4 py-3 font-mono text-sm">${b.booking_id}</td>
+                      <td class="px-4 py-3">${b.user_name}</td>
+                      <td class="px-4 py-3">${b.movie_title}</td>
+                      <td class="px-4 py-3 text-sm">${b.showtime}</td>
+                      <td class="px-4 py-3 text-sm">${b.seats}</td>
+                      <td class="px-4 py-3 font-medium">Rp ${(b.total_price || 0).toLocaleString('id-ID')}</td>
+                      <td class="px-4 py-3"><span class="px-2 py-1 bg-green-600 rounded text-xs">${b.status}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      } else if (tab === 'movies') {
+        contentDiv.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${moviesData.map(movie => `
+              <div class="glass-card rounded-xl p-4">
+                <div class="flex gap-4">
+                  <div class="w-16 h-24 rounded-lg flex items-center justify-center text-3xl flex-shrink-0" style="background: ${movie.backdrop};">
+                    ${movie.poster}
+                  </div>
+                  <div class="flex-1">
+                    <h4 class="font-bold">${movie.title}</h4>
+                    <p class="text-sm text-gray-400">${movie.genre} • ${movie.ageRating}</p>
+                    <p class="text-sm text-gray-400">${movie.duration} menit</p>
+                    <span class="inline-block mt-2 px-2 py-1 ${movie.status === 'now_showing' ? 'bg-green-600' : 'bg-blue-600'} rounded text-xs">
+                      ${movie.status === 'now_showing' ? 'Tayang' : 'Segera'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      } else if (tab === 'users') {
+        const combinedUsers = [...defaultUsers, ...allUsers.map(u => ({ name: u.user_name, email: u.user_email, role: u.user_role || 'user' }))];
+        contentDiv.innerHTML = `
+          <div class="glass-card rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full">
+                <thead class="bg-white/5">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Nama</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Email</th>
+                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-400">Role</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  ${combinedUsers.map(u => `
+                    <tr class="hover:bg-white/5">
+                      <td class="px-4 py-3">${u.name}</td>
+                      <td class="px-4 py-3 text-gray-400">${u.email}</td>
+                      <td class="px-4 py-3">
+                        <span class="px-2 py-1 ${u.role === 'admin' ? 'bg-yellow-600' : 'bg-blue-600'} rounded text-xs">${u.role}</span>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    // ============================================
+    // AUTHENTICATION
+    // ============================================
+    
+    async function handleLogin(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const errorDiv = document.getElementById('login-error');
+      const btn = document.getElementById('login-btn');
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Memproses...';
+      errorDiv.classList.add('hidden');
+      
+      // Check default users
+      const defaultUser = defaultUsers.find(u => u.email === email && u.password === password);
+      if (defaultUser) {
+        currentUser = defaultUser;
+        showToast(`Selamat datang, ${currentUser.name}!`, 'success');
+        navigateTo('home');
+        return;
+      }
+      
+      // Check registered users from Data SDK
+      const registeredUser = allData.find(d => d.type === 'user' && d.user_email === email && d.user_password === password);
+      if (registeredUser) {
+        currentUser = {
+          email: registeredUser.user_email,
+          name: registeredUser.user_name,
+          role: registeredUser.user_role || 'user'
+        };
+        showToast(`Selamat datang, ${currentUser.name}!`, 'success');
+        navigateTo('home');
+        return;
+      }
+      
+      errorDiv.textContent = 'Email atau password salah';
+      errorDiv.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = 'Masuk';
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      
+      const name = document.getElementById('signup-name').value;
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-confirm').value;
+      const errorDiv = document.getElementById('signup-error');
+      const btn = document.getElementById('signup-btn');
+      
+      errorDiv.classList.add('hidden');
+      
+      // Validation
+      if (password !== confirm) {
+        errorDiv.textContent = 'Password tidak cocok';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      // Check if email exists
+      if (defaultUsers.find(u => u.email === email) || allData.find(d => d.type === 'user' && d.user_email === email)) {
+        errorDiv.textContent = 'Email sudah terdaftar';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      // Check data limit
+      if (allData.length >= 999) {
+        errorDiv.textContent = 'Maaf, kapasitas penyimpanan penuh';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+      
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Mendaftar...';
+      
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create({
+          type: 'user',
+          user_email: email,
+          user_name: name,
+          user_password: password,
+          user_role: 'user'
+        });
+        
+        if (result.isOk) {
+          currentUser = { email, name, role: 'user' };
+          showToast('Pendaftaran berhasil!', 'success');
+          navigateTo('home');
+        } else {
+          errorDiv.textContent = 'Gagal mendaftar. Coba lagi.';
+          errorDiv.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Daftar';
+        }
+      } else {
+        // Demo mode
+        currentUser = { email, name, role: 'user' };
+        showToast('Pendaftaran berhasil! (Demo)', 'success');
+        navigateTo('home');
+      }
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      showToast('Anda telah keluar', 'info');
+      navigateTo('home');
+    }
+
+    // ============================================
+    // UTILITIES
+    // ============================================
+    
+    function showTrailer(movieId) {
+      const movie = moviesData.find(m => m.id === movieId);
+      document.getElementById('trailer-title').textContent = `Trailer: ${movie.title}`;
+      document.getElementById('trailer-modal').classList.remove('hidden');
+    }
+
+    function closeTrailer() {
+      document.getElementById('trailer-modal').classList.add('hidden');
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        success: 'bg-green-600',
+        error: 'bg-red-600',
+        warning: 'bg-yellow-600',
+        info: 'bg-blue-600'
+      };
+      
+      const icons = {
+        success: '✓',
+        error: '✕',
+        warning: '⚠',
+        info: 'ℹ'
+      };
+      
+      toast.className = `${colors[type]} px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-fadeIn`;
+      toast.innerHTML = `
+        <span class="text-lg">${icons[type]}</span>
+        <span>${message}</span>
+      `;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
+    function updateUIWithData() {
+      // Refresh current page if needed
+      if (currentPage === 'profile') {
+        renderProfile();
+      } else if (currentPage === 'admin') {
+        renderAdminDashboard();
+      } else if (currentPage === 'seats') {
+        renderSeatSelection();
+      }
+    }
+
+    // ============================================
+    // INITIALIZE
+    // ============================================
+    
+    initializeApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ea238695594ce01',t:'MTc3NTgyOTAyNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

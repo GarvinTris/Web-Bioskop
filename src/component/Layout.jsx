@@ -1,4 +1,5 @@
-import Navbar from "./Navbar"; 
+import Navbar from "./Navbar";
+import "../style/Navbar.css"; // Tambahkan import CSS
 
 function Layout({ children }) {
   console.log("Layout rendering with children:", children);
@@ -6,7 +7,7 @@ function Layout({ children }) {
   return (
     <>
       <Navbar />
-      <main>{children}</main>
+      <main style={{ paddingTop: "75px" }}>{children}</main>
     </>
   );
 }

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "../style/Admin.css";
 import AdminUser from "./AdminUser.jsx";
 
 function Admin() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("film");
   const [films, setFilms] = useState([]);
   const [schedules, setSchedules] = useState([]);
@@ -12,6 +14,10 @@ function Admin() {
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  
+  // HANYA CEK, JANGAN REDIRECT - Redirect sudah ditangani oleh ProtectedRoute
+  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const isAdmin = localStorage.getItem("isAdmin") === "true";
   
   // Form state untuk film dengan durasi terpisah
   const [filmForm, setFilmForm] = useState({
@@ -44,7 +50,7 @@ function Admin() {
     is_active: false
   });
 
-  // ==================== HELPER FUNCTIONS ====================x
+  // ==================== HELPER FUNCTIONS ====================
   
   const getRatingUsiaLabel = (kode) => {
     const labels = {
@@ -145,14 +151,14 @@ function Admin() {
   const fetchFilms = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php");
-      const data = await response.json();
-      setFilms(data);
+        const response = await fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php");
+        const data = await response.json();
+        setFilms(data);
     } catch (error) {
-      console.error("Error fetching films:", error);
-      showMessage("error", "Gagal mengambil data film");
+        console.error("Error fetching films:", error);
+        showMessage("error", "Gagal mengambil data film");
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
   };
 
@@ -169,38 +175,34 @@ function Admin() {
   const fetchSchedules = async () => {
     setLoading(true);
     try {
-      const timestamp = new Date().getTime();
-      const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/jadwal.php?t=${timestamp}`, {
-        method: 'GET',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
+        const timestamp = new Date().getTime();
+        // 🔴 HAPUS headers yang tidak perlu, biarkan default
+        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/jadwal.php?t=${timestamp}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (Array.isArray(data)) {
-        const formattedData = data.map(schedule => ({
-          ...schedule,
-          Jam_Mulai: formatTimeForDisplay(schedule.Jam_Mulai)
-        }));
-        setSchedules(formattedData);
-      } else {
-        setSchedules([]);
-      }
+        
+        const data = await response.json();
+        console.log("Schedules data:", data);
+        
+        if (Array.isArray(data)) {
+            const formattedData = data.map(schedule => ({
+                ...schedule,
+                Jam_Mulai: formatTimeForDisplay(schedule.Jam_Mulai)
+            }));
+            setSchedules(formattedData);
+        } else {
+            setSchedules([]);
+        }
     } catch (error) {
-      console.error("Error fetching schedules:", error);
-      showMessage("error", "Gagal mengambil data jadwal: " + error.message);
-      setSchedules([]);
+        console.error("Error fetching schedules:", error);
+        showMessage("error", "Gagal mengambil data jadwal: " + error.message);
+        setSchedules([]);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   const fetchTrailers = async () => {
     try {
