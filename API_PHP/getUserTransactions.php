@@ -2,10 +2,6 @@
 // getUserTransactions.php
 require_once 'database.php';
 
-// 🔴 HAPUS semua header manual!
-// HAPUS: header("Access-Control-Allow-Origin: *");
-// HAPUS: header("Content-Type: application/json");
-
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
@@ -14,7 +10,7 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
     exit;
 }
 
-$id = $conn->real_escape_string($_GET['id']);
+$id = $_GET['id'];
 
 $sql = "SELECT 
             t.ID_Transaksi,
@@ -34,18 +30,22 @@ $sql = "SELECT
         LEFT JOIN jadwal j ON t.ID_Jadwal = j.ID_Jadwal
         LEFT JOIN film f ON j.ID_Film = f.ID_Film
         LEFT JOIN studio s ON j.No_Studio = s.No_Studio
-        WHERE t.ID_Penonton = '$id'
+        WHERE t.ID_Penonton = ?
         ORDER BY t.Tanggal_Pemesanan DESC";
 
-$result = mysqli_query($conn, $sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if (!$result) {
-    echo json_encode(["success" => false, "error" => "Query error: " . mysqli_error($conn)]);
+    echo json_encode(["success" => false, "error" => "Query error: " . $conn->error]);
+    $stmt->close();
     exit;
 }
 
 $transactions = [];
-while ($row = mysqli_fetch_assoc($result)) {
+while ($row = $result->fetch_assoc()) {
     $kursi_list = [];
     if (!empty($row['Kursi'])) {
         $kursi_list = explode(',', $row['Kursi']);
@@ -69,5 +69,6 @@ while ($row = mysqli_fetch_assoc($result)) {
     ];
 }
 
+$stmt->close();
 echo json_encode(["success" => true, "transactions" => $transactions]);
 ?>

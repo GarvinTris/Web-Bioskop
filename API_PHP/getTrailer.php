@@ -1,19 +1,9 @@
 <?php
+// getTrailer.php
 require_once 'database.php';
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
 
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
-
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    echo json_encode(["error" => "Database gagal konek: " . $conn->connect_error]);
-    exit;
-}
 
 // Cek apakah tabel trailer ada
 $table_check = $conn->query("SHOW TABLES LIKE 'trailer'");
@@ -22,7 +12,6 @@ if ($table_check->num_rows == 0) {
     exit;
 }
 
-// HAPUS kolom Genre dari query (karena sudah dihapus dari tabel film)
 $query = "SELECT t.*, 
           f.Judul_Film, 
           f.Deskripsi, 
@@ -52,5 +41,4 @@ while ($row = $result->fetch_assoc()) {
 }
 
 echo json_encode($trailers);
-$conn->close();
 ?>

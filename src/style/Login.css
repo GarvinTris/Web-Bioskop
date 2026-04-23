@@ -128,7 +128,7 @@
 .signup-text {
   text-align: center;
   color: #9ca3af;
-  font-size: 0.9rem;
+  font-size: 1rem;
   margin-top: 20px;
 }
 
@@ -157,6 +157,74 @@ hr {
   border-top: 4px solid #e50914;
 }
 
+/* Tambahkan ke Login.css */
+
+.error-message {
+  background-color: #fee2e2;
+  color: #dc2626;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  text-align: center;
+  border: 1px solid #fecaca;
+}
+
+.otp-input {
+  text-align: center;
+  font-size: 28px !important;
+  letter-spacing: 10px;
+  font-weight: bold;
+  background: #f9fafb;
+}
+
+.otp-input::placeholder {
+  font-size: 16px;
+  letter-spacing: normal;
+  color: #9ca3af;
+}
+
+.resend-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-resend {
+  background: none;
+  color: #2563eb;
+  border: 1px solid #2563eb;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.btn-resend:hover:not(:disabled) {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-resend:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-back {
+  background: none;
+  color: #6b7280;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-back:hover {
+  color: #374151;
+  text-decoration: underline;
+}
 /* Responsive */
 @media (max-width: 480px) {
   .login-card {

@@ -4,26 +4,40 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
 // ==================== COMPONENT: NOW SHOWING ====================
+// ==================== COMPONENT: NOW SHOWING ====================
 function Movie() {
     const [films, setFilms] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php")
             .then(response => response.json())
             .then(data => {
-                setFilms(data);
+                if (Array.isArray(data)) {
+                    setFilms(data);
+                } else if (data && data.error) {
+                    console.error("API Error:", data.error);
+                    setError(data.error);
+                    setFilms([]);
+                } else {
+                    console.error("Data bukan array:", data);
+                    setError("Format data tidak valid");
+                    setFilms([]);
+                }
                 setLoading(false);
             })
             .catch(error => {
-                console.log(error);
+                console.error("Fetch error:", error);
+                setError("Gagal memuat data film");
+                setFilms([]);
                 setLoading(false);
             });
     }, []);
     
     if (loading) {
         return (
-            <section>
+            <section className="now-showing-section">
                 <h1>Now Showing In Cinema!</h1>
                 <div className="rekomen-loading">
                     <div className="loading-spinner"></div>
@@ -33,11 +47,35 @@ function Movie() {
         );
     }
     
+    if (error) {
+        return (
+            <section className="now-showing-section">
+                <h1>Now Showing In Cinema!</h1>
+                <div className="rekomen-error">
+                    <p>Error: {error}</p>
+                    <button onClick={() => window.location.reload()}>Coba Lagi</button>
+                </div>
+            </section>
+        );
+    }
+    
+    if (!Array.isArray(films) || films.length === 0) {
+        return (
+            <section className="now-showing-section">
+                <h1>Now Showing In Cinema!</h1>
+                <div className="rekomen-empty">
+                    <p>Tidak ada film yang sedang tayang saat ini.</p>
+                </div>
+            </section>
+        );
+    }
+    
     return (
-        <section>
+        <section className="now-showing-section">
             <h1>Now Showing In Cinema!</h1>
             <div className="rekomen">
-                {films.slice(0, 5).map((movie, index) => (
+                {/* MENAMPILKAN 8 FILM (4 KOLOM x 2 BARIS) */}
+                {films.slice(0, 8).map((movie, index) => (
                     <div className="card" key={index}>
                         <Link to={`/Reservasi/${encodeURIComponent(movie.Judul_Film)}`}>
                             <img 
@@ -109,9 +147,6 @@ function Jumbotron() {
     }
 
     const videoId = activeTrailer.Embed_URL?.split('/embed/')[1]?.split('?')[0];
-    const embedWithParams = videoId 
-        ? `${activeTrailer.Embed_URL}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&modestbranding=1`
-        : activeTrailer.Embed_URL;
 
     return (
         <div className="jumbotron">
@@ -194,73 +229,98 @@ function Popular() {
 }
 
 // ==================== COMPONENT: COMING SOON ====================
+// ==================== COMPONENT: COMING SOON (FROM DATABASE) ====================
+// ==================== COMPONENT: COMING SOON (SEDERHANA SEPERTI NOW SHOWING) ====================
 function ComingSoon() {
-    const [showNotification, setShowNotification] = useState(null);
-    
-    const upcomingMovies = [
-        {
-            id: 1,
-            title: "Avatar 3",
-            releaseDate: "Desember 2025",
-            genre: "Sci-Fi, Adventure",
-            poster: "https://image.tmdb.org/t/p/w500/jRXYjXNq0Cs2TcJjLkki24MLp7u.jpg",
-            description: "Pertempuran epik Pandora berlanjut dengan teknologi baru yang lebih spektakuler."
-        },
-        {
-            id: 2,
-            title: "Deadpool 3",
-            releaseDate: "Juli 2025",
-            genre: "Action, Comedy",
-            poster: "https://image.tmdb.org/t/p/w500/30YacPAcNPQPpttW8Fe9W5SIQoE.jpg",
-            description: "Wade Wilson kembali dengan aksi kocak dan pertarungan seru melawan musuh baru."
-        },
-        {
-            id: 3,
-            title: "Joker: Folie à Deux",
-            releaseDate: "Oktober 2025",
-            genre: "Drama, Thriller",
-            poster: "https://image.tmdb.org/t/p/w500/kbhtQ9QcB8A5mU5qYj5Z5Q8X9mU.jpg",
-            description: "Kisah kelam Arthur Fleck berlanjut dengan nuansa musikal yang gelap."
-        },
-        {
-            id: 4,
-            title: "Mission: Impossible 8",
-            releaseDate: "Mei 2025",
-            genre: "Action, Spy",
-            poster: "https://image.tmdb.org/t/p/w500/8gT9QcB8A5mU5qYj5Z5Q8X9mU5q.jpg",
-            description: "Ethan Hunt kembali dengan misi paling berbahaya yang pernah ada."
-        }
-    ];
+    const [comingSoonFilms, setComingSoonFilms] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const handleNotify = (movieId) => {
-        setShowNotification(movieId);
-        setTimeout(() => setShowNotification(null), 2000);
-    };
+    useEffect(() => {
+        // Sama persis seperti Movie component, tapi dengan parameter status=coming_soon
+        fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php?status=coming_soon")
+            .then(response => response.json())
+            .then(data => {
+                // Validasi: pastikan data adalah array (sama seperti di Movie)
+                if (Array.isArray(data)) {
+                    setComingSoonFilms(data);
+                } else if (data && data.error) {
+                    console.error("API Error:", data.error);
+                    setError(data.error);
+                    setComingSoonFilms([]);
+                } else {
+                    console.error("Data bukan array:", data);
+                    setError("Format data tidak valid");
+                    setComingSoonFilms([]);
+                }
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error("Fetch error:", error);
+                setError("Gagal memuat data film coming soon");
+                setComingSoonFilms([]);
+                setLoading(false);
+            });
+    }, []);
+
+    if (loading) {
+        return (
+            <section className="coming-soon-section">
+                <h1>🎬 Coming Soon</h1>
+                <div className="coming-soon-loading">
+                    <div className="loading-spinner"></div>
+                    <p>Memuat film coming soon...</p>
+                </div>
+            </section>
+        );
+    }
+
+    if (error) {
+        return (
+            <section className="coming-soon-section">
+                <h1>🎬 Coming Soon</h1>
+                <div className="coming-soon-error">
+                    <p>Error: {error}</p>
+                    <button onClick={() => window.location.reload()}>Coba Lagi</button>
+                </div>
+            </section>
+        );
+    }
+
+    if (comingSoonFilms.length === 0) {
+        return (
+            <section className="coming-soon-section">
+                <h1>🎬 Coming Soon</h1>
+                <div className="coming-soon-empty">
+                    <p>Tidak ada film yang akan datang saat ini.</p>
+                </div>
+            </section>
+        );  
+    }
 
     return (
         <section className="coming-soon-section">
             <h1>🎬 Coming Soon</h1>
-            <p className="coming-soon-subtitle">Film-film yang akan segera tayang di bioskop kami</p>
+            <p className="coming-soon-paragraf">Film-film yang akan segera tayang di bioskop kami</p>
             <div className="coming-soon-grid">
-                {upcomingMovies.map((movie) => (
-                    <div className="coming-soon-card" key={movie.id}>
+                {comingSoonFilms.map((film, index) => (
+                    <div className="coming-soon-card" key={index}>
                         <div className="coming-soon-image">
-                            <img src={movie.poster} alt={movie.title} />
-                            <div className="coming-soon-date">{movie.releaseDate}</div>
+                            <img 
+                                src={`http://localhost/Web_Bioskop/API_PHP/uploads/${film.image}`} 
+                                alt={film.Judul_Film}
+                                onError={(e) => e.target.src = 'https://via.placeholder.com/300x450?text=Coming+Soon'}
+                            />
+                            <div className="coming-soon-date">
+                                {film.Tanggal_Rilis || "Coming Soon"}
+                            </div>
                         </div>
                         <div className="coming-soon-info">
-                            <h3>{movie.title}</h3>
-                            <p className="coming-genre">{movie.genre}</p>
-                            <p className="coming-desc">{movie.description.substring(0, 80)}...</p>
-                            <button 
-                                className="notify-me-btn"
-                                onClick={() => handleNotify(movie.id)}
-                            >
-                                🔔 Ingatkan Saya
-                            </button>
-                            {showNotification === movie.id && (
-                                <div className="notify-success">✓ Akan diingatkan via email!</div>
-                            )}
+                            <h3>{film.Judul_Film}</h3>
+                            <p className="coming-genre">{film.Nama_Kategori || "Film"}</p>
+                            <p className="coming-desc">
+                                {film.Deskripsi ? film.Deskripsi.substring(0, 100) : "Deskripsi film akan segera diupdate..."}...
+                            </p>
                         </div>
                     </div>
                 ))}
@@ -369,23 +429,15 @@ function Footer() {
     
     const footerLinks = {
         perusahaan: [
-            { name: "Tentang Kami", link: "/about" },
-            { name: "Karir", link: "/career" },
-            { name: "Blog", link: "/blog" },
-            { name: "Press Kit", link: "/press" }
+            { name: "Tentang Kami", link: "/about" },   
         ],
         layanan: [
             { name: "Pesan Tiket", link: "/schedule" },
             { name: "Cek Pesanan", link: "/riwayat-tiket" },
-            { name: "Bantuan", link: "/help" },
-            { name: "Kebijakan Privasi", link: "/privacy" }
         ],
         sosial: [
             { name: "Facebook", link: "#", icon: "📘" },
             { name: "Instagram", link: "#", icon: "📷" },
-            { name: "Twitter", link: "#", icon: "🐦" },
-            { name: "YouTube", link: "#", icon: "▶️" },
-            { name: "TikTok", link: "#", icon: "🎵" }
         ]
     };
 

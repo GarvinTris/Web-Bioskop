@@ -1,7 +1,7 @@
 <?php
 // saveTransaction.php - Simpan transaksi
 require_once 'database.php';
-
+// requireAdminMfa();
 // Matikan error display
 error_reporting(E_ALL);
 ini_set('display_errors', 0);

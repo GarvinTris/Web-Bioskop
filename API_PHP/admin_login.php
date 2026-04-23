@@ -1,6 +1,13 @@
 <?php
-// admin_login.php - Login khusus admin
+// admin_login.php - Login khusus admin dengan MFA (kirim email asli)
 require_once 'database.php';
+require_once 'send_email.php';
+
+$emailSent = sendMfaEmail(
+    $admin['Email'],
+    $admin['Nama_Lengkap'],
+    $mfa_code
+);
 
 checkRateLimit('admin_login', 10, 60);
 
@@ -34,32 +41,43 @@ $admin = mysqli_fetch_assoc($result);
 
 if (password_verify($password, $admin['Password'])) {
     recordLoginAttempt($email, true);
-    session_regenerate_id(true);
     
-    $_SESSION['user_id'] = $admin['ID_Admin'];
-    $_SESSION['user_name'] = $admin['Nama_Lengkap'];
-    $_SESSION['user_email'] = $admin['Email'];
-    $_SESSION['user_role'] = $admin['Role'];
-    $_SESSION['user_type'] = 'admin';
-    $_SESSION['login_time'] = time();
-    $_SESSION['last_activity'] = time();
-    $_SESSION['ip_address'] = $_SERVER['REMOTE_ADDR'];
-    $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+    // 🔐 GENERATE MFA CODE
+    $mfa_code = sprintf("%06d", mt_rand(0, 999999));
+    $hashed_code = password_hash($mfa_code, PASSWORD_DEFAULT);
     
-    // Update last login
-    $conn->query("UPDATE admin SET Last_Login = NOW() WHERE ID_Admin = '{$admin['ID_Admin']}'");
+    $_SESSION['pending_admin'] = [
+        'user_id' => $admin['ID_Admin'],
+        'user_name' => $admin['Nama_Lengkap'],
+        'user_email' => $admin['Email'],
+        'user_role' => $admin['Role'],
+        'mfa_code' => $hashed_code,
+        'mfa_code_time' => time()
+    ];
     
-    logSecurityEvent('ADMIN_LOGIN_SUCCESS', "Admin: {$admin['ID_Admin']}");
+    // 📧 KIRIM EMAIL ASLI
+    $emailSent = sendMfaEmail(
+        $admin['Email'],           // To
+        $admin['Nama_Lengkap'],    // Nama
+        $mfa_code                  // Kode MFA
+    );
     
-    sendResponse(true, [
-        'user' => [
-            'id' => $admin['ID_Admin'],
-            'name' => $admin['Nama_Lengkap'],
-            'email' => $admin['Email'],
-            'role' => $admin['Role'],
-            'is_admin' => true
-        ]
-    ], 'Login admin berhasil!');
+    // Log MFA
+    logSecurityEvent('MFA_SENT', "MFA code sent to admin: {$admin['Email']} - Code: $mfa_code - Email sent: " . ($emailSent ? 'YES' : 'NO'));
+    
+    if ($emailSent) {
+        // ✅ Email berhasil dikirim
+        sendResponse(false, ['requires_mfa' => true], 'Kode verifikasi MFA telah dikirim ke email Anda', 401);
+    } else {
+        // ❌ Email gagal dikirim (fallback ke debug_code)
+        error_log("WARNING: Failed to send email to {$admin['Email']}");
+        sendResponse(false, [
+            'requires_mfa' => true, 
+            'debug_code' => $mfa_code,
+            'email_warning' => 'Gagal mengirim email, gunakan kode development di bawah'
+        ], 'Gagal mengirim email. Gunakan kode MFA berikut:', 401);
+    }
+    
 } else {
     recordLoginAttempt($email, false);
     logSecurityEvent('ADMIN_LOGIN_FAILED', "Wrong password for admin: $email");
@@ -67,5 +85,4 @@ if (password_verify($password, $admin['Password'])) {
 }
 
 mysqli_stmt_close($stmt);
-mysqli_close($conn);
 ?>

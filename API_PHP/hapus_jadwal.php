@@ -1,5 +1,6 @@
 <?php
 require_once 'database.php';
+requireAdminMfa();
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 

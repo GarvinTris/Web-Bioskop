@@ -3,7 +3,7 @@
     max-width: 900px;
     margin: 0 auto;
     padding: 30px 20px;
-    background-color: #0f0f0f;
+
     min-height: 100vh;
     color: #ffffff;
   }
@@ -75,7 +75,7 @@
   }
   
   .screen {
-    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    background: linear-gradient(135deg, #333333 0%, #1a1a1a 100%);
     color: #ffffff;
     text-align: center;
     padding: 15px;

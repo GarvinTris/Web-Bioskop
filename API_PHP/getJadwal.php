@@ -1,14 +1,8 @@
 <?php
+// getJadwal.php
 require_once 'database.php';
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    die(json_encode(["error" => "Database gagal konek"]));
-}
-
+requireAdminMfa();
+// Langsung pakai $conn dari database.php, jangan buat baru
 $sql = "SELECT j.*, f.Judul_Film 
         FROM jadwal j
         LEFT JOIN film f ON j.ID_Film = f.ID_Film
@@ -16,11 +10,16 @@ $sql = "SELECT j.*, f.Judul_Film
 
 $result = $conn->query($sql);
 
+if (!$result) {
+    echo json_encode(["error" => "Query error: " . $conn->error, "data" => []]);
+    exit;
+}
+
 $data = [];
 while ($row = $result->fetch_assoc()) {
     $data[] = $row;
 }
 
 echo json_encode($data);
-$conn->close();
+// Jangan tutup koneksi karena sudah di database.php
 ?>

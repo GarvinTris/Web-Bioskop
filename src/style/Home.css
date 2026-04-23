@@ -1,4 +1,4 @@
-/* ===== HOME.CSS - UPDATED VERSION ===== */
+/* ===== HOME.CSS - FIXED VERSION ===== */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 * {
@@ -14,14 +14,13 @@ html, body {
 }
 
 body {
+  min-height: 100vh;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
   color: #ffffff;
 }
 
-/* ===== GRADIENT BACKGROUND ===== */
-.gradient-bg {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-}
 
 /* ===== GLASS CARD ===== */
 .glass-card {
@@ -201,7 +200,6 @@ nav {
 /* ===== HERO / JUMBOTRON SECTION ===== */
 .jumbotron {
   position: relative;
-  height: 70vh;
   min-height: 500px;
   width: 100%;
   overflow: hidden;
@@ -214,22 +212,27 @@ nav {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 100vw;
-  height: 100vh;
+  height: 175vh;
   min-width: 100%;
   min-height: 100%;
   object-fit: cover;
-  pointer-events: none; /* Agar video tidak bisa di-pause/interact */
+  pointer-events: none;
 }
 
 .jumbotron-text {
   position: absolute;
-  bottom: 80px;
+  bottom: 0;
   left: 0;
   padding: 30px 40px;
   background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 70%, transparent 100%);
   border-radius: 0 20px 20px 0;
   max-width: 550px;
-  z-index: 10;
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; 
+  align-items: flex-start;
 }
 
 .jumbotron-text h1 {
@@ -237,6 +240,23 @@ nav {
   font-weight: 800;
   margin-bottom: 12px;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.jumbotron-text button {
+  background: linear-gradient(135deg, #e50914 0%, #b2070d 100%);
+  color: white;
+  border: none;
+  padding: 14px 36px;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 5px 20px rgba(229, 9, 20, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
 .jumbotron-badges {
@@ -264,12 +284,13 @@ nav {
   overflow: hidden;
 }
 
-/* ===== SECTION ===== */
+/* ===== SECTION - TIDAK ADA BACKGROUND AGAR TRANSPARAN ===== */
 section {
   padding: 48px 24px;
-  max-width: 1400px;
-  margin: 0 auto;
 }
+
+/* HAPUS background khusus untuk setiap section - biarkan transparan */
+/* Body sudah punya gradient, section akan mewarisinya */
 
 section h1, section h2 {
   font-size: 2rem;
@@ -290,14 +311,14 @@ section h1::after {
   border-radius: 2px;
 }
 
-/* ===== GRID LAYOUTS - FIX 4 PER BARIS ===== */
+/* ===== GRID LAYOUTS - 6 PER BARIS ===== */
 .rekomen, .popular-grid, .coming-soon-grid, .all-movies-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 28px;
 }
 
-/* ===== CARD STYLES - TINGGI YANG CONSISTENT ===== */
+/* ===== CARD STYLES ===== */
 .card, .popular-card, .coming-soon-card {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(12px);
@@ -376,9 +397,8 @@ section h1::after {
   transform: translateY(-2px);
 }
 
-/* ===== POPULAR SECTION ===== */
+/* ===== POPULAR SECTION - TAMBAHKAN SEDIKIT BACKGROUND AGAR TERBEDAKAN ===== */
 .popular-section {
-  background: rgba(0, 0, 0, 0.3);
   border-radius: 0;
 }
 
@@ -415,8 +435,9 @@ section h1::after {
 }
 
 /* ===== COMING SOON SECTION ===== */
-.coming-soon-section {
-  background: rgba(255, 255, 255, 0.02);
+
+.coming-soon-paragraf, .faq-subtitle {
+  padding: 12px 0;
 }
 
 .coming-soon-image {
@@ -476,7 +497,7 @@ section h1::after {
 
 /* ===== FAQ SECTION ===== */
 .faq-section-home {
-  background: rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
 .faq-container {
@@ -539,9 +560,6 @@ section h1::after {
 }
 
 /* ===== NEWSLETTER SECTION ===== */
-.newsletter-section-home {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
 
 .newsletter-content {
   text-align: center;

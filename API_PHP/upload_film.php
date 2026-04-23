@@ -3,7 +3,7 @@ require_once 'database.php';
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type");
-
+requireAdminMfa();
 $conn = new mysqli("localhost", "root", "", "web_bioskop");
 
 if ($conn->connect_error) {

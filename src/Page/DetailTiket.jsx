@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import "../style/DetailTiket.css";
 function DetailTiket() {
   const [ticket, setTicket] = useState(null);
   const navigate = useNavigate();
@@ -156,10 +156,10 @@ function DetailTiket() {
         {/* FOOTER TIKET */}
         <div className="ticket-footer">
           <button className="btn-back" onClick={() => navigate("/riwayat-tiket")}>
-            ← Kembali
+            Kembali
           </button>
           <button className="btn-print" onClick={() => window.print()}>
-            🖨️ Cetak Tiket
+            Cetak Tiket
           </button>
         </div>
       </div>

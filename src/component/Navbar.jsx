@@ -23,13 +23,20 @@ function Navbar() {
     setIsLoggedIn(loggedIn);
     setIsAdmin(admin);
     
-    if (userData) {
+    if (userData && loggedIn) {
       try {
         const user = JSON.parse(userData);
-        setUserName(user.name || user.email || "User");
-      } catch {
+        // 🔴 PERBAIKAN: Ambil Nama_Lengkap dari response API
+        let fullName = user.Nama_Lengkap || user.name || user.email || "User";
+        // Ambil nama depan saja (split spasi)
+        let firstName = fullName.split(" ")[0];
+        setUserName(firstName);
+      } catch (error) {
+        console.error("Error parsing user data:", error);
         setUserName("User");
       }
+    } else {
+      setUserName("");
     }
   };
 
@@ -38,6 +45,8 @@ function Navbar() {
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    localStorage.removeItem("userId");
+    localStorage.removeItem("userType");
     setIsLoggedIn(false);
     setIsAdmin(false);
     setUserName("");
@@ -64,28 +73,28 @@ function Navbar() {
         </div>
         
         <ul>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/about">About Us</Link></li>
-          <li><Link to="/contact">Contact Us</Link></li>
+          <li><Link to="/">HOME</Link></li>
+          <li><Link to="/about">ABOUT US</Link></li>
+          <li><Link to="/contact">CONTACT US</Link></li>
           <li>|</li>
           
           {isLoggedIn ? (
             <>
               <li style={{ color: "#4CAF50", fontWeight: "bold" }}>
-                Hi, {userName}
+                👋 {userName || "User"}
               </li>
-              <li><Link to="/riwayat-tiket">Riwayat</Link></li>
+              <li><Link to="/riwayat-tiket">RIWAYAT</Link></li>
               {isAdmin && (
-                <li><Link to="/admin">Admin Panel</Link></li>
+                <li><Link to="/admin">ADMIN</Link></li>
               )}
               <li>
-                <button onClick={handleLogout}>Logout</button>
+                <button onClick={handleLogout}>LOGOUT</button>
               </li>
             </>
           ) : (
             <>
-              <li><Link to="/login">Login</Link></li>
-              <li><Link to="/register">Register</Link></li>
+              <li><Link to="/login">LOGIN</Link></li>
+              <li><Link to="/register">REGISTER</Link></li>
             </>
           )}
         </ul>
@@ -103,7 +112,9 @@ function Navbar() {
           
           {isLoggedIn ? (
             <>
-              <li style={{ color: "#4CAF50" }}>Hi, {userName}</li>
+              <li style={{ color: "#4CAF50", fontWeight: "bold" }}>
+                {userName || "User"}
+              </li>
               <li><Link to="/riwayat-tiket" onClick={() => setMobileMenuOpen(false)}>Riwayat</Link></li>
               {isAdmin && (
                 <li><Link to="/admin" onClick={() => setMobileMenuOpen(false)}>Admin Panel</Link></li>

@@ -1,13 +1,11 @@
 <?php
+// save_jadwal.php
 require_once 'database.php';
-header("Access-Control-Allow-Origin: *");
+requireAdminMfa();
+header("Access-Control-Allow-Origin: http://localhost:5173");
 header("Content-Type: application/json");
 
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    die(json_encode(["error" => "Database gagal konek"]));
-}
+// Langsung pakai $conn dari database.php, jangan buat baru
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_jadwal = $_POST['ID_Jadwal'] ?? null;
@@ -16,19 +14,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $jam_mulai = $_POST['Jam_Mulai'] ?? null;
     $no_studio = $_POST['No_Studio'] ?? null;
     
-    // Validasi (HAPUS validasi harga)
     if (!$id_film || !$tanggal || !$jam_mulai || !$no_studio) {
         echo json_encode(["error" => "Semua field harus diisi", "success" => false]);
         exit;
     }
     
-    // Ambil harga dari tabel studio
+    // Ambil harga dari tabel studio dengan prepared statement
     $harga_query = "SELECT Harga_Tiket FROM studio WHERE No_Studio = ?";
     $harga_stmt = $conn->prepare($harga_query);
     $harga_stmt->bind_param("i", $no_studio);
     $harga_stmt->execute();
     $harga_result = $harga_stmt->get_result();
     $harga_row = $harga_result->fetch_assoc();
+    $harga_stmt->close();
     
     if (!$harga_row) {
         echo json_encode(["error" => "Studio tidak ditemukan", "success" => false]);
@@ -37,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     $harga = (int)$harga_row['Harga_Tiket'];
     
-    // Cek apakah ID_Jadwal sudah ada
     if ($id_jadwal) {
         // Update existing schedule
         $query = "UPDATE jadwal SET 
@@ -65,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     } else {
         // Insert new schedule
-        // Generate ID_Jadwal otomatis
         $query_id = "SELECT MAX(CAST(SUBSTRING(ID_Jadwal, 5) AS UNSIGNED)) as max_id FROM jadwal";
         $result = $conn->query($query_id);
         $row = $result->fetch_assoc();
@@ -112,5 +108,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$conn->close();
+// Jangan tutup koneksi karena sudah di database.php
 ?>

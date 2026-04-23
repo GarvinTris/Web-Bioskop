@@ -1,57 +1,49 @@
 <?php
-// notifikasi.php - Sistem notifikasi internal
+// notifikasi.php
 require_once 'database.php';
+requireAdminMfa();
+header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Methods: POST');
+header('Access-Control-Allow-Headers: Content-Type');
 
-// Buat tabel notifikasi jika belum ada
-$createTable = "CREATE TABLE IF NOT EXISTS notifications (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id VARCHAR(20),
-    title VARCHAR(100),
-    message TEXT,
-    type ENUM('success', 'info', 'warning', 'error') DEFAULT 'info',
-    is_read TINYINT DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_user_id (user_id),
-    INDEX idx_is_read (is_read)
-)";
-$conn->query($createTable);
+$data = json_decode(file_get_contents('php://input'), true);
 
-function sendNotification($user_id, $title, $message, $type = 'info') {
-    global $conn;
-    $stmt = $conn->prepare("INSERT INTO notifications (user_id, title, message, type) VALUES (?, ?, ?, ?)");
-    $stmt->bind_param("ssss", $user_id, $title, $message, $type);
-    return $stmt->execute();
+if (!$data) {
+    echo json_encode(['success' => false, 'message' => 'Invalid data']);
+    exit;
 }
 
-function getUserNotifications($user_id, $limit = 20) {
-    global $conn;
-    $stmt = $conn->prepare("SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ?");
-    $stmt->bind_param("si", $user_id, $limit);
-    $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$film_id = $data['film_id'];
+$film_title = $data['film_title'];
+$user_email = $data['user_email'];
+$release_date = isset($data['release_date']) ? $data['release_date'] : null;
+
+// Cek apakah sudah terdaftar dengan prepared statement
+$check_sql = "SELECT * FROM notifications WHERE film_id = ? AND user_email = ?";
+$check_stmt = $conn->prepare($check_sql);
+$check_stmt->bind_param("ss", $film_id, $user_email);
+$check_stmt->execute();
+$check_result = $check_stmt->get_result();
+
+if ($check_result->num_rows > 0) {
+    $check_stmt->close();
+    echo json_encode(['success' => false, 'message' => 'Anda sudah terdaftar untuk notifikasi film ini']);
+    exit;
+}
+$check_stmt->close();
+
+// Simpan notifikasi dengan prepared statement
+$insert_sql = "INSERT INTO notifications (film_id, film_title, user_email, release_date, created_at) 
+                VALUES (?, ?, ?, ?, NOW())";
+$insert_stmt = $conn->prepare($insert_sql);
+$insert_stmt->bind_param("ssss", $film_id, $film_title, $user_email, $release_date);
+
+if ($insert_stmt->execute()) {
+    echo json_encode(['success' => true, 'message' => 'Berhasil mendaftarkan notifikasi']);
+} else {
+    echo json_encode(['success' => false, 'message' => 'Gagal menyimpan: ' . $insert_stmt->error]);
 }
 
-function markAsRead($notification_id, $user_id) {
-    global $conn;
-    $stmt = $conn->prepare("UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?");
-    $stmt->bind_param("is", $notification_id, $user_id);
-    return $stmt->execute();
-}
-
-// API endpoint
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    requireLogin();
-    $user_id = $_SESSION['user_id'];
-    $notifications = getUserNotifications($user_id);
-    echo json_encode(['success' => true, 'notifications' => $notifications]);
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    requireLogin();
-    $data = json_decode(file_get_contents("php://input"), true);
-    if (isset($data['mark_read'])) {
-        markAsRead($data['notification_id'], $_SESSION['user_id']);
-        echo json_encode(['success' => true]);
-    }
-}
+$insert_stmt->close();
 ?>

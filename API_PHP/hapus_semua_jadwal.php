@@ -2,7 +2,7 @@
 require_once 'database.php';
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
-
+requireAdminMfa();
 $conn = new mysqli("localhost", "root", "", "web_bioskop");
 
 if ($conn->connect_error) {

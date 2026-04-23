@@ -1,5 +1,5 @@
 <?php
-// verify_mfa.php - Verifikasi kode MFA untuk admin
+// verify_mfa.php - Verifikasi kode MFA untuk admin SAJA
 require_once 'database.php';
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
@@ -16,34 +16,55 @@ if (!isset($data['code'])) {
 
 $code = $data['code'];
 
-if (!isset($_SESSION['mfa_code']) || !isset($_SESSION['mfa_code_time'])) {
-    sendResponse(false, [], 'Sesi MFA tidak valid. Silakan login kembali.');
+// Hanya cek untuk admin pending
+if (!isset($_SESSION['pending_admin'])) {
+    sendResponse(false, [], 'Sesi tidak valid. Silakan login kembali.');
 }
 
-if (time() - $_SESSION['mfa_code_time'] > 300) {
-    unset($_SESSION['mfa_code']);
-    unset($_SESSION['mfa_code_time']);
-    sendResponse(false, [], 'Kode MFA sudah kadaluarsa. Silakan login kembali.');
+$pending = $_SESSION['pending_admin'];
+
+// Cek kadaluarsa (5 menit)
+if (time() - $pending['mfa_code_time'] > 300) {
+    unset($_SESSION['pending_admin']);
+    sendResponse(false, [], 'Kode MFA sudah kadaluarsa. Silakan login kembali.', 401);
 }
 
-if (password_verify($code, $_SESSION['mfa_code'])) {
-    $_SESSION['mfa_verified'] = true;
-    unset($_SESSION['mfa_code']);
-    unset($_SESSION['mfa_code_time']);
+// Verifikasi kode
+if (password_verify($code, $pending['mfa_code'])) {
+    // Login sukses - buat session admin
+    session_regenerate_id(true);
     
-    logSecurityEvent('MFA_SUCCESS', "User {$_SESSION['user_id']} verified MFA");
+    $_SESSION['user_id'] = $pending['user_id'];
+    $_SESSION['user_name'] = $pending['user_name'];
+    $_SESSION['user_email'] = $pending['user_email'];
+    $_SESSION['user_role'] = $pending['user_role'];
+    $_SESSION['user_type'] = 'admin';
+    $_SESSION['login_time'] = time();
+    $_SESSION['last_activity'] = time();
+    $_SESSION['ip_address'] = $_SERVER['REMOTE_ADDR'];
+    $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'];
+    $_SESSION['mfa_verified'] = true; // Tanda MFA sudah terverifikasi
+    
+    // Hapus data pending
+    unset($_SESSION['pending_admin']);
+    
+    // Update last login
+    $conn->query("UPDATE admin SET Last_Login = NOW() WHERE ID_Admin = '{$_SESSION['user_id']}'");
+    
+    logSecurityEvent('ADMIN_LOGIN_SUCCESS', "Admin: {$_SESSION['user_id']} - MFA verified");
     
     sendResponse(true, [
         'user' => [
-            'ID_Penonton' => $_SESSION['user_id'],
-            'Nama_Lengkap' => $_SESSION['user_name'],
-            'Email' => $_SESSION['user_email'],
-            'No_HP' => $_SESSION['user_no_hp'],
+            'id' => $_SESSION['user_id'],
+            'name' => $_SESSION['user_name'],
+            'email' => $_SESSION['user_email'],
+            'role' => $_SESSION['user_role'],
             'is_admin' => true
         ]
-    ], 'Verifikasi berhasil');
+    ], 'Login admin berhasil!');
+    
 } else {
-    logSecurityEvent('MFA_FAILED', "User {$_SESSION['user_id']} failed MFA");
+    logSecurityEvent('MFA_FAILED', "Admin failed MFA - wrong code");
     sendResponse(false, [], 'Kode verifikasi salah');
 }
 ?>

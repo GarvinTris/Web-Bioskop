@@ -1,14 +1,7 @@
 <?php
+// getJadwalByFilm.php
 require_once 'database.php';
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    die(json_encode(["error" => "Database gagal konek"]));
-}
-
+requireAdminMfa();
 if (isset($_GET['ID_Film'])) {
     $ID_Film = $_GET['ID_Film'];
     
@@ -29,11 +22,8 @@ if (isset($_GET['ID_Film'])) {
     }
     
     echo json_encode($jadwal);
-    
     $stmt->close();
 } else {
     echo json_encode(["error" => "ID_Film tidak ditemukan"]);
 }
-
-$conn->close();
 ?>

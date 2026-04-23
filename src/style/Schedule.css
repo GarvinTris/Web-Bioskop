@@ -48,15 +48,6 @@
   transition: all 0.3s ease;
 }
 
-.date-btn:hover {
-  background: #e2e8f0;
-  transform: translateY(-2px);
-}
-
-.date-btn.active {
-  background: #4f46e5;
-  color: white;
-}
 
 /* Schedule List */
 .schedule-list {
@@ -72,7 +63,7 @@
 
 /* Studio Section */
 .studio-section {
-  background: white;
+  background: #1a1a2e;
   border-radius: 16px;
   margin-bottom: 30px;
   overflow: hidden;

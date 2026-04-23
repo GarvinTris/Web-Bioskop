@@ -1,5 +1,6 @@
 <?php
 require_once 'database.php';
+requireAdminMfa();
 // tambah_jadwal.php - HAPUS kolom Harga (tidak ada di tabel jadwal)
 header("Access-Control-Allow-Origin: http://localhost:5173");
 header("Content-Type: application/json");

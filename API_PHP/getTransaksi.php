@@ -1,19 +1,10 @@
 <?php
+// getTransaksi.php
 require_once 'database.php';
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json");
-
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    die(json_encode(["error" => "Database gagal konek"]));
-}
-
-// Cek apakah ada parameter ID_Penonton (untuk user tertentu)
+requireAdminMfa();
 $id_penonton = isset($_GET['id_penonton']) ? $_GET['id_penonton'] : '';
 
 if ($id_penonton) {
-    // Ambil transaksi untuk user tertentu
     $sql = "SELECT t.*, p.Nama_Penonton, p.Email, 
                    f.Judul_Film, j.Tanggal, j.Jam_Mulai, s.Nama_Studio,
                    tk.ID_Kursi, tk.Harga
@@ -29,7 +20,6 @@ if ($id_penonton) {
     $stmt = $conn->prepare($sql);
     $stmt->bind_param("s", $id_penonton);
 } else {
-    // Ambil semua transaksi (untuk admin)
     $sql = "SELECT t.*, p.Nama_Penonton, p.Email, 
                    f.Judul_Film, j.Tanggal, j.Jam_Mulai, s.Nama_Studio,
                    tk.ID_Kursi, tk.Harga
@@ -52,6 +42,6 @@ while ($row = $result->fetch_assoc()) {
     $transaksi[] = $row;
 }
 
+$stmt->close();
 echo json_encode($transaksi);
-$conn->close();
 ?>

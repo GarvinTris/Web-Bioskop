@@ -93,7 +93,7 @@ function About(){
   ];
 
   return (
-    <div className="about-container">
+    <div className="about-container-wrapper">
       {/* Hero Section */}
       <section className="about-hero">
         <div className="hero-overlay"></div>
@@ -216,7 +216,7 @@ function About(){
           )}
 
           {activeTab === 'timeline' && (
-            <div className="timeline-container fade-in">
+            <div className="about-timeline-wrapper fade-in">
               {milestones.map((item, index) => (
                 <div className="timeline-item" key={index}>
                   <div className="timeline-year">{item.year}</div>

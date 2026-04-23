@@ -236,7 +236,7 @@ function Reservasi() {
             </div>
             <div className="age-rating">{movie.Rating_Usia || "SU"}</div>
           </div>
-          <div className="movie-meta">
+          <div className="reservasi-movie-meta">
             <span className="label">Genre:</span>
             <span className="value">{movie.Nama_Kategori || movie.ID_Kategori || "-"}</span>
             <span className="label">Durasi:</span>

@@ -1,48 +1,101 @@
-/* RiwayatTiket.css */
+/* ===== RIWAYAT TIKET STYLES ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ===== DASAR ===== */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-body {
-  background-color: #0a0a0a;
-  font-family:
-    "Inter",
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
-}
-
 .riwayat-container {
+  text-align: center;
   min-height: 100vh;
-  background-color: #0f0f0f;
-  color: #ffffff;
+  margin: 0 20%;
+  background: transparent;
   padding: 40px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.riwayat-container > * {
-  width: 100%;
-  max-width: 1200px;
+  font-family: 'Inter', sans-serif;
 }
 
 .riwayat-container h1 {
+  margin-bottom: 24px;
+}
+
+/* Loading State */
+.riwayat-loading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  gap: 20px;
+}
+
+.riwayat-loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Tombol Kembali */
+.riwayat-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 40px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 30px;
+}
+
+.riwayat-back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(-4px);
+}
+
+/* Header */
+.riwayat-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.riwayat-header h1 {
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 30px;
-  text-align: center;
-  color: #fff;
-  border-bottom: 2px solid #e50914;
-  padding-bottom: 15px;
+  color: white;
+  margin-bottom: 12px;
+  position: relative;
   display: inline-block;
-  align-self: center;
+}
+
+.riwayat-header h1::after {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 4px;
+  background: linear-gradient(90deg, #e50914, #ff4d4d);
+  border-radius: 2px;
+}
+
+.riwayat-header p {
+  color: #9ca3af;
+  font-size: 1rem;
+  margin-top: 20px;
 }
 
 /* ===== FILTER BUTTONS ===== */
@@ -55,30 +108,31 @@ body {
 }
 
 .filter-btn {
-  background: #1e1e1e;
-  border: 1px solid #333;
-  color: #aaa;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e5e7eb;
   padding: 12px 28px;
   border-radius: 40px;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .filter-btn:hover {
-  background: #2a2a2a;
-  border-color: #e50914;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(229, 9, 20, 0.5);
+  color: white;
+  transform: translateY(-2px);
 }
 
 .filter-btn.active {
-  background: #e50914;
+  background: linear-gradient(135deg, #e50914 0%, #b2070d 100%);
   border-color: #e50914;
   color: white;
-  box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+  box-shadow: 0 5px 20px rgba(229, 9, 20, 0.3);
 }
 
 /* ===== STATISTIK CARDS ===== */
@@ -90,36 +144,38 @@ body {
 }
 
 .stat-card {
-  background: #121212;
-  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(30, 36, 63, 0.8) 0%, rgba(22, 28, 54, 0.8) 100%);
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
   padding: 30px 20px;
   text-align: center;
-  border: 1px solid #2a2a2a;
-  transition:
-    transform 0.2s,
-    box-shadow 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 10px 20px rgba(229, 9, 20, 0.2);
-  border-color: #e50914;
+  border-color: rgba(229, 9, 20, 0.5);
+  box-shadow: 0 15px 30px rgba(229, 9, 20, 0.15);
 }
 
 .stat-label {
   display: block;
-  color: #aaa;
-  font-size: 1rem;
+  color: #9ca3af;
+  font-size: 0.85rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   margin-bottom: 15px;
 }
 
 .stat-value {
   display: block;
-  color: #e50914;
-  font-size: 2.2rem;
-  font-weight: 700;
+  background: linear-gradient(135deg, #e50914, #ff4d4d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2.5rem;
+  font-weight: 800;
 }
 
 /* ===== DAFTAR TRANSAKSI ===== */
@@ -130,57 +186,70 @@ body {
 }
 
 .transaction-card {
-  background: #121212;
-  border-radius: 20px;
-  border: 1px solid #2a2a2a;
+  background: linear-gradient(135deg, rgba(30, 36, 63, 0.8) 0%, rgba(22, 28, 54, 0.8) 100%);
+  backdrop-filter: blur(12px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
 }
 
 .transaction-card:hover {
-  border-color: #e50914;
-  box-shadow: 0 10px 20px rgba(229, 9, 20, 0.15);
-  transform: scale(1.01);
+  transform: translateY(-4px);
+  border-color: rgba(229, 9, 20, 0.5);
+  box-shadow: 0 15px 30px rgba(229, 9, 20, 0.15);
 }
 
 .transaction-header {
-  background: #1a1a1a;
-  padding: 15px 25px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 18px 25px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .transaction-header > div {
   display: flex;
   align-items: center;
   gap: 15px;
+  flex-wrap: wrap;
 }
 
 .transaction-id {
   font-weight: 600;
   color: #e50914;
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-family: monospace;
-  background: #2a2a2a;
-  padding: 4px 10px;
+  background: rgba(229, 9, 20, 0.15);
+  padding: 5px 12px;
   border-radius: 30px;
+  letter-spacing: 1px;
 }
 
 .transaction-badge {
-  background: #00c853;
+  background: #10b981;
   color: white;
-  padding: 4px 12px;
+  padding: 5px 14px;
   border-radius: 30px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.transaction-badge.cancelled {
+  background: #6b7280;
 }
 
 .transaction-date {
-  color: #aaa;
-  font-size: 0.9rem;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .transaction-body {
@@ -189,15 +258,16 @@ body {
 
 .movie-info h3 {
   font-size: 1.4rem;
-  margin-bottom: 10px;
-  color: #fff;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: white;
 }
 
 .studio-info {
   display: flex;
   gap: 20px;
-  color: #aaa;
-  font-size: 0.95rem;
+  color: #9ca3af;
+  font-size: 0.9rem;
   margin-bottom: 20px;
   flex-wrap: wrap;
 }
@@ -205,23 +275,28 @@ body {
 .studio-info span {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+}
+
+.studio-info i {
+  color: #e50914;
+  width: 18px;
 }
 
 .seats-info {
   margin-bottom: 20px;
   padding: 15px 0;
-  border-top: 1px dashed #2a2a2a;
-  border-bottom: 1px dashed #2a2a2a;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
 .seats-label {
   display: block;
-  color: #aaa;
-  margin-bottom: 10px;
-  font-size: 0.95rem;
+  color: #9ca3af;
+  margin-bottom: 12px;
+  font-size: 0.8rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
 }
 
 .seats-value {
@@ -231,13 +306,13 @@ body {
 }
 
 .seat-badge {
-  background: #2a2a2a;
+  background: rgba(255, 255, 255, 0.08);
   color: #e50914;
   padding: 6px 14px;
   border-radius: 30px;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  border: 1px solid #444;
+  border: 1px solid rgba(229, 9, 20, 0.3);
 }
 
 .transaction-footer {
@@ -245,6 +320,8 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-top: 20px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 .price-detail {
@@ -253,27 +330,38 @@ body {
 
 .price-label {
   display: block;
-  color: #aaa;
-  font-size: 0.9rem;
+  color: #9ca3af;
+  font-size: 0.8rem;
   margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .total-price {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #e50914;
+  background: linear-gradient(135deg, #e50914, #ff4d4d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .view-ticket-btn {
   background: transparent;
-  border: 2px solid #e50914;
+  border: 1.5px solid rgba(229, 9, 20, 0.6);
   color: #e50914;
-  padding: 12px 30px;
+  padding: 10px 24px;
   border-radius: 40px;
-  font-size: 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -282,15 +370,47 @@ body {
   background: #e50914;
   color: white;
   box-shadow: 0 5px 15px rgba(229, 9, 20, 0.3);
+  transform: translateY(-2px);
+}
+
+.cancel-ticket-btn {
+  background: transparent;
+  border: 1.5px solid rgba(107, 114, 128, 0.6);
+  color: #9ca3af;
+  padding: 10px 24px;
+  border-radius: 40px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cancel-ticket-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.cancelled-label {
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 /* ===== KOSONG ===== */
 .no-transactions {
   text-align: center;
-  padding: 80px 20px;
-  background: #121212;
-  border-radius: 20px;
-  border: 1px solid #2a2a2a;
+  padding: 80px 40px;
+  background: linear-gradient(135deg, rgba(30, 36, 63, 0.8) 0%, rgba(22, 28, 54, 0.8) 100%);
+  backdrop-filter: blur(12px);
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .empty-icon {
@@ -300,46 +420,107 @@ body {
 }
 
 .no-transactions p {
-  color: #aaa;
-  font-size: 1.2rem;
+  color: #9ca3af;
+  font-size: 1.1rem;
   margin-bottom: 30px;
 }
 
 .btn-cari-film {
-  background: #e50914;
+  background: linear-gradient(135deg, #e50914 0%, #b2070d 100%);
   color: white;
   border: none;
-  padding: 15px 40px;
+  padding: 14px 40px;
   border-radius: 50px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 2px;
+  box-shadow: 0 5px 20px rgba(229, 9, 20, 0.3);
 }
 
 .btn-cari-film:hover {
-  background: #b2070d;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(229, 9, 20, 0.4);
 }
 
-/* ===== LOADING ===== */
-.loading-spinner {
-  text-align: center;
-  padding: 100px;
-  color: #e50914;
-  font-size: 1.5rem;
+/* ===== MODAL CANCEL ===== */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #1e243f 0%, #161c36 100%);
+  border-radius: 28px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content h3 {
+  color: #ef4444;
+  margin-bottom: 16px;
+  font-size: 1.4rem;
+}
+
+.modal-content textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  color: white;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.modal-content textarea:focus {
+  outline: none;
+  border-color: #e50914;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-footer button {
+  padding: 10px 24px;
+  border-radius: 40px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .riwayat-container h1 {
+  .riwayat-container {
+    padding: 30px 16px;
+  }
+
+  .riwayat-header h1 {
     font-size: 2rem;
   }
 
   .filter-btn {
-    padding: 10px 20px;
-    font-size: 0.9rem;
+    padding: 8px 20px;
+    font-size: 0.8rem;
   }
 
   .stat-card {
@@ -347,13 +528,12 @@ body {
   }
 
   .stat-value {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
 
   .transaction-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
   }
 
   .studio-info {
@@ -363,12 +543,34 @@ body {
 
   .transaction-footer {
     flex-direction: column;
-    gap: 20px;
     align-items: stretch;
   }
 
-  .view-ticket-btn {
+  .view-ticket-btn,
+  .cancel-ticket-btn {
     width: 100%;
     text-align: center;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .riwayat-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .transaction-body {
+    padding: 18px;
+  }
+
+  .movie-info h3 {
+    font-size: 1.2rem;
+  }
+
+  .total-price {
+    font-size: 1.3rem;
   }
 }

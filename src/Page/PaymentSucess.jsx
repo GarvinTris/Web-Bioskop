@@ -18,7 +18,7 @@ useEffect(() => {
       setTransaction(trxData);
       
       // Pastikan transaksi tersimpan dengan benar
-      const userId = localStorage.getItem("userId");
+      const userId = localStorage.getItem("userId");  
       if (userId && trxData.id) {
           const transactionKey = `transaction_${userId}_${trxData.id}`;
           const existingTrx = localStorage.getItem(transactionKey);

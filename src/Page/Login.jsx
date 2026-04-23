@@ -105,6 +105,7 @@ function Login() {
                     
                     <p className="signup-text">
                         Belum punya akun? 
+                        <br />
                         <Link to="/register">Daftar Sekarang</Link>
                     </p>
                     

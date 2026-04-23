@@ -172,6 +172,17 @@ function requireLogin() {
     }
 }
 
+
+function requireAdminMfa() {
+    requireAdmin(); // Cek sudah login sebagai admin
+    
+    // Cek apakah MFA sudah diverifikasi di session ini
+    if (!isset($_SESSION['mfa_verified']) || $_SESSION['mfa_verified'] !== true) {
+        logSecurityEvent('MFA_REQUIRED', "Admin {$_SESSION['user_id']} attempted access without MFA");
+        sendResponse(false, [], 'Verifikasi MFA diperlukan untuk akses ini', 403);
+    }
+}
+
 function logSecurityEvent($event, $details = '') {
     $logFile = __DIR__ . '/security.log';
     $timestamp = date('Y-m-d H:i:s');
