@@ -2,11 +2,6 @@
 // get_booked_seats.php
 require_once 'database.php';
 
-// 🔴 HAPUS semua header manual! database.php sudah mengatur CORS
-// HAPUS: header("Access-Control-Allow-Origin: *");
-// HAPUS: header("Content-Type: application/json");
-// HAPUS: $conn = new mysqli(...);
-
 if (isset($_GET['id_jadwal'])) {
     $id_jadwal = $_GET['id_jadwal'];
     
@@ -25,10 +20,10 @@ if (isset($_GET['id_jadwal'])) {
         $bookedSeats[] = $row['Baris'] . $row['Nomor_Kursi'];
     }
     
+    $stmt->close();
+    
     echo json_encode(["success" => true, "booked_seats" => $bookedSeats]);
 } else {
     echo json_encode(["success" => false, "error" => "ID Jadwal tidak ditemukan"]);
 }
-
-// Jangan tutup koneksi karena sudah di database.php
 ?>

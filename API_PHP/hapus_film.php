@@ -1,18 +1,11 @@
 <?php
+// hapus_film.php
 require_once 'database.php';
 requireAdminMfa();
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: DELETE, GET, POST");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
 
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
+// HAPUS semua header manual karena database.php sudah mengatur CORS dengan benar
+// JANGAN tambahkan header("Access-Control-Allow-Origin: *") lagi!
 
-if ($conn->connect_error) {
-    die(json_encode(["success" => false, "error" => "Database gagal konek: " . $conn->connect_error]));
-}
-
-// CEK APAKAH ADA PARAMETER ID
 if (!isset($_GET['id'])) {
     echo json_encode(["success" => false, "error" => "ID film tidak ditemukan"]);
     exit;
@@ -20,16 +13,13 @@ if (!isset($_GET['id'])) {
 
 $id_film = intval($_GET['id']);
 
-// CEK METODE REQUEST
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method === 'DELETE' || ($method === 'GET' && isset($_GET['confirm']))) {
     
-    // Mulai transaksi
     $conn->begin_transaction();
     
     try {
-        // CEK APAKAH FILM DIPAKAI DI TABEL JADWAL
         $check_sql = "SELECT COUNT(*) as total FROM jadwal WHERE ID_Film = ?";
         $check_stmt = $conn->prepare($check_sql);
         $check_stmt->bind_param("i", $id_film);
@@ -42,7 +32,6 @@ if ($method === 'DELETE' || ($method === 'GET' && isset($_GET['confirm']))) {
         }
         $check_stmt->close();
         
-        // CEK APAKAH FILM DIPAKAI DI TABEL TRAILER
         $check_trailer = "SELECT COUNT(*) as total FROM trailer WHERE ID_Film = ?";
         $trailer_stmt = $conn->prepare($check_trailer);
         $trailer_stmt->bind_param("i", $id_film);
@@ -51,7 +40,6 @@ if ($method === 'DELETE' || ($method === 'GET' && isset($_GET['confirm']))) {
         $trailer_row = $trailer_result->fetch_assoc();
         
         if ($trailer_row['total'] > 0) {
-            // Hapus trailer terlebih dahulu
             $delete_trailer = "DELETE FROM trailer WHERE ID_Film = ?";
             $del_trailer_stmt = $conn->prepare($delete_trailer);
             $del_trailer_stmt->bind_param("i", $id_film);
@@ -60,7 +48,6 @@ if ($method === 'DELETE' || ($method === 'GET' && isset($_GET['confirm']))) {
         }
         $trailer_stmt->close();
         
-        // AMBIL NAMA FILE GAMBAR SEBELUM DIHAPUS
         $img_sql = "SELECT image FROM film WHERE ID_Film = ?";
         $img_stmt = $conn->prepare($img_sql);
         $img_stmt->bind_param("i", $id_film);
@@ -70,7 +57,6 @@ if ($method === 'DELETE' || ($method === 'GET' && isset($_GET['confirm']))) {
         $image_file = $img_row['image'] ?? '';
         $img_stmt->close();
         
-        // HAPUS DATA FILM
         $delete_sql = "DELETE FROM film WHERE ID_Film = ?";
         $delete_stmt = $conn->prepare($delete_sql);
         $delete_stmt->bind_param("i", $id_film);
@@ -79,7 +65,6 @@ if ($method === 'DELETE' || ($method === 'GET' && isset($_GET['confirm']))) {
             throw new Exception("Gagal menghapus film: " . $delete_stmt->error);
         }
         
-        // HAPUS FILE GAMBAR
         if (!empty($image_file)) {
             $file_path = "uploads/" . $image_file;
             if (file_exists($file_path)) {
@@ -100,6 +85,4 @@ if ($method === 'DELETE' || ($method === 'GET' && isset($_GET['confirm']))) {
 } else {
     echo json_encode(["success" => false, "error" => "Method tidak diizinkan"]);
 }
-
-$conn->close();
 ?>

@@ -1,7 +1,6 @@
 <?php
 // getKategori.php
 require_once 'database.php';
-requireAdminMfa();
 $sql = "SELECT ID_Kategori, Nama_Kategori FROM kategori ORDER BY Nama_Kategori";
 $result = $conn->query($sql);
 

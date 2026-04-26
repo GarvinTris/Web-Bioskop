@@ -312,7 +312,47 @@ section h1::after {
 }
 
 /* ===== GRID LAYOUTS - 6 PER BARIS ===== */
-.rekomen, .popular-grid, .coming-soon-grid, .all-movies-grid {
+
+.rekomen {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 24px;
+  padding-bottom: 16px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  
+  /* 🔴 INI KUNCI: memungkinkan flex items menyusut */
+  min-width: 0;
+  width: 100%;
+}
+
+/* 🔴 KUNCI: setiap card harus punya min-width: 0 */
+.rekomen .card {
+  flex: 0 0 auto;
+  width: 15.5%;
+  min-width: 0; /* Memungkinkan card menyusut */
+  overflow: hidden; /* Mencegah konten keluar */
+}
+
+/* 🔴 Untuk konten teks di dalam card */
+.rekomen .card h2,
+.rekomen .card p,
+.rekomen .card .movie-info-card-home {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}
+.rekomen::-webkit-scrollbar {
+  height: 8px;
+}
+
+.rekomen::-webkit-scrollbar-track {
+  background: None;
+}
+.popular-grid, .coming-soon-grid, .all-movies-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 28px;

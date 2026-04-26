@@ -2,10 +2,8 @@
 // save_jadwal.php
 require_once 'database.php';
 requireAdminMfa();
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header("Content-Type: application/json");
 
-// Langsung pakai $conn dari database.php, jangan buat baru
+// HAPUS semua header manual
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id_jadwal = $_POST['ID_Jadwal'] ?? null;
@@ -19,7 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Ambil harga dari tabel studio dengan prepared statement
     $harga_query = "SELECT Harga_Tiket FROM studio WHERE No_Studio = ?";
     $harga_stmt = $conn->prepare($harga_query);
     $harga_stmt->bind_param("i", $no_studio);
@@ -36,7 +33,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $harga = (int)$harga_row['Harga_Tiket'];
     
     if ($id_jadwal) {
-        // Update existing schedule
         $query = "UPDATE jadwal SET 
                   ID_Film = ?, 
                   Tanggal = ?, 
@@ -48,7 +44,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sssss", $id_film, $tanggal, $jam_mulai, $no_studio, $id_jadwal);
         
         if ($stmt->execute()) {
-            // Update harga tiket
             $update_tiket = "UPDATE tiket SET Harga = ? WHERE ID_Jadwal = ?";
             $update_stmt = $conn->prepare($update_tiket);
             $update_stmt->bind_param("is", $harga, $id_jadwal);
@@ -61,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         $stmt->close();
     } else {
-        // Insert new schedule
         $query_id = "SELECT MAX(CAST(SUBSTRING(ID_Jadwal, 5) AS UNSIGNED)) as max_id FROM jadwal";
         $result = $conn->query($query_id);
         $row = $result->fetch_assoc();
@@ -75,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->bind_param("sssss", $new_id, $id_film, $tanggal, $jam_mulai, $no_studio);
         
         if ($stmt->execute()) {
-            // Insert tiket untuk setiap kursi
             $tiket_id = "TKT" . str_pad($next_id, 3, "0", STR_PAD_LEFT);
             
             $kursi_query = "SELECT ID_Kursi FROM kursi WHERE No_Studio = ?";
@@ -107,6 +100,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->close();
     }
 }
-
-// Jangan tutup koneksi karena sudah di database.php
 ?>

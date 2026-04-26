@@ -1,13 +1,7 @@
 <?php
-// admin_login.php - Login khusus admin dengan MFA (kirim email asli)
+// admin_login.php - Login khusus admin dengan MFA
 require_once 'database.php';
 require_once 'send_email.php';
-
-$emailSent = sendMfaEmail(
-    $admin['Email'],
-    $admin['Nama_Lengkap'],
-    $mfa_code
-);
 
 checkRateLimit('admin_login', 10, 60);
 
@@ -50,33 +44,21 @@ if (password_verify($password, $admin['Password'])) {
         'user_id' => $admin['ID_Admin'],
         'user_name' => $admin['Nama_Lengkap'],
         'user_email' => $admin['Email'],
-        'user_role' => $admin['Role'],
+        'user_role' => $admin['Role'] ?? 'admin',
         'mfa_code' => $hashed_code,
         'mfa_code_time' => time()
     ];
     
-    // 📧 KIRIM EMAIL ASLI
+    // 📧 KIRIM EMAIL
     $emailSent = sendMfaEmail(
-        $admin['Email'],           // To
-        $admin['Nama_Lengkap'],    // Nama
-        $mfa_code                  // Kode MFA
+        $admin['Email'],
+        $admin['Nama_Lengkap'],
+        $mfa_code
     );
     
-    // Log MFA
-    logSecurityEvent('MFA_SENT', "MFA code sent to admin: {$admin['Email']} - Code: $mfa_code - Email sent: " . ($emailSent ? 'YES' : 'NO'));
+    logSecurityEvent('MFA_SENT', "MFA code sent to admin: {$admin['Email']} - Email sent: " . ($emailSent ? 'YES' : 'NO'));
     
-    if ($emailSent) {
-        // ✅ Email berhasil dikirim
-        sendResponse(false, ['requires_mfa' => true], 'Kode verifikasi MFA telah dikirim ke email Anda', 401);
-    } else {
-        // ❌ Email gagal dikirim (fallback ke debug_code)
-        error_log("WARNING: Failed to send email to {$admin['Email']}");
-        sendResponse(false, [
-            'requires_mfa' => true, 
-            'debug_code' => $mfa_code,
-            'email_warning' => 'Gagal mengirim email, gunakan kode development di bawah'
-        ], 'Gagal mengirim email. Gunakan kode MFA berikut:', 401);
-    }
+    sendResponse(false, ['requires_mfa' => true], 'Kode verifikasi MFA telah dikirim ke email Anda', 401);
     
 } else {
     recordLoginAttempt($email, false);

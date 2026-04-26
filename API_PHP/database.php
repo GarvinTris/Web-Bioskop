@@ -9,18 +9,19 @@ ini_set('session.gc_maxlifetime', 1800);
 ini_set('session.cookie_lifetime', 1800);
 ini_set('session.cookie_samesite', 'Strict');
 
-// Matikan error display
+// Matikan error display (ubah ke 1 untuk debug)
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
 // ==================== START SESSION ====================
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 // ==================== HEADER KEAMANAN ====================
 $allowed_origin = "http://localhost:5173";
 header("Access-Control-Allow-Origin: $allowed_origin");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-// 🔴 TAMBAHKAN cache-control ke Allow-Headers
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, Cache-Control, Pragma");
 header("Access-Control-Allow-Credentials: true");
 header("Access-Control-Max-Age: 3600");
@@ -55,6 +56,23 @@ mysqli_set_charset($conn, "utf8mb4");
 
 function isAdmin() {
     return isset($_SESSION['user_type']) && $_SESSION['user_type'] === 'admin';
+}
+
+function isLoggedIn() {
+    if (!checkSessionTimeout()) {
+        return false;
+    }
+    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
+}
+
+function checkSessionTimeout() {
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
+        session_unset();
+        session_destroy();
+        return false;
+    }
+    $_SESSION['last_activity'] = time();
+    return true;
 }
 
 function checkRateLimit($key, $limit = 100, $window = 60) {
@@ -134,17 +152,6 @@ function recordLoginAttempt($identifier, $success = false) {
     file_put_contents($cacheFile, json_encode($attempts));
 }
 
-function checkSessionTimeout() {
-    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
-        session_unset();
-        session_destroy();
-        sendResponse(false, ['expired' => true], 'Session expired, silakan login kembali', 401);
-        return false;
-    }
-    $_SESSION['last_activity'] = time();
-    return true;
-}
-
 function sendResponse($success, $data = [], $message = '', $statusCode = 200) {
     http_response_code($statusCode);
     header('Content-Type: application/json');
@@ -159,24 +166,28 @@ function sendResponse($success, $data = [], $message = '', $statusCode = 200) {
     exit();
 }
 
-function isLoggedIn() {
-    if (!checkSessionTimeout()) {
-        return false;
-    }
-    return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
-}
-
 function requireLogin() {
     if (!isLoggedIn()) {
         sendResponse(false, [], 'Silakan login terlebih dahulu', 401);
     }
 }
 
+function requireAdmin() {
+    requireLogin();
+    
+    if (!isAdmin()) {
+        logSecurityEvent('UNAUTHORIZED_ADMIN_ACCESS', "User {$_SESSION['user_id']} tried to access admin area");
+        sendResponse(false, [], 'Anda tidak memiliki akses sebagai admin', 403);
+    }
+}
 
 function requireAdminMfa() {
-    requireAdmin(); // Cek sudah login sebagai admin
+    requireLogin();
     
-    // Cek apakah MFA sudah diverifikasi di session ini
+    if (!isAdmin()) {
+        sendResponse(false, [], 'Anda tidak memiliki akses sebagai admin', 403);
+    }
+    
     if (!isset($_SESSION['mfa_verified']) || $_SESSION['mfa_verified'] !== true) {
         logSecurityEvent('MFA_REQUIRED', "Admin {$_SESSION['user_id']} attempted access without MFA");
         sendResponse(false, [], 'Verifikasi MFA diperlukan untuk akses ini', 403);

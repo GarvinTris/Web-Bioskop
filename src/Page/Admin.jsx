@@ -10,14 +10,15 @@ function Admin() {
   const [schedules, setSchedules] = useState([]);
   const [kategori, setKategori] = useState([]);
   const [studios, setStudios] = useState([]);
-  const [trailers, setTrailers] = useState([]);
+  
+  // State untuk trailer management
+  const [searchFilmTerm, setSearchFilmTerm] = useState("");
+  const [activeTrailerId, setActiveTrailerId] = useState(null); // SINGLE ID, bukan array
+  const [updatingTrailerIds, setUpdatingTrailerIds] = useState([]);
+  
   const [message, setMessage] = useState({ type: "", text: "" });
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  
-  // HANYA CEK, JANGAN REDIRECT - Redirect sudah ditangani oleh ProtectedRoute
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-  const isAdmin = localStorage.getItem("isAdmin") === "true";
   
   // Form state untuk film dengan durasi terpisah
   const [filmForm, setFilmForm] = useState({
@@ -41,13 +42,6 @@ function Admin() {
     tanggal: "",
     jam_mulai: "",
     no_studio: ""
-  });
-
-  const [trailerForm, setTrailerForm] = useState({
-    id_trailer: null,
-    id_film: "",
-    link_video: "",
-    is_active: false
   });
 
   // ==================== HELPER FUNCTIONS ====================
@@ -76,30 +70,57 @@ function Admin() {
     return colors[kode] || '#6b7280';
   };
 
+  // Format waktu untuk ditampilkan di tabel (HH:MM)
   const formatTimeForDisplay = (time) => {
     if (!time) return "";
-    if (time.includes(':')) {
-      const parts = time.split(':');
-      return `${parts[0].padStart(2, '0')}:${parts[1]}`;
+    
+    // Handle berbagai format input
+    let timeStr = time.toString();
+    
+    // Jika sudah dalam format HH:MM atau HH:MM:SS
+    if (timeStr.includes(':')) {
+      const parts = timeStr.split(':');
+      // Ambil jam dan menit saja
+      let jam = parseInt(parts[0]);
+      let menit = parseInt(parts[1]);
+      
+      // Validasi angka
+      if (isNaN(jam)) jam = 0;
+      if (isNaN(menit)) menit = 0;
+      
+      // Format dengan leading zero
+      return `${String(jam).padStart(2, '0')}:${String(menit).padStart(2, '0')}`;
     }
-    return time;
+    
+    return timeStr;
   };
-
+  
   const formatTimeForInput = (time) => {
     if (!time) return "";
-    if (time.includes(':')) {
-      const parts = time.split(':');
-      return `${parts[0].padStart(2, '0')}:${parts[1]}`;
+    
+    let timeStr = time.toString();
+    
+    // Jika sudah dalam format HH:MM atau HH:MM:SS
+    if (timeStr.includes(':')) {
+      const parts = timeStr.split(':');
+      let jam = parseInt(parts[0]);
+      let menit = parseInt(parts[1]);
+      
+      if (isNaN(jam)) jam = 0;
+      if (isNaN(menit)) menit = 0;
+      
+      return `${String(jam).padStart(2, '0')}:${String(menit).padStart(2, '0')}`;
     }
-    return time;
+    
+    return timeStr;
   };
-
+  
   const convertDurationToDatabase = (jam, menit) => {
     const jamNum = parseInt(jam) || 0;
     const menitNum = parseInt(menit) || 0;
     return `${String(jamNum).padStart(2, '0')}:${String(menitNum).padStart(2, '0')}:00`;
   };
-
+  
   const convertDurationFromDatabase = (duration) => {
     if (!duration) return { jam: "", menit: "" };
     const parts = duration.split(':');
@@ -107,6 +128,17 @@ function Admin() {
       jam: parseInt(parts[0]) || "",
       menit: parseInt(parts[1]) || ""
     };
+  };
+  
+  // Format jam untuk ditampilkan di tabel jadwal (HH:MM)
+  const formatJamMulai = (jamMulai) => {
+    if (!jamMulai) return "";
+    const str = jamMulai.toString();
+    if (str.includes(':')) {
+      const parts = str.split(':');
+      return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+    }
+    return str;
   };
 
   const showMessage = (type, text) => {
@@ -135,11 +167,23 @@ function Admin() {
     }
   };
 
+  // Filter film untuk trailer
+  const filteredFilmsForTrailer = films.filter(film => {
+    const searchTerm = searchFilmTerm.toLowerCase();
+    return (
+      film.Judul_Film?.toLowerCase().includes(searchTerm) ||
+      film.Director?.toLowerCase().includes(searchTerm) ||
+      film.Nama_Kategori?.toLowerCase().includes(searchTerm)
+    );
+  });
+
   // ==================== FETCH FUNCTIONS ====================
   
   const fetchKategori = async () => {
     try {
-      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/getKategori.php");
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/getKategori.php", {
+        credentials: "include"
+      });
       const data = await response.json();
       setKategori(data);
     } catch (error) {
@@ -148,80 +192,84 @@ function Admin() {
     }
   };
 
-  const fetchFilms = async () => {
-    setLoading(true);
-    try {
-        const response = await fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php");
-        const data = await response.json();
-        setFilms(data);
-    } catch (error) {
-        console.error("Error fetching films:", error);
-        showMessage("error", "Gagal mengambil data film");
-    } finally {
-        setLoading(false);
-    }
-  };
-
   const fetchStudios = async () => {
     try {
-      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/getStudio.php");
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/getStudio.php", {
+        credentials: "include"
+      });
       const data = await response.json();
       setStudios(data);
     } catch (error) {
       console.error("Error fetching studios:", error);
+      showMessage("error", "Gagal mengambil data studio");
+    }
+  };
+
+  const fetchFilms = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php", {
+        credentials: "include"
+      });
+      const data = await response.json();
+      setFilms(data);
+    } catch (error) {
+      console.error("Error fetching films:", error);
+      showMessage("error", "Gagal mengambil data film");
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchSchedules = async () => {
     setLoading(true);
     try {
-        const timestamp = new Date().getTime();
-        // 🔴 HAPUS headers yang tidak perlu, biarkan default
-        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/jadwal.php?t=${timestamp}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log("Schedules data:", data);
-        
-        if (Array.isArray(data)) {
-            const formattedData = data.map(schedule => ({
-                ...schedule,
-                Jam_Mulai: formatTimeForDisplay(schedule.Jam_Mulai)
-            }));
-            setSchedules(formattedData);
-        } else {
-            setSchedules([]);
-        }
-    } catch (error) {
-        console.error("Error fetching schedules:", error);
-        showMessage("error", "Gagal mengambil data jadwal: " + error.message);
-        setSchedules([]);
-    } finally {
-        setLoading(false);
-    }
-};
-
-  const fetchTrailers = async () => {
-    try {
-      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/getTrailer.php");
+      const timestamp = new Date().getTime();
+      const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/jadwal.php?t=${timestamp}`, {
+        credentials: "include"
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       
       if (Array.isArray(data)) {
-        setTrailers(data);
-      } else if (data.error) {
-        console.error("Error from server:", data.error);
-        showMessage("error", data.error);
-        setTrailers([]);
+        const formattedData = data.map(schedule => ({
+          ...schedule,
+          // Format jam untuk ditampilkan
+          Jam_Mulai_Display: formatJamMulai(schedule.Jam_Mulai)
+        }));
+        setSchedules(formattedData);
       } else {
-        setTrailers([]);
+        setSchedules([]);
       }
     } catch (error) {
-      console.error("Error fetching trailers:", error);
-      showMessage("error", "Gagal mengambil data trailer: " + error.message);
-      setTrailers([]);
+      console.error("Error fetching schedules:", error);
+      showMessage("error", "Gagal mengambil data jadwal: " + error.message);
+      setSchedules([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch active trailer (single)
+  const fetchActiveTrailer = async () => {
+    try {
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/getTrailer.php", {
+        credentials: "include"
+      });
+      const data = await response.json();
+      
+      // Cari trailer yang aktif (is_Active == 1)
+      const activeTrailer = Array.isArray(data) 
+        ? data.find(trailer => trailer.is_Active == 1)
+        : null;
+      
+      setActiveTrailerId(activeTrailer ? activeTrailer.ID_Film : null);
+    } catch (error) {
+      console.error("Error fetching active trailer:", error);
     }
   };
 
@@ -286,11 +334,13 @@ function Admin() {
         formData.append("ID_Film", filmForm.id_film);
         response = await fetch("http://localhost/Web_Bioskop/API_PHP/update_film.php", {
           method: "POST",
+          credentials: "include",
           body: formData
         });
       } else {
         response = await fetch("http://localhost/Web_Bioskop/API_PHP/tambah_film.php", {
           method: "POST",
+          credentials: "include",
           body: formData
         });
       }
@@ -300,6 +350,7 @@ function Admin() {
       if (result.success || result.message) {
         showMessage("success", filmForm.id_film ? "Film berhasil diupdate!" : "Film berhasil ditambahkan!");
         await fetchFilms();
+        await fetchActiveTrailer(); // Refresh active trailer
         resetFilmForm();
       } else {
         showMessage("error", result.error || "Gagal menyimpan film");
@@ -335,13 +386,16 @@ function Admin() {
     if (window.confirm("Yakin ingin menghapus film ini?")) {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_film.php?id=${id}&confirm=1`);
+        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_film.php?id=${id}&confirm=1`, {
+          credentials: "include"
+        });
         const result = await response.json();
         
         if (result.success) {
           showMessage("success", "Film berhasil dihapus!");
           await fetchFilms();
           await fetchSchedules();
+          await fetchActiveTrailer();
         } else {
           showMessage("error", result.error || "Gagal menghapus film");
         }
@@ -351,6 +405,92 @@ function Admin() {
       } finally {
         setLoading(false);
       }
+    }
+  };
+
+  // ==================== TRAILER HANDLERS ====================
+  
+  const handleToggleTrailerActive = async (filmId, isActive) => {
+    const film = films.find(f => f.ID_Film === filmId);
+    if (!film) {
+      showMessage("error", "Film tidak ditemukan");
+      return;
+    }
+    
+    if (!film.Trailer_URL || film.Trailer_URL.trim() === "") {
+      showMessage("error", "Film ini tidak memiliki URL trailer.");
+      return;
+    }
+
+    setUpdatingTrailerIds(prev => [...prev, filmId]);
+    setLoading(true);
+
+    try {
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/toggleTrailerActive.php", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          id_film: filmId,
+          is_active: isActive ? 1 : 0
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Update state dengan single ID (null jika tidak aktif)
+        setActiveTrailerId(isActive ? filmId : null);
+        
+        if (isActive) {
+          showMessage("success", `Trailer "${film.Judul_Film}" telah diaktifkan`);
+        } else {
+          showMessage("success", `Trailer "${film.Judul_Film}" telah dinonaktifkan`);
+        }
+      } else {
+        showMessage("error", result.error || "Gagal mengubah status trailer");
+      }
+    } catch (error) {
+      console.error("Error toggling trailer:", error);
+      showMessage("error", "Terjadi kesalahan server");
+    } finally {
+      setLoading(false);
+      setUpdatingTrailerIds(prev => prev.filter(id => id !== filmId));
+    }
+  };
+
+  const handleClearActiveTrailer = async () => {
+    if (!activeTrailerId) return;
+    
+    const isConfirmed = window.confirm(
+      `⚠️ PERINGATAN!\n\nAnda akan menonaktifkan trailer yang sedang aktif.\n\nApakah Anda yakin?`
+    );
+    
+    if (!isConfirmed) return;
+    
+    setLoading(true);
+    
+    try {
+      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/clearAllTrailers.php", {
+        method: "POST",
+        credentials: "include"
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setActiveTrailerId(null);
+        showMessage("success", "Trailer telah dinonaktifkan");
+      } else {
+        showMessage("error", result.error || "Gagal menonaktifkan trailer");
+      }
+    } catch (error) {
+      console.error("Error clearing trailer:", error);
+      showMessage("error", "Terjadi kesalahan server");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -368,9 +508,9 @@ function Admin() {
       showMessage("error", "Semua field harus diisi!");
       return;
     }
-
+  
     setLoading(true);
-
+  
     const formData = new FormData();
     
     if (jadwalForm.id_jadwal) {
@@ -380,21 +520,27 @@ function Admin() {
     formData.append("ID_Film", jadwalForm.id_film);
     formData.append("Tanggal", jadwalForm.tanggal);
     
+    // Format jam_mulai untuk database (HH:MM:SS)
     let jamMulai = jadwalForm.jam_mulai;
-    if (jamMulai && jamMulai.length === 5) {
-      jamMulai = `${jamMulai}:00`;
+    if (jamMulai) {
+      // Jika hanya HH:MM, tambahkan :00
+      if (jamMulai.length === 5 && jamMulai.includes(':')) {
+        jamMulai = `${jamMulai}:00`;
+      }
     }
+    
     formData.append("Jam_Mulai", jamMulai);
     formData.append("No_Studio", jadwalForm.no_studio);
-
+  
     try {
       const response = await fetch("http://localhost/Web_Bioskop/API_PHP/save_jadwal.php", {
         method: "POST",
+        credentials: "include",
         body: formData
       });
-
+  
       const result = await response.json();
-
+  
       if (result.success) {
         showMessage("success", jadwalForm.id_jadwal ? "Jadwal berhasil diupdate!" : "Jadwal berhasil ditambahkan!");
         await fetchSchedules();
@@ -418,11 +564,26 @@ function Admin() {
   };
 
   const handleEditJadwal = (jadwal) => {
+    // Parse jam dengan benar dari format database
+    let jamMulai = jadwal.Jam_Mulai;
+    
+    // Format untuk input time (HH:MM)
+    let formattedTime = "";
+    
+    if (jamMulai) {
+      const parts = jamMulai.toString().split(':');
+      if (parts.length >= 2) {
+        const jam = String(parseInt(parts[0])).padStart(2, '0');
+        const menit = String(parseInt(parts[1])).padStart(2, '0');
+        formattedTime = `${jam}:${menit}`;
+      }
+    }
+    
     setJadwalForm({
       id_jadwal: jadwal.ID_Jadwal,
       id_film: jadwal.ID_Film?.toString() || "",
       tanggal: jadwal.Tanggal || "",
-      jam_mulai: formatTimeForInput(jadwal.Jam_Mulai),
+      jam_mulai: formattedTime,
       no_studio: jadwal.No_Studio?.toString() || ""
     });
     setActiveTab("jadwal");
@@ -433,7 +594,9 @@ function Admin() {
       setLoading(true);
       try {
         const timestamp = new Date().getTime();
-        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_jadwal.php?id=${id}&t=${timestamp}`);
+        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_jadwal.php?id=${id}&t=${timestamp}`, {
+          credentials: "include"
+        });
         const result = await response.json();
         
         if (result.success) {
@@ -481,7 +644,9 @@ function Admin() {
     
     try {
       const timestamp = new Date().getTime();
-      const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_semua_jadwal.php?t=${timestamp}`);
+      const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_semua_jadwal.php?t=${timestamp}`, {
+        credentials: "include"
+      });
       const result = await response.json();
       
       if (result.success) {
@@ -498,95 +663,6 @@ function Admin() {
     }
   };
 
-  // ==================== TRAILER HANDLERS ====================
-  
-  const handleTrailerChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setTrailerForm({
-      ...trailerForm,
-      [name]: type === 'checkbox' ? checked : value
-    });
-  };
-  
-  const handleTrailerSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!trailerForm.id_film || !trailerForm.link_video) {
-      showMessage("error", "Pilih film dan isi URL video!");
-      return;
-    }
-  
-    setLoading(true);
-  
-    const formData = new FormData();
-    if (trailerForm.id_trailer) {
-      formData.append("id_trailer", trailerForm.id_trailer);
-    }
-    formData.append("id_film", trailerForm.id_film);
-    formData.append("link_video", trailerForm.link_video);
-    formData.append("is_active", trailerForm.is_active);
-  
-    try {
-      const response = await fetch("http://localhost/Web_Bioskop/API_PHP/saveTrailer.php", {
-        method: "POST",
-        body: formData
-      });
-  
-      const result = await response.json();
-  
-      if (result.success) {
-        showMessage("success", trailerForm.id_trailer ? "Trailer berhasil diupdate!" : "Trailer berhasil ditambahkan!");
-        await fetchTrailers();
-        
-        setTrailerForm({
-          id_trailer: null,
-          id_film: "",
-          link_video: "",
-          is_active: false
-        });
-      } else {
-        showMessage("error", result.error || "Gagal menyimpan trailer");
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      showMessage("error", "Terjadi kesalahan server");
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  const handleEditTrailer = (trailer) => {
-    setTrailerForm({
-      id_trailer: trailer.ID_Trailer,
-      id_film: trailer.ID_Film?.toString() || "",
-      link_video: trailer.Link_Video,
-      is_active: trailer.is_Active == 1
-    });
-    setActiveTab("trailer");
-  };
-  
-  const handleDeleteTrailer = async (id) => {
-    if (window.confirm("Yakin ingin menghapus trailer ini?")) {
-      setLoading(true);
-      try {
-        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapusTrailer.php?id=${id}`);
-        const result = await response.json();
-        
-        if (result.success) {
-          showMessage("success", "Trailer berhasil dihapus!");
-          await fetchTrailers();
-        } else {
-          showMessage("error", result.error || "Gagal menghapus trailer");
-        }
-      } catch (error) {
-        console.error("Error deleting trailer:", error);
-        showMessage("error", "Terjadi kesalahan server: " + error.message);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
   // ==================== EFFECTS ====================
   
   useEffect(() => {
@@ -594,7 +670,7 @@ function Admin() {
     fetchFilms();
     fetchSchedules();
     fetchStudios();
-    fetchTrailers();
+    fetchActiveTrailer(); // Ganti dari fetchActiveTrailers
   }, []);
 
   // ==================== RENDER ====================
@@ -615,116 +691,49 @@ function Admin() {
         </div>
       )}
 
-      {/* ==================== TAB NAVIGATION ==================== */}
+      {/* TAB NAVIGATION */}
       <div className="admin-tabs">
-        <button 
-          className={activeTab === 'film' ? 'active' : ''}
-          onClick={() => setActiveTab('film')}
-        >
+        <button className={activeTab === 'film' ? 'active' : ''} onClick={() => setActiveTab('film')}>
           Kelola Film
         </button>
-        <button 
-          className={activeTab === 'jadwal' ? 'active' : ''}
-          onClick={() => setActiveTab('jadwal')}
-        >
+        <button className={activeTab === 'jadwal' ? 'active' : ''} onClick={() => setActiveTab('jadwal')}>
           Kelola Jadwal
         </button>
-        <button 
-          className={activeTab === 'trailer' ? 'active' : ''}
-          onClick={() => setActiveTab('trailer')}
-        >
+        <button className={activeTab === 'trailer' ? 'active' : ''} onClick={() => setActiveTab('trailer')}>
           Kelola Trailer
         </button>
-        <button 
-          className={activeTab === 'users' ? 'active' : ''}
-          onClick={() => setActiveTab('users')}
-        >
+        <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
           Kelola Pengguna
         </button>
       </div>
 
-      {/* ==================== KONTEN FILM ==================== */}
+      {/* KONTEN FILM */}
       {activeTab === 'film' && (
         <>
           <form onSubmit={handleFilmSubmit} className="admin-form" encType="multipart/form-data">
             <h3>{isEditing ? "Edit Film" : "Tambah Film Baru"}</h3>
             
-            <input
-              type="text"
-              name="judul"
-              placeholder="Judul Film"
-              value={filmForm.judul}
-              onChange={handleFilmChange}
-              required
-            />
+            <input type="text" name="judul" placeholder="Judul Film" value={filmForm.judul} onChange={handleFilmChange} required />
 
-            <select
-              name="id_kategori"
-              value={filmForm.id_kategori}
-              onChange={handleFilmChange}
-              required
-            >
+            <select name="id_kategori" value={filmForm.id_kategori} onChange={handleFilmChange} required>
               <option value="">Pilih Kategori</option>
               {kategori.map(kat => (
-                <option key={kat.ID_Kategori} value={kat.ID_Kategori}>
-                  {kat.Nama_Kategori}
-                </option>
+                <option key={kat.ID_Kategori} value={kat.ID_Kategori}>{kat.Nama_Kategori}</option>
               ))}
             </select>
 
-            <input
-              type="text"
-              name="director"
-              placeholder="Director (pisahkan dengan koma jika lebih dari satu)"
-              value={filmForm.director}
-              onChange={handleFilmChange}
-              required
-            />
+            <input type="text" name="director" placeholder="Director" value={filmForm.director} onChange={handleFilmChange} required />
 
-            <textarea
-              name="deskripsi"
-              placeholder="Deskripsi Film"
-              value={filmForm.deskripsi}
-              onChange={handleFilmChange}
-              required
-              rows="4"
-            ></textarea>
+            <textarea name="deskripsi" placeholder="Deskripsi Film" value={filmForm.deskripsi} onChange={handleFilmChange} required rows="4"></textarea>
 
-            {/* Durasi input terpisah */}
             <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
-              <input
-                type="number"
-                name="durasi_jam"
-                placeholder="Jam"
-                value={filmForm.durasi_jam}
-                onChange={handleFilmChange}
-                style={{ flex: 1, padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}
-                min="0"
-              />
-              <input
-                type="number"
-                name="durasi_menit"
-                placeholder="Menit"
-                value={filmForm.durasi_menit}
-                onChange={handleFilmChange}
-                style={{ flex: 1, padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}
-                min="0"
-                max="59"
-              />
+              <input type="number" name="durasi_jam" placeholder="Jam" value={filmForm.durasi_jam} onChange={handleFilmChange} style={{ flex: 1, padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }} min="0" />
+              <input type="number" name="durasi_menit" placeholder="Menit" value={filmForm.durasi_menit} onChange={handleFilmChange} style={{ flex: 1, padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }} min="0" max="59" />
             </div>
 
-            {/* Rating Usia */}
             <div style={{ marginBottom: "15px" }}>
-              <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>
-                Klasifikasi Usia <span style={{ color: "red" }}>*</span>
-              </label>
-              <select
-                name="rating_usia"
-                value={filmForm.rating_usia}
-                onChange={handleFilmChange}
-                required
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}
-              >
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "bold" }}>Klasifikasi Usia <span style={{ color: "red" }}>*</span></label>
+              <select name="rating_usia" value={filmForm.rating_usia} onChange={handleFilmChange} required style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}>
                 <option value="">Pilih Klasifikasi Usia</option>
                 <option value="SU">SU - Semua Umur</option>
                 <option value="P">P - Pra Sekolah (2-6 tahun)</option>
@@ -733,59 +742,19 @@ function Admin() {
                 <option value="D">D - Dewasa (18+ tahun)</option>
                 <option value="BO">BO - Bimbingan Orang Tua</option>
               </select>
-              <small style={{ fontSize: "12px", color: "#666", marginTop: "5px", display: "block" }}>
-                💡 Klasifikasi usia menentukan siapa saja yang boleh menonton film ini
-              </small>
             </div>
 
-            {/* Rating */}
-            <input
-              type="number"
-              name="rating"
-              placeholder="Rating Film (1-10)"
-              min="0"
-              max="10"
-              step="0.1"
-              value={filmForm.rating}
-              onChange={handleFilmChange}
-              style={{ marginBottom: "15px", width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}
-            />
+            <input type="number" name="rating" placeholder="Rating Film (1-10)" min="0" max="10" step="0.1" value={filmForm.rating} onChange={handleFilmChange} style={{ marginBottom: "15px", width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }} />
 
-            {/* URL Trailer */}
-            <input
-              type="url"
-              name="trailer_url"
-              placeholder="URL Trailer YouTube"
-              value={filmForm.trailer_url}
-              onChange={handleFilmChange}
-              style={{ marginBottom: "15px", width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }}
-            />
+            <input type="text" name="trailer_url" placeholder="URL Trailer (YouTube)" value={filmForm.trailer_url} onChange={handleFilmChange} style={{ marginBottom: "15px", width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ddd" }} />
 
-            {/* Upload Gambar */}
-            <input
-              type="file"
-              name="gambar"
-              accept="image/*"
-              onChange={handleFilmChange}
-              required={!isEditing}
-              style={{ marginBottom: "15px", width: "100%", padding: "10px" }}
-            />
+            <input type="file" name="gambar" accept="image/*" onChange={handleFilmChange} required={!isEditing} style={{ marginBottom: "15px", width: "100%", padding: "10px" }} />
 
-            {isEditing && (
-              <p style={{ fontSize: "12px", color: "#666", marginBottom: "15px" }}>
-                *Kosongkan jika tidak ingin mengubah gambar
-              </p>
-            )}
+            {isEditing && <p style={{ fontSize: "12px", color: "#666", marginBottom: "15px" }}>*Kosongkan jika tidak ingin mengubah gambar</p>}
 
             <div style={{ display: "flex", gap: "10px" }}>
-              <button type="submit" disabled={loading}>
-                {loading ? "Memproses..." : (isEditing ? "Update Film" : "Tambah Film")}
-              </button>
-              {isEditing && (
-                <button type="button" onClick={resetFilmForm} style={{ backgroundColor: "#6c757d" }}>
-                  Batal Edit
-                </button>
-              )}
+              <button type="submit" disabled={loading}>{loading ? "Memproses..." : (isEditing ? "Update Film" : "Tambah Film")}</button>
+              {isEditing && <button type="button" onClick={resetFilmForm} style={{ backgroundColor: "#6c757d" }}>Batal Edit</button>}
             </div>
           </form>
 
@@ -793,17 +762,7 @@ function Admin() {
             <h3 style={{ margin: "20px 0 10px" }}>Daftar Film</h3>
             <table className="admin-table">
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Judul</th>
-                  <th>Kategori</th>
-                  <th>Director</th>
-                  <th>Rating Usia</th>
-                  <th>Rating</th>
-                  <th>Durasi</th>
-                  <th>Gambar</th>
-                  <th>Aksi</th>
-                </tr>
+                <tr><th>ID</th><th>Judul</th><th>Kategori</th><th>Director</th><th>Rating Usia</th><th>Rating</th><th>Durasi</th><th>Gambar</th><th>Aksi</th></tr>
               </thead>
               <tbody>
                 {films.map(film => (
@@ -812,160 +771,54 @@ function Admin() {
                     <td>{film.Judul_Film}</td>
                     <td>{film.Nama_Kategori}</td>
                     <td>{film.Director}</td>
-                    <td>
-                      <span style={{
-                        display: "inline-block",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontSize: "12px",
-                        fontWeight: "bold",
-                        backgroundColor: getRatingUsiaColor(film.Rating_Usia),
-                        color: "white"
-                      }}>
-                        {getRatingUsiaLabel(film.Rating_Usia)}
-                      </span>
-                    </td>
+                    <td><span style={{ display: "inline-block", padding: "4px 8px", borderRadius: "4px", fontSize: "12px", fontWeight: "bold", backgroundColor: getRatingUsiaColor(film.Rating_Usia), color: "white" }}>{getRatingUsiaLabel(film.Rating_Usia)}</span></td>
                     <td>{film.Rating}</td>
                     <td>{film.Durasi}</td>
-                    <td>
-                      {film.image && (
-                        <img 
-                          src={`http://localhost/Web_Bioskop/API_PHP/uploads/${film.image}`} 
-                          alt={film.Judul_Film}
-                          style={{ width: "50px", height: "70px", objectFit: "cover" }}
-                          onError={(e) => {
-                            e.target.src = 'https://via.placeholder.com/50x70?text=No+Image';
-                          }}
-                        />
-                      )}
-                    </td>
-                    <td>
-                      <button 
-                        className="btn-edit"
-                        onClick={() => handleEditFilm(film)}
-                        disabled={loading}
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        className="btn-delete"
-                        onClick={() => handleDeleteFilm(film.ID_Film)}
-                        disabled={loading}
-                      >
-                        Hapus
-                      </button>
-                    </td>
+                    <td>{film.image && <img src={`http://localhost/Web_Bioskop/API_PHP/uploads/${film.image}`} alt={film.Judul_Film} style={{ width: "50px", height: "70px", objectFit: "cover" }} onError={(e) => { e.target.src = 'https://via.placeholder.com/50x70?text=No+Image'; }} />}</td>
+                    <td><button className="btn-edit" onClick={() => handleEditFilm(film)} disabled={loading}>Edit</button><button className="btn-delete" onClick={() => handleDeleteFilm(film.ID_Film)} disabled={loading}>Hapus</button></td>
                   </tr>
                 ))}
-                {films.length === 0 && !loading && (
-                  <tr>
-                    <td colSpan="9" style={{ textAlign: "center", padding: "20px" }}>
-                      Belum ada data film
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
         </>
       )}
 
-      {/* ==================== KONTEN JADWAL ==================== */}
+      {/* KONTEN JADWAL - FIXED */}
       {activeTab === 'jadwal' && (
         <>
           <form onSubmit={handleJadwalSubmit} className="admin-form">
             <h3>{jadwalForm.id_jadwal ? "Edit Jadwal" : "Tambah Jadwal Baru"}</h3>
             
-            <select
-              name="id_film"
-              value={jadwalForm.id_film}
-              onChange={handleJadwalChange}
-              required
-            >
+            <select name="id_film" value={jadwalForm.id_film} onChange={handleJadwalChange} required>
               <option value="">Pilih Film</option>
-              {films.map(film => (
-                <option key={film.ID_Film} value={film.ID_Film}>
-                  {film.Judul_Film} - {film.Durasi}
-                </option>
-              ))}
+              {films.map(film => (<option key={film.ID_Film} value={film.ID_Film}>{film.Judul_Film} - {film.Durasi}</option>))}
             </select>
 
-            <input
-              type="date"
-              name="tanggal"
-              value={jadwalForm.tanggal}
-              onChange={handleJadwalChange}
-              required
-              min={new Date().toISOString().split('T')[0]}
-            />
+            <input type="date" name="tanggal" value={jadwalForm.tanggal} onChange={handleJadwalChange} required min={new Date().toISOString().split('T')[0]} />
+            <input type="time" name="jam_mulai" value={jadwalForm.jam_mulai} onChange={handleJadwalChange} required step="60" />
 
-            <input
-              type="time"
-              name="jam_mulai"
-              value={jadwalForm.jam_mulai}
-              onChange={handleJadwalChange}
-              required
-              step="60"
-            />
-
-            <select
-              name="no_studio"
-              value={jadwalForm.no_studio}
-              onChange={handleJadwalChange}
-              required
-            >
+            <select name="no_studio" value={jadwalForm.no_studio} onChange={handleJadwalChange} required>
               <option value="">Pilih Studio</option>
-              {studios.map(studio => (
-                <option key={studio.No_Studio} value={studio.No_Studio}>
-                  {studio.Nama_Studio} - Rp {studio.Harga_Tiket?.toLocaleString()}
-                </option>
-              ))}
+              {studios.map(studio => (<option key={studio.No_Studio} value={studio.No_Studio}>{studio.Nama_Studio} - Rp {studio.Harga_Tiket?.toLocaleString()}</option>))}
             </select>
 
-            {jadwalForm.no_studio && (
-              <div style={{ 
-                padding: "10px", 
-                backgroundColor: "#e3f2fd", 
-                borderRadius: "5px",
-                marginBottom: "15px",
-                fontSize: "14px"
-              }}>
-                💡 Harga tiket akan otomatis mengikuti harga studio yang dipilih
-              </div>
-            )}
+            {jadwalForm.no_studio && (<div style={{ padding: "10px", backgroundColor: "#e3f2fd", borderRadius: "5px", marginBottom: "15px", fontSize: "14px" }}>💰 Harga tiket: Rp {studios.find(s => s.No_Studio == jadwalForm.no_studio)?.Harga_Tiket?.toLocaleString()}</div>)}
 
-            <button type="submit" disabled={loading}>
-              {loading ? "Memproses..." : (jadwalForm.id_jadwal ? "Update Jadwal" : "Tambah Jadwal")}
-            </button>
+            <button type="submit" disabled={loading}>{loading ? "Memproses..." : (jadwalForm.id_jadwal ? "Update Jadwal" : "Tambah Jadwal")}</button>
           </form>
 
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", margin: "20px 0 10px" }}>
               <h3 style={{ margin: 0 }}>Daftar Jadwal</h3>
-              {schedules.length > 0 && (
-                <button 
-                  onClick={handleDeleteAllSchedules}
-                  style={{
-                    backgroundColor: "#dc3545",
-                    color: "white",
-                    padding: "8px 16px",
-                    border: "none",
-                    borderRadius: "5px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "bold"
-                  }}
-                >
-                  🗑️ Hapus Semua Jadwal
-                </button>
-              )}
+              {schedules.length > 0 && (<button onClick={handleDeleteAllSchedules} style={{ backgroundColor: "#dc3545", color: "white", padding: "8px 16px", border: "none", borderRadius: "5px", cursor: "pointer" }}>🗑️ Hapus Semua Jadwal</button>)}
             </div>
             <table className="admin-table">
               <thead>
                 <tr>
+                  <th>No</th>
                   <th>ID Jadwal</th>
                   <th>Film</th>
-                  <th>Durasi</th>
                   <th>Tanggal</th>
                   <th>Jam Mulai</th>
                   <th>Studio</th>
@@ -974,13 +827,13 @@ function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {schedules.map(schedule => (
+                {schedules.map((schedule, index) => (
                   <tr key={schedule.ID_Jadwal}>
+                    <td>{index + 1}</td>
                     <td>{schedule.ID_Jadwal}</td>
                     <td>{schedule.judul_film}</td>
-                    <td>{schedule.Durasi || '-'}</td>
                     <td>{schedule.Tanggal}</td>
-                    <td>{formatTimeForDisplay(schedule.Jam_Mulai)}</td>
+                    <td>{schedule.Jam_Mulai_Display}</td>
                     <td>{schedule.Nama_Studio || `Studio ${schedule.No_Studio}`}</td>
                     <td>Rp {parseInt(schedule.Harga || 0).toLocaleString()}</td>
                     <td>
@@ -989,79 +842,88 @@ function Admin() {
                     </td>
                   </tr>
                 ))}
-                {schedules.length === 0 && !loading && (
-                  <tr>
-                    <td colSpan="8" style={{ textAlign: "center", padding: "20px" }}>Belum ada data jadwal</td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
         </>
       )}
 
-      {/* ==================== KONTEN TRAILER ==================== */}
+      {/* KONTEN TRAILER - DENGAN RADIO BUTTON */}
       {activeTab === 'trailer' && (
-        <>
-          <form onSubmit={handleTrailerSubmit} className="admin-form">
-            <h3>{trailerForm.id_trailer ? "Edit Trailer" : "Tambah Trailer Baru"}</h3>
-            
-            <select name="id_film" value={trailerForm.id_film} onChange={handleTrailerChange} required>
-              <option value="">-- Pilih Film --</option>
-              {films.map(film => (
-                <option key={film.ID_Film} value={film.ID_Film}>
-                  {film.Judul_Film} - {film.Durasi || 'Durasi?'}
-                </option>
-              ))}
-            </select>
+        <div className="trailer-management">
+          <h3>Kelola Trailer Aktif</h3>
+          <p style={{ marginBottom: "15px", color: "#666" }}>Pilih SATU film yang ingin ditampilkan trailernya di halaman utama (Jumbotron). Hanya film yang memiliki URL trailer yang bisa diaktifkan.</p>
 
-            <input type="url" name="link_video" placeholder="URL Trailer YouTube" value={trailerForm.link_video} onChange={handleTrailerChange} required />
-
-            <label style={{ display: "flex", alignItems: "center", gap: "10px", margin: "10px 0", cursor: "pointer" }}>
-              <input type="checkbox" name="is_active" checked={trailerForm.is_active} onChange={handleTrailerChange} />
-              <span>Set sebagai Trailer Aktif (akan ditampilkan di Jumbotron)</span>
-            </label>
-
-            <button type="submit" disabled={loading}>
-              {loading ? "Memproses..." : (trailerForm.id_trailer ? "Update Trailer" : "Tambah Trailer")}
-            </button>
-          </form>
-
-          <div>
-            <h3 style={{ margin: "20px 0 10px" }}>Daftar Trailer</h3>
-            <table className="admin-table">
-              <thead>
-                <tr><th>ID</th><th>Judul Film</th><th>Genre</th><th>Deskripsi</th><th>Rating Usia</th><th>Durasi</th><th>Status</th><th>Preview</th><th>Aksi</th></tr>
-              </thead>
-              <tbody>
-                {trailers.map(trailer => (
-                  <tr key={trailer.ID_Trailer} style={trailer.is_Active == 1 ? { backgroundColor: "#e8f5e9" } : {}}>
-                    <td>{trailer.ID_Trailer}</td>
-                    <td>{trailer.Judul_Film}</td>
-                    <td>{trailer.Genre || '-'}</td>
-                    <td style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {trailer.Deskripsi ? trailer.Deskripsi.substring(0, 50) + '...' : '-'}
-                    </td>
-                    <td>{trailer.Rating_Usia || '-'}</td>
-                    <td>{trailer.Durasi || '-'}</td>
-                    <td>{trailer.is_Active == 1 ? <span style={{ color: "green", fontWeight: "bold" }}>✓ Aktif</span> : <span style={{ color: "gray" }}>Tidak Aktif</span>}</td>
-                    <td>{trailer.Embed_URL && <iframe width="100" height="56" src={trailer.Embed_URL} title={trailer.Judul_Film} frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>}</td>
-                    <td>
-                      <button className="btn-edit" onClick={() => handleEditTrailer(trailer)} disabled={loading}>Edit</button>
-                      <button className="btn-delete" onClick={() => handleDeleteTrailer(trailer.ID_Trailer)} disabled={loading}>Hapus</button>
-                    </td>
-                  </tr>
-                ))}
-                {trailers.length === 0 && !loading && (
-                  <tr><td colSpan="9" style={{ textAlign: "center", padding: "20px" }}>Belum ada data trailer</td></tr>
-                )}
-              </tbody>
-            </table>
+          <div style={{ marginBottom: "20px" }}>
+            <input type="text" placeholder="🔍 Cari film..." value={searchFilmTerm} onChange={(e) => setSearchFilmTerm(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ddd" }} />
           </div>
-        </>
+
+          <div style={{ display: "flex", gap: "15px", marginBottom: "20px", padding: "15px", backgroundColor: "#f5f5f5", borderRadius: "8px" }}>
+            <div><strong>Total Film:</strong> {filteredFilmsForTrailer.length}</div>
+            <div><strong>Dengan Trailer:</strong> {filteredFilmsForTrailer.filter(f => f.Trailer_URL && f.Trailer_URL.trim() !== "").length}</div>
+            <div><strong>Trailer Aktif:</strong> {activeTrailerId ? 1 : 0}</div>
+          </div>
+
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Gambar</th>
+                <th>Judul Film</th>
+                <th>Genre</th>
+                <th>Director</th>
+                <th style={{ textAlign: "center" }}>Aktif di Home</th>
+                <th>Preview</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredFilmsForTrailer.map((film, index) => {
+                const hasTrailer = film.Trailer_URL && film.Trailer_URL.trim() !== "";
+                const isCurrentlyActive = activeTrailerId === film.ID_Film;
+                return (
+                  <tr key={film.ID_Film} style={isCurrentlyActive ? { backgroundColor: "#e8f5e9" } : {}}>
+                    <td>{index + 1}</td>
+                    <td>{film.image && <img src={`http://localhost/Web_Bioskop/API_PHP/uploads/${film.image}`} alt={film.Judul_Film} style={{ width: "40px", height: "56px", objectFit: "cover", borderRadius: "4px" }} />}</td>
+                    <td><strong>{film.Judul_Film}</strong><br /><small>{film.Durasi || '-'}</small></td>
+                    <td>{film.Nama_Kategori || '-'}</td>
+                    <td>{film.Director || '-'}</td>
+                    <td style={{ textAlign: "center" }}>
+                      {hasTrailer ? (
+                        <input 
+                          type="radio" 
+                          name="activeTrailer"
+                          checked={isCurrentlyActive} 
+                          onChange={() => handleToggleTrailerActive(film.ID_Film, !isCurrentlyActive)} 
+                          disabled={updatingTrailerIds.includes(film.ID_Film) || loading} 
+                          style={{ width: "20px", height: "20px", cursor: "pointer", accentColor: "#4caf50" }} 
+                        />
+                      ) : <span style={{ color: "#999" }}>❌ Tidak ada trailer</span>}
+                    </td>
+                    <td>{hasTrailer && <button className="btn-edit" onClick={() => window.open(film.Trailer_URL, '_blank')} style={{ padding: "4px 12px" }} disabled={loading}>Preview</button>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+
+          {activeTrailerId && (
+            <button onClick={handleClearActiveTrailer} style={{ marginTop: "15px", backgroundColor: "#dc3545", color: "white", padding: "8px 16px", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+              🗑️ Nonaktifkan Trailer
+            </button>
+          )}
+
+          <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff3cd", borderRadius: "8px" }}>
+            <strong>💡 Informasi:</strong>
+            <ul style={{ margin: "10px 0 0 20px", color: "#856404" }}>
+              <li>Hanya SATU trailer yang bisa aktif di halaman utama</li>
+              <li>Hanya film yang memiliki URL trailer yang bisa diaktifkan</li>
+              <li>Untuk menambah/mengedit URL trailer, silakan ke menu "Kelola Film"</li>
+            </ul>
+          </div>
+        </div>
       )}
 
-      {/* ==================== KONTEN PENGGUNA ==================== */}
+      {/* KONTEN PENGGUNA */}
       {activeTab === 'users' && <AdminUser />}
     </div>
   );

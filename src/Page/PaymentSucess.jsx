@@ -114,7 +114,7 @@ useEffect(() => {
           <span className="detail-label">
             <i>🆔</i> ID Transaksi
           </span>
-          <span className="detail-value transaction-id">{transaction.id}</span>
+          <span className="detail-value transaction-id" style={{ color: '#ffffff' }}>{transaction.id}</span>
         </div>
         
         
@@ -122,30 +122,30 @@ useEffect(() => {
         <span className="detail-label">
           <i>🎬</i> Film
         </span>
-        <span className="detail-value">
-          {transaction.jadwal?.Judul_Film || transaction.jadwal?.judul_film || "Film Tidak Diketahui"}
-        </span>
+        <span className="detail-value" style={{ color: '#ffffff' }}>
+    {transaction.jadwal?.Judul_Film || transaction.jadwal?.judul_film || "Film Tidak Diketahui"}
+  </span>
       </div>
         
         <div className="transaction-detail">
           <span className="detail-label">
             <i>📅</i> Tanggal
           </span>
-          <span className="detail-value">{formatTanggal(transaction.jadwal?.Tanggal)}</span>
+          <span className="detail-value" style={{ color: '#ffffff' }}>{formatTanggal(transaction.jadwal?.Tanggal)}</span>
         </div>
         
         <div className="transaction-detail">
           <span className="detail-label">
             <i>⏰</i> Jam
           </span>
-          <span className="detail-value">{transaction.jadwal?.Jam_Mulai?.substring(0, 5)} WIB</span>
+          <span className="detail-value" style={{ color: '#ffffff' }}>{transaction.jadwal?.Jam_Mulai?.substring(0, 5)} WIB</span>
         </div>
         
         <div className="transaction-detail">
           <span className="detail-label">
             <i>🎥</i> Studio
           </span>
-          <span className="detail-value">
+          <span className="detail-value" style={{ color: '#ffffff' }}>
             {transaction.jadwal?.Nama_Studio || `Studio ${transaction.jadwal?.No_Studio}`}
           </span>
         </div>
@@ -154,7 +154,7 @@ useEffect(() => {
           <span className="detail-label">
             <i>💺</i> Kursi
           </span>
-          <span className="detail-value">
+          <span className="detail-value" style={{ color: '#ffffff' }}>
             {transaction.seats?.join(", ") || "-"}
           </span>
         </div>
@@ -163,7 +163,7 @@ useEffect(() => {
           <span className="detail-label">
             <i>💰</i> Total
           </span>
-          <span className="detail-value total-amount">
+          <span className="detail-value total-amount" style={{ color: '#ffffff' }}>
             {formatRupiah(transaction.total)}
           </span>
         </div>
@@ -172,7 +172,7 @@ useEffect(() => {
           <span className="detail-label">
             <i>💳</i> Metode
           </span>
-          <span className="detail-value">{transaction.paymentMethod || "Transfer Bank"}</span>
+          <span className="detail-value" style={{ color: '#ffffff' }}>{transaction.paymentMethod || "Transfer Bank"}</span>
         </div>
       </div>
 

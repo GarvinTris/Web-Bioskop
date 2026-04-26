@@ -1,21 +1,13 @@
 <?php
+// update_film.php
 require_once 'database.php';
 requireAdminMfa();
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+
+// HAPUS semua header manual
 
 error_reporting(E_ALL);
-ini_set('display_errors', 1);
+ini_set('display_errors', 0);
 
-$conn = new mysqli("localhost", "root", "", "web_bioskop");
-
-if ($conn->connect_error) {
-    die(json_encode(["success" => false, "error" => "Database gagal konek: " . $conn->connect_error]));
-}
-
-// Ambil data dari POST
 $id_film = isset($_POST['ID_Film']) ? intval($_POST['ID_Film']) : 0;
 $judul = isset($_POST['Judul_Film']) ? $conn->real_escape_string($_POST['Judul_Film']) : '';
 $durasi = isset($_POST['Durasi']) ? $_POST['Durasi'] : '';
@@ -26,26 +18,22 @@ $rating_usia = isset($_POST['Rating_Usia']) ? $conn->real_escape_string($_POST['
 $deskripsi = isset($_POST['Deskripsi']) ? $conn->real_escape_string($_POST['Deskripsi']) : ''; 
 $trailer_url = isset($_POST['Trailer_URL']) ? $conn->real_escape_string($_POST['Trailer_URL']) : '';
 
-// Validasi ID film
 if ($id_film <= 0) {
     echo json_encode(["success" => false, "error" => "ID Film tidak valid"]);
     exit;
 }
 
-// Validasi field wajib
 if (empty($judul) || empty($id_kategori) || empty($director) || empty($deskripsi) || empty($durasi)) {
     echo json_encode(["success" => false, "error" => "Semua field wajib harus diisi!"]);
     exit;
 }
 
-// Validasi Rating_Usia
 $allowed_ratings = ['SU', 'P', 'A', 'R', 'D', 'BO'];
 if (!empty($rating_usia) && !in_array($rating_usia, $allowed_ratings)) {
     echo json_encode(["success" => false, "error" => "Klasifikasi usia tidak valid"]);
     exit;
 }
 
-// Konversi durasi ke format time jika perlu
 function convertToTimeFormat($durasi) {
     if (preg_match('/^\d{1,2}:\d{2}(:\d{2})?$/', $durasi)) {
         if (substr_count($durasi, ':') == 1) {
@@ -80,9 +68,7 @@ function convertToTimeFormat($durasi) {
 
 $durasi_formatted = convertToTimeFormat($durasi);
 
-// Cek apakah ada upload gambar baru
 if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-    // Validasi file gambar
     $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     $ext = strtolower(pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION));
     
@@ -96,7 +82,6 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         exit;
     }
     
-    // Ambil gambar lama untuk dihapus
     $old_img_query = "SELECT image FROM film WHERE ID_Film = ?";
     $old_stmt = $conn->prepare($old_img_query);
     $old_stmt->bind_param("i", $id_film);
@@ -105,17 +90,14 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
     $old_img = $old_result->fetch_assoc();
     $old_stmt->close();
     
-    // Upload gambar baru
     $imageName = time() . "_" . uniqid() . "." . $ext;
     $uploadPath = "uploads/" . $imageName;
     
     if (move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
-        // Hapus gambar lama
         if ($old_img && !empty($old_img['image']) && file_exists("uploads/" . $old_img['image'])) {
             unlink("uploads/" . $old_img['image']);
         }
         
-        // Update dengan gambar baru
         $sql = "UPDATE film SET 
                 Judul_Film=?, Durasi=?, ID_Kategori=?, image=?, Director=?, Deskripsi=?, Trailer_URL=?, Rating=?, Rating_Usia=? 
                 WHERE ID_Film=?";
@@ -126,7 +108,6 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
         exit;
     }
 } else {
-    // Update tanpa gambar
     $sql = "UPDATE film SET 
             Judul_Film=?, Durasi=?, ID_Kategori=?, Director=?, Deskripsi=?, Trailer_URL=?, Rating=?, Rating_Usia=? 
             WHERE ID_Film=?";
@@ -141,5 +122,4 @@ if ($stmt->execute()) {
 }
 
 $stmt->close();
-$conn->close();
 ?>
