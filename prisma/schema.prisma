@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../src/generated/prisma"
@@ -10,4 +5,142 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model admin {
+  id_admin     String    @id @db.VarChar(20)
+  nama_lengkap String?   @db.VarChar(100)
+  email        String?   @db.VarChar(100)
+  password     String?   @db.VarChar(255)
+  role         String?   @db.VarChar(20)
+  last_login   DateTime? @db.Timestamp(6)
+  created_at   DateTime? @db.Timestamp(6)
+}
+
+model film {
+  id_film     Int       @id @default(autoincrement())
+  judul_film  String    @db.VarChar(50)
+  durasi      DateTime? @db.Time(6)
+  id_kategori String?   @db.VarChar(20)
+  image       String?   @db.VarChar(255)
+  director    String?   @db.VarChar(100)
+  deskripsi   String?
+  rating_usia String?   @db.VarChar(10)
+  trailer_url String?   @db.VarChar(255)
+  rating      Decimal?  @db.Decimal(3, 1)
+  kategori    kategori? @relation(fields: [id_kategori], references: [id_kategori], onUpdate: NoAction)
+  jadwal      jadwal[]
+  trailer     trailer[]
+
+  @@index([id_kategori], map: "idx_id_kategori")
+}
+
+model jadwal {
+  id_jadwal String      @id @db.VarChar(20)
+  tanggal   DateTime    @db.Date
+  jam_mulai DateTime    @db.Time(6)
+  no_studio Int
+  id_film   Int
+  film      film        @relation(fields: [id_film], references: [id_film], onDelete: Cascade, onUpdate: NoAction)
+  studio    studio      @relation(fields: [no_studio], references: [no_studio], onDelete: Cascade, onUpdate: NoAction)
+  tiket     tiket[]
+  transaksi transaksi[]
+
+  @@index([id_film], map: "idx_id_film")
+  @@index([tanggal], map: "idx_tanggal")
+}
+
+model kategori {
+  id_kategori   String @id @db.VarChar(20)
+  nama_kategori String @db.VarChar(50)
+  film          film[]
+}
+
+model kursi {
+  id_kursi    String  @id @db.VarChar(20)
+  no_studio   Int
+  baris       String  @db.VarChar(5)
+  nomor_kursi Int
+  studio      studio  @relation(fields: [no_studio], references: [no_studio], onDelete: Cascade, onUpdate: NoAction)
+  tiket       tiket[]
+
+  @@unique([no_studio, baris, nomor_kursi])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model notifications {
+  id         Int       @id @default(autoincrement())
+  user_id    String?   @db.VarChar(20)
+  title      String?   @db.VarChar(255)
+  message    String?
+  type       String?   @db.VarChar(20)
+  is_read    Boolean?
+  created_at DateTime? @db.Timestamp(6)
+
+  @@index([is_read], map: "idx_is_read")
+  @@index([user_id], map: "idx_user_id")
+}
+
+model penonton {
+  id_penonton    String      @id @db.VarChar(20)
+  email          String      @unique @db.VarChar(50)
+  password       String      @db.VarChar(255)
+  alamat         String?
+  no_hp          String?     @db.VarChar(15)
+  jenis_kelamin  String?     @db.VarChar(10)
+  nama_lengkap   String      @db.VarChar(100)
+  tanggal_daftar DateTime?   @default(now()) @db.Timestamp(6)
+  transaksi      transaksi[]
+
+  @@index([email], map: "idx_email")
+  @@index([no_hp], map: "idx_no_hp")
+}
+
+model studio {
+  no_studio   Int      @id
+  nama_studio String   @db.VarChar(50)
+  harga_tiket Int
+  jadwal      jadwal[]
+  kursi       kursi[]
+}
+
+model tiket {
+  id_tiket  String  @id @db.VarChar(20)
+  stok      Int
+  harga     Int
+  id_kursi  String  @db.VarChar(20)
+  id_jadwal String  @db.VarChar(20)
+  status    String? @default("tersedia") @db.VarChar(20)
+  jadwal    jadwal  @relation(fields: [id_jadwal], references: [id_jadwal], onDelete: Cascade, onUpdate: NoAction)
+  kursi     kursi   @relation(fields: [id_kursi], references: [id_kursi], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([id_jadwal, id_kursi])
+  @@index([id_jadwal], map: "idx_id_jadwal_tiket")
+  @@index([id_kursi], map: "idx_id_kursi")
+}
+
+model trailer {
+  id_trailer Int       @id @default(autoincrement())
+  id_film    Int
+  link_video String    @db.VarChar(255)
+  is_active  Boolean?  @default(false)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  film       film      @relation(fields: [id_film], references: [id_film], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model transaksi {
+  id_transaksi      String   @id @db.VarChar(20)
+  jumlah            Int
+  total_harga       Int
+  metode_pembayaran String   @db.VarChar(50)
+  tanggal_pemesanan DateTime @db.Date
+  id_jadwal         String   @db.VarChar(20)
+  kursi             String
+  id_penonton       String   @db.VarChar(20)
+  jadwal            jadwal   @relation(fields: [id_jadwal], references: [id_jadwal], onDelete: Cascade, onUpdate: NoAction)
+  penonton          penonton @relation(fields: [id_penonton], references: [id_penonton], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([id_jadwal], map: "idx_id_jadwal_transaksi")
+  @@index([id_penonton], map: "idx_id_penonton")
 }
