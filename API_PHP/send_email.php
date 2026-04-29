@@ -45,7 +45,7 @@ function sendMfaEmail($to, $name, $code) {
         $mail->Subject = 'Kode Verifikasi MFA - Login Admin Bioskop';
         $mail->Body    = "<h2>Kode Verifikasi MFA</h2>
                          <p>Halo <strong>$name</strong>,</p>
-                         <p>Kode verifikasi MFA Anda: <strong style='font-size:24px'>$code</strong></p>
+                         <p>Kode verifikasi MFA Anda: <br><strong style='font-size:24px'>$code</strong></p>
                          <p>Kode ini berlaku <strong>5 menit</strong>.</p>
                          <p style='color:red'>Jangan bagikan kode ini kepada siapapun.</p>
                          <hr>
