@@ -147,6 +147,21 @@ CREATE TABLE notifications (
 );
 
 -- =============================================
+-- TABEL PASSWORD RESETS (untuk lupa password)
+-- =============================================
+CREATE TABLE IF NOT EXISTS password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    email VARCHAR(50) NOT NULL,
+    token VARCHAR(64) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used TINYINT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_token (token),
+    INDEX idx_email (email),
+    FOREIGN KEY (email) REFERENCES penonton(Email) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- =============================================
 -- 13. INDEKS UNTUK PERFORMANCE
 -- =============================================
 ALTER TABLE penonton   ADD INDEX idx_email (Email);

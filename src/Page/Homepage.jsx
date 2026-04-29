@@ -1,9 +1,9 @@
-// Homepage.jsx - Lengkap dengan Populer, Coming Soon, FAQ, dan Footer
+// Homepage.jsx - Tambahkan loading screen di awal
 import "../style/Home.css"
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import LoadingScreen from "../component/LoadingScreen.jsx"; // Import loading screen
 
-// ==================== COMPONENT: NOW SHOWING ====================
 // ==================== COMPONENT: NOW SHOWING ====================
 function Movie() {
     const [films, setFilms] = useState([]);
@@ -74,7 +74,6 @@ function Movie() {
         <section className="now-showing-section">
             <h1>Now Showing In Cinema!</h1>
             <div className="rekomen">
-                {/* MENAMPILKAN 8 FILM (4 KOLOM x 2 BARIS) */}
                 {films.slice(0, 8).map((movie, index) => (
                     <div className="card" key={index}>
                         <Link to={`/Reservasi/${encodeURIComponent(movie.Judul_Film)}`}>
@@ -151,13 +150,13 @@ function Jumbotron() {
     return (
         <div className="jumbotron">
             <iframe 
-  src={`${activeTrailer.Embed_URL}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&modestbranding=1&rel=0`}
-  title={activeTrailer.Judul_Film}
-  frameBorder="0" 
-  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-  referrerPolicy="strict-origin-when-cross-origin" 
-  allowFullScreen
-/>
+                src={`${activeTrailer.Embed_URL}?autoplay=1&mute=1&loop=1&playlist=${videoId}&controls=0&showinfo=0&modestbranding=1&rel=0`}
+                title={activeTrailer.Judul_Film}
+                frameBorder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                referrerPolicy="strict-origin-when-cross-origin" 
+                allowFullScreen
+            />
             <div className="jumbotron-text">
                 <h1>{activeTrailer.Judul_Film}</h1>
                 <div className="jumbotron-badges">
@@ -171,7 +170,7 @@ function Jumbotron() {
     );
 }
 
-// ==================== COMPONENT: POPULER (MOST POPULAR) ====================
+// ==================== COMPONENT: POPULER ====================
 function Popular() {
     const [popularFilms, setPopularFilms] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -229,19 +228,15 @@ function Popular() {
 }
 
 // ==================== COMPONENT: COMING SOON ====================
-// ==================== COMPONENT: COMING SOON (FROM DATABASE) ====================
-// ==================== COMPONENT: COMING SOON (SEDERHANA SEPERTI NOW SHOWING) ====================
 function ComingSoon() {
     const [comingSoonFilms, setComingSoonFilms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Sama persis seperti Movie component, tapi dengan parameter status=coming_soon
         fetch("http://localhost/Web_Bioskop/API_PHP/Bioskop.php?status=coming_soon")
             .then(response => response.json())
             .then(data => {
-                // Validasi: pastikan data adalah array (sama seperti di Movie)
                 if (Array.isArray(data)) {
                     setComingSoonFilms(data);
                 } else if (data && data.error) {
@@ -423,7 +418,6 @@ function NewsletterSection() {
 function Footer() {
     const currentYear = new Date().getFullYear();
     
-    // 🔴 CEK APAKAH USER ADALAH ADMIN
     const isAdmin = localStorage.getItem("isAdmin") === "true";
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
     
@@ -502,7 +496,6 @@ function Footer() {
                 </div>
             </div>
             
-            {/* 🔴 ADMIN LINK - HANYA TAMPIL JIKA LOGIN SEBAGAI ADMIN */}
             {isLoggedIn && isAdmin && (
                 <div style={{ 
                     textAlign: "center", 
@@ -519,10 +512,18 @@ function Footer() {
     );
 }
 
-export { Movie, Jumbotron, Popular, ComingSoon, FAQSection, NewsletterSection, Footer };
-
-// Export default untuk Homepage
+// ==================== HOMEPAGE UTAMA DENGAN LOADING SCREEN ====================
 export default function Homepage() {
+    const [isLoading, setIsLoading] = useState(true);
+
+    const handleLoadingComplete = () => {
+        setIsLoading(false);
+    };
+
+    if (isLoading) {
+        return <LoadingScreen onLoadingComplete={handleLoadingComplete} />;
+    }
+
     return (
         <>
             <Jumbotron />
@@ -535,3 +536,6 @@ export default function Homepage() {
         </>
     );
 }
+
+// Export components untuk keperluan lain
+export { Movie, Jumbotron, Popular, ComingSoon, FAQSection, NewsletterSection, Footer };

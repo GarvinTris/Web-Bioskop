@@ -616,52 +616,55 @@ function Admin() {
 
   const handleDeleteAllSchedules = async () => {
     const isConfirmed = window.confirm(
-      "⚠️ PERINGATAN! ⚠️\n\n" +
-      "Anda akan menghapus SEMUA jadwal yang ada.\n" +
-      "Termasuk semua data tiket yang terkait.\n\n" +
-      "TINDAKAN INI TIDAK DAPAT DIBATALKAN!\n\n" +
-      "Apakah Anda yakin ingin melanjutkan?"
+        "⚠️ PERINGATAN! ⚠️\n\n" +
+        "Anda akan menghapus SEMUA jadwal yang ada.\n" +
+        "Termasuk semua data tiket yang terkait.\n\n" +
+        "TINDAKAN INI TIDAK DAPAT DIBATALKAN!\n\n" +
+        "Apakah Anda yakin ingin melanjutkan?"
     );
     
     if (!isConfirmed) return;
     
     const confirmationText = window.prompt(
-      "KONFIRMASI AKHIR:\n\n" +
-      "Ketik 'HAPUS' untuk mengkonfirmasi penghapusan semua jadwal."
+        "KONFIRMASI AKHIR:\n\n" +
+        "Ketik 'HAPUS' untuk mengkonfirmasi penghapusan semua jadwal."
     );
     
     if (confirmationText === null) {
-      showMessage("error", "Penghapusan dibatalkan.");
-      return;
+        showMessage("error", "Penghapusan dibatalkan.");
+        return;
     }
     
     if (confirmationText !== "HAPUS") {
-      showMessage("error", "Penghapusan dibatalkan. Kode konfirmasi salah.");
-      return;
+        showMessage("error", "Penghapusan dibatalkan. Kode konfirmasi salah.");
+        return;
     }
     
     setLoading(true);
     
     try {
-      const timestamp = new Date().getTime();
-      const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_semua_jadwal.php?t=${timestamp}`, {
-        credentials: "include"
-      });
-      const result = await response.json();
-      
-      if (result.success) {
-        showMessage("success", `Berhasil menghapus ${result.jumlah} jadwal beserta tiketnya!`);
-        await fetchSchedules();
-      } else {
-        showMessage("error", result.error || "Gagal menghapus semua jadwal");
-      }
+        const timestamp = new Date().getTime();
+        const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/hapus_semua_jadwal.php?t=${timestamp}`, {
+            method: "GET",
+            credentials: "include"
+        });
+        const result = await response.json();
+        
+        console.log("Delete all schedules response:", result);
+        
+        if (result.success) {
+            showMessage("success", result.message);
+            await fetchSchedules();
+        } else {
+            showMessage("error", result.error || "Gagal menghapus semua jadwal");
+        }
     } catch (error) {
-      console.error("Error:", error);
-      showMessage("error", "Terjadi kesalahan server: " + error.message);
+        console.error("Error:", error);
+        showMessage("error", "Terjadi kesalahan server: " + error.message);
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+};
 
   // ==================== EFFECTS ====================
   

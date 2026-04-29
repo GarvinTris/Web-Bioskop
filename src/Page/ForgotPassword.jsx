@@ -1,5 +1,6 @@
+// ForgotPassword.jsx - Tambahkan useEffect untuk navbar
 import "../style/Login.css";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 function ForgotPassword() {
@@ -7,15 +8,29 @@ function ForgotPassword() {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [cooldown, setCooldown] = useState(0); // State untuk cooldown timer
-    const navigate = useNavigate();
+    const [cooldown, setCooldown] = useState(0);
+
+    // Sembunyikan navbar saat halaman ini aktif
+    useEffect(() => {
+        // Cari elemen navbar dan sembunyikan
+        const navbar = document.querySelector('nav');
+        const footer = document.querySelector('footer');
+        
+        if (navbar) navbar.style.display = 'none';
+        if (footer) footer.style.display = 'none';
+        
+        // Kembalikan saat komponen unmount
+        return () => {
+            if (navbar) navbar.style.display = '';
+            if (footer) footer.style.display = '';
+        };
+    }, []);
 
     const validateEmail = (email) => {
         const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
         return emailRegex.test(email);
     };
 
-    // Effect untuk countdown timer
     useEffect(() => {
         let timer;
         if (cooldown > 0) {
@@ -32,13 +47,11 @@ function ForgotPassword() {
         e.preventDefault();
         setError("");
         
-        // Validasi email tidak kosong
         if (!email) {
             setError("Email harus diisi!");
             return;
         }
         
-        // Validasi format email
         if (!validateEmail(email)) {
             setError("Format email tidak valid! Contoh: nama@email.com");
             return;
@@ -46,38 +59,32 @@ function ForgotPassword() {
         
         setIsLoading(true);
         
-        // Simulasi pengiriman request ke server
-        setTimeout(() => {
-            // Cek apakah email terdaftar (simulasi)
-            const registeredUsers = JSON.parse(localStorage.getItem("users") || "[]");
-            const userExists = registeredUsers.some(user => user.email === email);
+        try {
+            const response = await fetch('http://localhost/Web_Bioskop/API_PHP/forgot_password.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: email })
+            });
             
-            // Atau cek dari localStorage user yang login (jika ada)
-            const currentUser = JSON.parse(localStorage.getItem("user") || "null");
+            const data = await response.json();
             
-            if (userExists || currentUser?.email === email) {
-                // Simulasi pengiriman email reset password
-                const resetToken = Math.random().toString(36).substring(2, 15);
-                localStorage.setItem(`reset_token_${email}`, resetToken);
-                
+            if (data.success) {
                 setIsSubmitted(true);
-                setError("");
-                // Set cooldown 60 detik setelah berhasil kirim
                 setCooldown(60);
             } else {
-                // Tetap tampilkan pesan sukses untuk keamanan
-                setIsSubmitted(true);
-                setError("");
-                // Set cooldown 60 detik
-                setCooldown(60);
+                setError(data.message || "Terjadi kesalahan, silakan coba lagi");
             }
-            
+        } catch (error) {
+            console.error("Error:", error);
+            setError("Terjadi kesalahan koneksi ke server");
+        } finally {
             setIsLoading(false);
-        }, 1500);
+        }
     };
 
     const handleResendEmail = () => {
-        // Cek apakah masih dalam masa cooldown
         if (cooldown > 0) {
             setError(`Harap tunggu ${cooldown} detik sebelum mengirim ulang!`);
             return;
@@ -88,7 +95,6 @@ function ForgotPassword() {
         setError("");
     };
 
-    // Format waktu untuk menampilkan menit:detik
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;

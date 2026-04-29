@@ -17,6 +17,7 @@ import Contact from "./Page/Contact.jsx";
 import ForgotPassword from "./Page/ForgotPassword.jsx";
 import DetailTiket from "./Page/DetailTiket.jsx";
 import Schedule from "./Page/Schedule.jsx";
+import ResetPassword from "./Page/ResetPassword.jsx";
 
 // ==================== COMPONENT PROTECTED ROUTE ====================
 function ProtectedRoute({ children, requireAdmin = false }) {
@@ -198,6 +199,12 @@ function App() {
               <DetailTiket />
             </LayoutWrapper>
           </ProtectedRoute>
+        } />
+
+        <Route path="/reset-password" element={
+          <LayoutWrapper>
+            <ResetPassword />
+          </LayoutWrapper>
         } />
 
         {/* 🔴 ADMIN ROUTE - KHUSUS ADMIN (tanpa LayoutWrapper karena Admin punya layout sendiri) */}
