@@ -7,7 +7,6 @@ import Reservasi from "./Page/Reservasi.jsx";
 import Login from "./Page/Login.jsx";
 import Register from "./Page/Register.jsx";
 import AdminLogin from "./Page/AdminLogin.jsx";
-import AdminRegister from "./Page/AdminRegister.jsx";
 import SeatSelection from "./Page/SeatSelection.jsx";
 import Payment from "./Page/Payment.jsx";
 import PaymentSuccess from "./Page/PaymentSucess.jsx";
@@ -145,7 +144,6 @@ function App() {
         
         {/* AUTH ROUTES - Admin */}
         <Route path="/admin-login" element={<AdminLogin />} />
-        <Route path="/admin-register" element={<AdminRegister />} />
         
         {/* PUBLIC INFO PAGES */}
         <Route path="/about" element={

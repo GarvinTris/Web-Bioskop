@@ -861,7 +861,7 @@ function Admin() {
             <input type="text" placeholder="🔍 Cari film..." value={searchFilmTerm} onChange={(e) => setSearchFilmTerm(e.target.value)} style={{ width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #ddd" }} />
           </div>
 
-          <div style={{ display: "flex", gap: "15px", marginBottom: "20px", padding: "15px", backgroundColor: "#f5f5f5", borderRadius: "8px" }}>
+          <div style={{ display: "flex", gap: "15px", marginBottom: "20px", padding: "15px", backgroundColor: "#f5f5f5", borderRadius: "8px", color: "black" }}>
             <div><strong>Total Film:</strong> {filteredFilmsForTrailer.length}</div>
             <div><strong>Dengan Trailer:</strong> {filteredFilmsForTrailer.filter(f => f.Trailer_URL && f.Trailer_URL.trim() !== "").length}</div>
             <div><strong>Trailer Aktif:</strong> {activeTrailerId ? 1 : 0}</div>
@@ -915,7 +915,7 @@ function Admin() {
             </button>
           )}
 
-          <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff3cd", borderRadius: "8px" }}>
+          <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff3cd", borderRadius: "8px",color: "black" }}>
             <strong>💡 Informasi:</strong>
             <ul style={{ margin: "10px 0 0 20px", color: "#856404" }}>
               <li>Hanya SATU trailer yang bisa aktif di halaman utama</li>

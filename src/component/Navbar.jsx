@@ -62,10 +62,9 @@ function Navbar() {
     <>
       <nav>
         <div className="layout">
-          <i className="fa-solid fa-bars"></i>
           <select className="dropdown">
-            <option value="en">EN</option>
-            <option value="id">ID</option>
+            <option value="en">ID</option>
+            <option value="id">EN</option>
           </select>
           <Link to="/" style={{ textDecoration: "none" }}>
             <h1>FilmOut</h1>

@@ -109,13 +109,6 @@ function Login() {
                         <Link to="/register">Daftar Sekarang</Link>
                     </p>
                     
-                    {/* 🔴 HAPUS BAGIAN INI - Tidak ada tautan ke admin lagi */}
-                    {/* 
-                    <hr />
-                    <div className="admin-access">
-                        <Link to="/admin-login">Login sebagai Admin →</Link>
-                    </div>
-                    */}
                 </form>
             </div>
         </div>

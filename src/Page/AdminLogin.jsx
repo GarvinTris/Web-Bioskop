@@ -1,17 +1,20 @@
-// Page/AdminLogin.jsx
-import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+// Page/AdminLogin.jsx - Updated dengan OTP input terpisah
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "../style/Login.css";
 
 function AdminLogin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [mfaCode, setMfaCode] = useState("");
-    const [step, setStep] = useState("login"); // 'login' or 'mfa'
+    const [mfaCode, setMfaCode] = useState(["", "", "", "", "", ""]); // Array untuk 6 digit
+    const [step, setStep] = useState("login");
     const [loading, setLoading] = useState(false);
     const [countdown, setCountdown] = useState(0);
     const [error, setError] = useState("");
     const navigate = useNavigate();
+    
+    // Refs untuk auto-focus
+    const inputRefs = useRef([]);
 
     // Timer untuk resend
     useEffect(() => {
@@ -21,6 +24,60 @@ function AdminLogin() {
         }
         return () => clearTimeout(timer);
     }, [countdown]);
+
+    // Auto-focus ke input pertama saat MFA step
+    useEffect(() => {
+        if (step === "mfa" && inputRefs.current[0]) {
+            inputRefs.current[0].focus();
+        }
+    }, [step]);
+
+    // Handle OTP input change
+    const handleOtpChange = (index, value) => {
+        // Hanya terima angka
+        if (value && !/^\d*$/.test(value)) return;
+        
+        const newCode = [...mfaCode];
+        newCode[index] = value.slice(0, 1); // Hanya 1 digit
+        setMfaCode(newCode);
+        
+        // Auto-focus ke next input
+        if (value && index < 5) {
+            inputRefs.current[index + 1].focus();
+        }
+    };
+
+    // Handle keydown untuk backspace
+    const handleOtpKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !mfaCode[index] && index > 0) {
+            inputRefs.current[index - 1].focus();
+        }
+    };
+
+    // Handle paste OTP
+    const handleOtpPaste = (e) => {
+        e.preventDefault();
+        const pastedData = e.clipboardData.getData('text').slice(0, 6);
+        if (/^\d+$/.test(pastedData)) {
+            const digits = pastedData.split('');
+            const newCode = [...mfaCode];
+            for (let i = 0; i < Math.min(digits.length, 6); i++) {
+                newCode[i] = digits[i];
+            }
+            setMfaCode(newCode);
+            
+            // Focus ke input terakhir yang terisi
+            const lastFilledIndex = Math.min(digits.length, 5);
+            if (inputRefs.current[lastFilledIndex]) {
+                inputRefs.current[lastFilledIndex].focus();
+            }
+        }
+    };
+
+    // Get full OTP code
+    const getFullOtpCode = () => {
+        return mfaCode.join('');
+    };
 
     // STEP 1: Login dengan email & password
     const handleLogin = async (e) => {
@@ -50,21 +107,18 @@ function AdminLogin() {
             const data = await response.json();
             
             if (data.success) {
-                // Login sukses tanpa MFA (tapi kita pake MFA)
                 localStorage.setItem("isLoggedIn", "true");
                 localStorage.setItem("isAdmin", "true");
                 localStorage.setItem("userType", "admin");
                 localStorage.setItem("userId", data.user.id);
                 localStorage.setItem("user", JSON.stringify(data.user));
-                
                 navigate("/admin");
             } 
             else if (data.requires_mfa) {
-                // Pindah ke step MFA
                 setStep("mfa");
-                setCountdown(60); // 60 detik untuk resend
+                setCountdown(60);
+                setMfaCode(["", "", "", "", "", ""]); // Reset OTP
                 
-                // Untuk development: tampilkan debug_code jika ada
                 if (data.debug_code) {
                     console.log("Development MFA Code:", data.debug_code);
                     alert(`[DEV MODE] Kode MFA: ${data.debug_code}`);
@@ -87,8 +141,9 @@ function AdminLogin() {
     const handleVerifyMFA = async (e) => {
         e.preventDefault();
         
-        if (!mfaCode || mfaCode.length !== 6) {
-            setError("Masukkan kode 6 digit");
+        const code = getFullOtpCode();
+        if (code.length !== 6) {
+            setError("Masukkan kode 6 digit lengkap!");
             return;
         }
         
@@ -102,13 +157,12 @@ function AdminLogin() {
                     'Content-Type': 'application/json',
                 },
                 credentials: 'include',
-                body: JSON.stringify({ code: mfaCode })
+                body: JSON.stringify({ code: code })
             });
             
             const data = await response.json();
             
             if (data.success) {
-                // MFA berhasil, login sukses
                 localStorage.setItem("isLoggedIn", "true");
                 localStorage.setItem("isAdmin", "true");
                 localStorage.setItem("userType", "admin");
@@ -119,7 +173,8 @@ function AdminLogin() {
                 navigate("/admin");
             } else {
                 setError(data.message || "Kode verifikasi salah");
-                setMfaCode(""); // Reset input
+                setMfaCode(["", "", "", "", "", ""]);
+                if (inputRefs.current[0]) inputRefs.current[0].focus();
             }
         } catch (error) {
             console.error("MFA error:", error);
@@ -155,6 +210,9 @@ function AdminLogin() {
             
             if (data.requires_mfa) {
                 setCountdown(60);
+                setMfaCode(["", "", "", "", "", ""]);
+                if (inputRefs.current[0]) inputRefs.current[0].focus();
+                
                 if (data.debug_code) {
                     console.log("New MFA Code:", data.debug_code);
                     alert(`[DEV MODE] Kode MFA baru: ${data.debug_code}`);
@@ -186,7 +244,7 @@ function AdminLogin() {
                             <label>Email Admin</label>
                             <input 
                                 type="email" 
-                                placeholder="admin@example.com"
+                                placeholder="admin@cinema.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
@@ -208,9 +266,8 @@ function AdminLogin() {
                             {loading ? "Loading..." : "Login sebagai Admin"}
                         </button>
                         
-                        <p className="signup-text">
-                            Belum punya akun admin? 
-                            <Link to="/admin-register">Daftar Admin Sekarang</Link>
+                        <p className="signup-text" style={{ textAlign: "center", marginTop: "16px", color: "#666" }}>
+                            ⚠️ Akun admin hanya dapat dibuat oleh super administrator melalui database.
                         </p>
                     </form>
                 </div>
@@ -218,13 +275,13 @@ function AdminLogin() {
         );
     }
 
-    // Form OTP MFA (Step 2)
+    // Form OTP MFA (Step 2) - Dengan 6 kotak terpisah
     return (
         <div className="auth-layout">
             <div className="login-card admin-card">
                 <h2>🔐 Verifikasi Dua Langkah</h2>
                 <p className="subtitle">
-                    Kode verifikasi telah dikirim ke<br />
+                    Masukkan kode 6 digit yang telah dikirim ke<br />
                     <strong>{email}</strong>
                 </p>
                 
@@ -232,17 +289,24 @@ function AdminLogin() {
                 
                 <form onSubmit={handleVerifyMFA} className="login-form">
                     <div className="form-group">
-                        <label>Kode Verifikasi (6 digit)</label>
-                        <input 
-                            type="text"
-                            maxLength="6"
-                            placeholder="000000"
-                            value={mfaCode}
-                            onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, ''))}
-                            className="otp-input"
-                            autoFocus
-                            required
-                        />
+                        <label>Kode Verifikasi</label>
+                        <div className="otp-container">
+                            {mfaCode.map((digit, index) => (
+                                <input
+                                    key={index}
+                                    type="text"
+                                    maxLength="1"
+                                    className="otp-digit"
+                                    value={digit}
+                                    onChange={(e) => handleOtpChange(index, e.target.value)}
+                                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                                    onPaste={index === 0 ? handleOtpPaste : undefined}
+                                    ref={(el) => (inputRefs.current[index] = el)}
+                                    disabled={loading}
+                                    autoFocus={index === 0}
+                                />
+                            ))}
+                        </div>
                     </div>
                     
                     <button type="submit" className="btn-login" disabled={loading}>
@@ -263,7 +327,7 @@ function AdminLogin() {
                             type="button" 
                             onClick={() => {
                                 setStep("login");
-                                setMfaCode("");
+                                setMfaCode(["", "", "", "", "", ""]);
                                 setError("");
                             }}
                             className="btn-back"

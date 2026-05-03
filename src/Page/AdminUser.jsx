@@ -450,18 +450,18 @@ function AdminUser() {
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead style={{ backgroundColor: "#f8fafc" }}>
                     <tr>
-                      <th style={{ padding: "12px", textAlign: "left" }}>ID Transaksi</th>
-                      <th style={{ padding: "12px", textAlign: "left" }}>Film</th>
-                      <th style={{ padding: "12px", textAlign: "left" }}>Tanggal Tayang</th>
-                      <th style={{ padding: "12px", textAlign: "left" }}>Total</th>
+                      <th style={{ padding: "12px", textAlign: "left" , color: "black"}}>ID Transaksi</th>
+                      <th style={{ padding: "12px", textAlign: "left" , color: "black"}}>Film</th>
+                      <th style={{ padding: "12px", textAlign: "left" , color: "black"}}>Tanggal Tayang</th>
+                      <th style={{ padding: "12px", textAlign: "left" , color: "black"}}>Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     {userTransactions.map((trx, idx) => (
                       <tr key={idx} style={{ borderBottom: "1px solid #e2e8f0" }}>
-                        <td style={{ padding: "12px" }}>{trx.ID_Transaksi || "-"}</td>
-                        <td style={{ padding: "12px" }}>{trx.Judul_Film || "-"}</td>
-                        <td style={{ padding: "12px" }}>{trx.Tanggal || trx.Tanggal_Tayang || "-"}</td>
+                        <td style={{ padding: "12px", color: "black" }}>{trx.ID_Transaksi || "-"}</td>
+                        <td style={{ padding: "12px", color: "black" }}>{trx.Judul_Film || "-"}</td>
+                        <td style={{ padding: "12px", color: "black"}}>{trx.Tanggal || trx.Tanggal_Tayang || "-"}</td>
                         <td style={{ padding: "12px", color: "#10b981", fontWeight: "bold" }}>{formatRupiah(trx.Total_Harga)}</td>
                       </tr>
                     ))}

@@ -153,6 +153,7 @@ function Register() {
                     
                     <p className="signup-text">
                         Sudah punya akun? 
+                        <br />
                         <Link to="/login">Login</Link>
                     </p>
                 </form>

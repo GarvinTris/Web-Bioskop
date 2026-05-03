@@ -1,5 +1,5 @@
 <?php
-// reset_password.php - SIMPLE WORKING VERSION
+// reset_password.php - SECURE VERSION with Prepared Statements
 require_once 'database.php';
 
 header("Content-Type: application/json");
@@ -23,42 +23,87 @@ $confirmPassword = isset($data['confirm_password']) ? $data['confirm_password'] 
 
 // Validasi input
 if (empty($token) || empty($email)) {
-    echo json_encode(['success' => false, 'message' => 'Token atau email tidak valid']);
+    sendResponse(false, [], 'Token atau email tidak valid');
+    exit();
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    sendResponse(false, [], 'Format email tidak valid');
     exit();
 }
 
 if (strlen($newPassword) < 8) {
-    echo json_encode(['success' => false, 'message' => 'Password minimal 8 karakter']);
+    sendResponse(false, [], 'Password minimal 8 karakter');
+    exit();
+}
+
+if (!preg_match('/[A-Za-z]/', $newPassword) || !preg_match('/[0-9]/', $newPassword)) {
+    sendResponse(false, [], 'Password harus mengandung huruf dan angka');
     exit();
 }
 
 if ($newPassword !== $confirmPassword) {
-    echo json_encode(['success' => false, 'message' => 'Password tidak cocok']);
+    sendResponse(false, [], 'Password tidak cocok');
     exit();
 }
 
-// Cek token di database
+// 🔐 AMAN: Gunakan Prepared Statement untuk SELECT
 $currentDateTime = date('Y-m-d H:i:s');
-$sql = "SELECT * FROM password_resets WHERE email = '$email' AND token = '$token' AND expires_at > '$currentDateTime' AND used = 0";
-$result = $conn->query($sql);
+
+$sql = "SELECT id, email FROM password_resets WHERE email = ? AND token = ? AND expires_at > ? AND used = 0";
+$stmt = $conn->prepare($sql);
+
+if (!$stmt) {
+    error_log("Prepare failed: " . $conn->error);
+    sendResponse(false, [], 'Terjadi kesalahan sistem');
+    exit();
+}
+
+$stmt->bind_param("sss", $email, $token, $currentDateTime);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result && $result->num_rows > 0) {
-    // Token valid, update password
-    $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-    $updateSql = "UPDATE penonton SET Password = '$hashedPassword' WHERE Email = '$email'";
+    $row = $result->fetch_assoc();
+    $stmt->close();
     
-    if ($conn->query($updateSql)) {
-        // Tandai token sudah digunakan
-        $row = $result->fetch_assoc();
-        $updateToken = "UPDATE password_resets SET used = 1 WHERE id = " . $row['id'];
-        $conn->query($updateToken);
+    // 🔐 AMAN: Gunakan Prepared Statement untuk UPDATE password
+    $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+    
+    $updateSql = "UPDATE penonton SET Password = ? WHERE Email = ?";
+    $updateStmt = $conn->prepare($updateSql);
+    
+    if (!$updateStmt) {
+        error_log("Prepare update failed: " . $conn->error);
+        sendResponse(false, [], 'Terjadi kesalahan sistem');
+        exit();
+    }
+    
+    $updateStmt->bind_param("ss", $hashedPassword, $email);
+    
+    if ($updateStmt->execute()) {
+        $updateStmt->close();
         
-        echo json_encode(['success' => true, 'message' => 'Password berhasil direset! Silakan login.']);
+        // 🔐 AMAN: Gunakan Prepared Statement untuk UPDATE token status
+        $updateTokenSql = "UPDATE password_resets SET used = 1 WHERE id = ?";
+        $tokenStmt = $conn->prepare($updateTokenSql);
+        
+        if ($tokenStmt) {
+            $tokenStmt->bind_param("i", $row['id']);
+            $tokenStmt->execute();
+            $tokenStmt->close();
+        }
+        
+        sendResponse(true, [], 'Password berhasil direset! Silakan login.');
     } else {
-        echo json_encode(['success' => false, 'message' => 'Gagal mengupdate password: ' . $conn->error]);
+        $updateStmt->close();
+        error_log("Update password failed: " . $updateStmt->error);
+        sendResponse(false, [], 'Gagal mengupdate password');
     }
 } else {
-    echo json_encode(['success' => false, 'message' => 'Token tidak valid atau sudah kadaluarsa']);
+    $stmt->close();
+    // 🔐 AMAN: Beri response yang sama untuk keamanan (user enumeration protection)
+    sendResponse(false, [], 'Token tidak valid atau sudah kadaluarsa');
 }
 
 $conn->close();

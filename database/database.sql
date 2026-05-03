@@ -12,7 +12,6 @@ CREATE TABLE admin (
     Nama_Lengkap  VARCHAR(100),
     Email         VARCHAR(100),
     Password      VARCHAR(255),
-    Role          ENUM('super_admin', 'admin'),
     Last_Login    DATETIME,
     Created_At    DATETIME
 );
@@ -176,6 +175,15 @@ ALTER TABLE tiket      ADD INDEX idx_id_kursi (ID_Kursi);
 ALTER TABLE notifications ADD INDEX idx_user_id (user_id);
 ALTER TABLE notifications ADD INDEX idx_is_read (is_read);
 
+
+INSERT INTO admin (ID_Admin, Nama_Lengkap, Email, Password, Created_At) 
+VALUES (
+    'ADM001', 
+    'Administrator', 
+    'admin@cinema.com', 
+    '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    NOW()
+);
 -- =============================================
 -- 14. INSERT DATA KATEGORI
 -- =============================================
@@ -369,6 +377,8 @@ INSERT INTO jadwal (ID_Jadwal, Tanggal, Jam_Mulai, No_Studio, ID_Film) VALUES
 ('TKR003', '2026-05-05', '20:00:00', 2, 19),
 
 -- Ikatan Darah (ID_Film = 20)
+
 ('IKD001', '2026-05-02', '12:00:00', 2, 20),
 ('IKD002', '2026-05-04', '14:00:00', 3, 20),
 ('IKD003', '2026-05-05', '16:00:00', 5, 20);
+;

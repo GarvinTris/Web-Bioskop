@@ -1,4 +1,4 @@
-// ForgotPassword.jsx - Tambahkan useEffect untuk navbar
+// ForgotPassword.jsx - Updated dengan style yang lebih rapi
 import "../style/Login.css";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -12,24 +12,17 @@ function ForgotPassword() {
 
     // Sembunyikan navbar saat halaman ini aktif
     useEffect(() => {
-        // Cari elemen navbar dan sembunyikan
         const navbar = document.querySelector('nav');
         const footer = document.querySelector('footer');
         
         if (navbar) navbar.style.display = 'none';
         if (footer) footer.style.display = 'none';
         
-        // Kembalikan saat komponen unmount
         return () => {
             if (navbar) navbar.style.display = '';
             if (footer) footer.style.display = '';
         };
     }, []);
-
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
-        return emailRegex.test(email);
-    };
 
     useEffect(() => {
         let timer;
@@ -42,6 +35,11 @@ function ForgotPassword() {
             if (timer) clearInterval(timer);
         };
     }, [cooldown]);
+
+    const validateEmail = (email) => {
+        const emailRegex = /^[^\s@]+@([^\s@]+\.)+[^\s@]+$/;
+        return emailRegex.test(email);
+    };
 
     const handleForgotPassword = async (e) => {
         e.preventDefault();
@@ -105,16 +103,21 @@ function ForgotPassword() {
         return (
             <div className="auth-layout">
                 <div className="login-card">
-                    <h2>Check Your Email</h2>
-                    <p className="subtitle">We've sent you a password reset link</p>
+                    <h2>✓ Cek Email Anda</h2>
+                    <p className="subtitle">Link reset password telah dikirim</p>
                     
                     <div className="success-message">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20 6L9 17L4 12" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <circle cx="12" cy="12" r="10" stroke="#4CAF50" strokeWidth="2" fill="none"/>
+                            <path d="M8 12L11 15L16 9" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
-                        <p>Password reset link has been sent to:</p>
+                        <p>Link reset password telah dikirim ke:</p>
                         <strong>{email}</strong>
-                        <p className="instruction">Please check your email inbox and follow the instructions to reset your password.</p>
+                        <p className="instruction">
+                            Silakan cek inbox email Anda dan ikuti instruksi untuk mereset password.
+                            <br />
+                            <small>Jika tidak menemukan email, cek folder Spam.</small>
+                        </p>
                     </div>
                     
                     <div className="button-group">
@@ -127,11 +130,11 @@ function ForgotPassword() {
                                 cursor: cooldown > 0 ? "not-allowed" : "pointer"
                             }}
                         >
-                            {cooldown > 0 ? `Resend Email (${formatTime(cooldown)})` : "Resend Email"}
+                            {cooldown > 0 ? `Kirim Ulang (${formatTime(cooldown)})` : "Kirim Ulang Email"}
                         </button>
                         <Link to="/login">
                             <button className="btn-back-to-login">
-                                Back to Login
+                                Kembali ke Login
                             </button>
                         </Link>
                     </div>
@@ -150,8 +153,8 @@ function ForgotPassword() {
     return (
         <div className="auth-layout">
             <div className="login-card">
-                <h2>Forgot Password</h2>
-                <p className="subtitle">Enter your email to reset your password</p>
+                <h2>Lupa Password?</h2>
+                <p className="subtitle">Masukkan email Anda untuk mereset password</p>
                 
                 {error && (
                     <div className="error-message">
@@ -162,10 +165,10 @@ function ForgotPassword() {
                 
                 <form onSubmit={handleForgotPassword} className="login-form">
                     <div className="form-group">
-                        <label>Email Address</label>
+                        <label>Alamat Email</label>
                         <input 
                             type="email" 
-                            placeholder="example@email.com"
+                            placeholder="contoh: nama@email.com"
                             value={email}
                             onChange={(e) => {
                                 setEmail(e.target.value);
@@ -181,12 +184,12 @@ function ForgotPassword() {
                         className="btn-login"
                         disabled={isLoading}
                     >
-                        {isLoading ? "Sending..." : "Send Reset Link"}
+                        {isLoading ? "Mengirim..." : "Kirim Link Reset"}
                     </button>
                     
                     <p className="signup-text">
-                        Remember your password? 
-                        <Link to="/login">Back to Login</Link>
+                        Ingat password Anda? 
+                        <Link to="/login">Kembali ke Login</Link>
                     </p>
                 </form>
             </div>

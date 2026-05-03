@@ -1,4 +1,4 @@
-// ResetPassword.jsx - Tambahkan useEffect untuk navbar
+// ResetPassword.jsx - Updated dengan style rapi
 import "../style/Login.css";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -11,6 +11,7 @@ function ResetPassword() {
     const [isLoading, setIsLoading] = useState(false);
     const [token, setToken] = useState("");
     const [email, setEmail] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -35,9 +36,6 @@ function ResetPassword() {
         
         const decodedEmail = emailParam ? decodeURIComponent(emailParam) : null;
 
-        console.log("Token:", tokenParam);
-        console.log("Email decoded:", decodedEmail);
-
         if (!tokenParam || !decodedEmail) {
             setError("Link reset password tidak valid");
         } else {
@@ -46,27 +44,25 @@ function ResetPassword() {
         }
     }, [location]);
 
+    const validatePassword = (password) => {
+        if (password.length < 8) return "Password minimal 8 karakter";
+        if (!/[A-Za-z]/.test(password)) return "Password harus mengandung huruf";
+        if (!/[0-9]/.test(password)) return "Password harus mengandung angka";
+        return null;
+    };
+
     const handleResetPassword = async (e) => {
         e.preventDefault();
         setError("");
 
-        if (!newPassword || !confirmPassword) {
-            setError("Semua field harus diisi!");
-            return;
-        }
-
-        if (newPassword.length < 8) {
-            setError("Password minimal 8 karakter!");
+        const validationError = validatePassword(newPassword);
+        if (validationError) {
+            setError(validationError);
             return;
         }
 
         if (newPassword !== confirmPassword) {
             setError("Password tidak cocok!");
-            return;
-        }
-
-        if (!/[A-Za-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-            setError("Password harus mengandung huruf dan angka!");
             return;
         }
 
@@ -104,17 +100,22 @@ function ResetPassword() {
         }
     };
 
+    const toggleShowPassword = () => {
+        setShowPassword(!showPassword);
+    };
+
     if (success) {
         return (
             <div className="auth-layout">
                 <div className="login-card">
-                    <h2>Password Berhasil Diubah!</h2>
+                    <h2>✓ Password Berhasil Diubah!</h2>
                     <div className="success-message">
                         <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
-                            <path d="M20 6L9 17L4 12" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            <circle cx="12" cy="12" r="10" stroke="#4CAF50" strokeWidth="2" fill="none"/>
+                            <path d="M8 12L11 15L16 9" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                         <p>Password Anda telah berhasil direset.</p>
-                        <p>Mengarahkan ke halaman login...</p>
+                        <p className="instruction">Mengarahkan ke halaman login...</p>
                     </div>
                     <Link to="/login">
                         <button className="btn-login">Login Sekarang</button>
@@ -128,7 +129,7 @@ function ResetPassword() {
         return (
             <div className="auth-layout">
                 <div className="login-card">
-                    <h2>Link Tidak Valid</h2>
+                    <h2>⚠️ Link Tidak Valid</h2>
                     <p className="subtitle">Link reset password tidak valid atau sudah kadaluarsa.</p>
                     <Link to="/forgot-password">
                         <button className="btn-login">Kirim Ulang Link</button>
@@ -154,20 +155,43 @@ function ResetPassword() {
                 <form onSubmit={handleResetPassword} className="login-form">
                     <div className="form-group">
                         <label>Password Baru</label>
-                        <input
-                            type="password"
-                            placeholder="Minimal 8 karakter (huruf dan angka)"
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                            disabled={isLoading}
-                            required
-                        />
+                        <div style={{ position: "relative" }}>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Minimal 8 karakter (huruf dan angka)"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                disabled={isLoading}
+                                required
+                                style={{ paddingRight: "45px" }}
+                            />
+                            <button
+                                type="button"
+                                onClick={toggleShowPassword}
+                                style={{
+                                    position: "absolute",
+                                    right: "12px",
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    background: "none",
+                                    border: "none",
+                                    color: "#9ca3af",
+                                    cursor: "pointer",
+                                    fontSize: "1rem"
+                                }}
+                            >
+                                {showPassword ? "🙈" : "👁️"}
+                            </button>
+                        </div>
+                        <small style={{ color: "#6b7280", fontSize: "0.7rem", marginTop: "4px", display: "block" }}>
+                            Password harus mengandung huruf dan angka, minimal 8 karakter
+                        </small>
                     </div>
 
                     <div className="form-group">
                         <label>Konfirmasi Password Baru</label>
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Masukkan ulang password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
@@ -181,7 +205,7 @@ function ResetPassword() {
                     </button>
 
                     <p className="signup-text">
-                        <Link to="/login">Kembali ke Login</Link>
+                        <Link to="/login">← Kembali ke Login</Link>
                     </p>
                 </form>
             </div>
