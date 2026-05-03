@@ -85,7 +85,7 @@ function Register() {
     return (
         <div className="auth-layout">
             <div className="login-card user-card">
-                <h2>Daftar Akun Penonton</h2>
+                <h2>Register</h2>
                 <p className="subtitle">Mulai pengalaman menonton Anda</p>
                 
                 <form onSubmit={handleRegister} className="login-form">

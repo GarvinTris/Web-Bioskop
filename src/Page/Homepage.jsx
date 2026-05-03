@@ -38,7 +38,7 @@ function Movie() {
     if (loading) {
         return (
             <section className="now-showing-section">
-                <h1>Now Showing In Cinema!</h1>
+                <h1>Sedang Tayang di Bioskop!</h1>
                 <div className="rekomen-loading">
                     <div className="loading-spinner"></div>
                     <p>Memuat film...</p>
@@ -50,7 +50,7 @@ function Movie() {
     if (error) {
         return (
             <section className="now-showing-section">
-                <h1>Now Showing In Cinema!</h1>
+                <h1>Sedang Tayang di Bioskop!</h1>
                 <div className="rekomen-error">
                     <p>Error: {error}</p>
                     <button onClick={() => window.location.reload()}>Coba Lagi</button>
@@ -62,7 +62,7 @@ function Movie() {
     if (!Array.isArray(films) || films.length === 0) {
         return (
             <section className="now-showing-section">
-                <h1>Now Showing In Cinema!</h1>
+                <h1>Sedang Tayang di Bioskop!</h1>
                 <div className="rekomen-empty">
                     <p>Tidak ada film yang sedang tayang saat ini.</p>
                 </div>
@@ -72,7 +72,7 @@ function Movie() {
     
     return (
         <section className="now-showing-section">
-            <h1>Now Showing In Cinema!</h1>
+            <h1>Sedang Tayang di Bioskop!</h1>
             <div className="rekomen">
                 {films.slice(0, 8).map((movie, index) => (
                     <div className="card" key={index}>
@@ -137,9 +137,9 @@ function Jumbotron() {
         return (
             <div className="jumbotron">
                 <div className="jumbotron-text">
-                    <h1>Welcome to Cinema</h1>
-                    <p>No trailer available</p>
-                    <button onClick={handleBookNow}>Book Now!</button>
+                    <h1>Selamat Datang di Filmout</h1>
+                    <p>trailer tidak tersedia</p>
+                    <button onClick={handleBookNow}>Pesan Sekarang!</button>
                 </div>
             </div>
         );
@@ -164,7 +164,7 @@ function Jumbotron() {
                     <span className="badge">{activeTrailer.Nama_Kategori || 'Film'}</span>
                 </div>
                 <p>{activeTrailer.Deskripsi?.substring(0, 150)}...</p>
-                <button onClick={handleBookNow}>Book Now!</button>
+                <button onClick={handleBookNow}>Pesan</button>
             </div>
         </div>
     );
@@ -227,7 +227,7 @@ function Popular() {
     );
 }
 
-// ==================== COMPONENT: COMING SOON ====================
+// ==================== COMPONENT: Segera hadir ====================
 function ComingSoon() {
     const [comingSoonFilms, setComingSoonFilms] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -252,7 +252,7 @@ function ComingSoon() {
             })
             .catch(error => {
                 console.error("Fetch error:", error);
-                setError("Gagal memuat data film coming soon");
+                setError("Gagal memuat data film Segera hadir");
                 setComingSoonFilms([]);
                 setLoading(false);
             });
@@ -261,10 +261,10 @@ function ComingSoon() {
     if (loading) {
         return (
             <section className="coming-soon-section">
-                <h1>🎬 Coming Soon</h1>
+                <h1>🎬 Segera hadir</h1>
                 <div className="coming-soon-loading">
                     <div className="loading-spinner"></div>
-                    <p>Memuat film coming soon...</p>
+                    <p>Memuat film Segera hadir...</p>
                 </div>
             </section>
         );
@@ -273,7 +273,7 @@ function ComingSoon() {
     if (error) {
         return (
             <section className="coming-soon-section">
-                <h1>🎬 Coming Soon</h1>
+                <h1>🎬 Segera hadir</h1>
                 <div className="coming-soon-error">
                     <p>Error: {error}</p>
                     <button onClick={() => window.location.reload()}>Coba Lagi</button>
@@ -285,7 +285,7 @@ function ComingSoon() {
     if (comingSoonFilms.length === 0) {
         return (
             <section className="coming-soon-section">
-                <h1>🎬 Coming Soon</h1>
+                <h1>🎬 Segera hadir</h1>
                 <div className="coming-soon-empty">
                     <p>Tidak ada film yang akan datang saat ini.</p>
                 </div>
@@ -295,7 +295,7 @@ function ComingSoon() {
 
     return (
         <section className="coming-soon-section">
-            <h1>🎬 Coming Soon</h1>
+            <h1>🎬 Segera hadir</h1>
             <p className="coming-soon-paragraf">Film-film yang akan segera tayang di bioskop kami</p>
             <div className="coming-soon-grid">
                 {comingSoonFilms.map((film, index) => (
@@ -307,7 +307,7 @@ function ComingSoon() {
                                 onError={(e) => e.target.src = 'https://via.placeholder.com/300x450?text=Coming+Soon'}
                             />
                             <div className="coming-soon-date">
-                                {film.Tanggal_Rilis || "Coming Soon"}
+                                {film.Tanggal_Rilis || "Segera hadir"}
                             </div>
                         </div>
                         <div className="coming-soon-info">
@@ -357,7 +357,7 @@ function FAQSection() {
 
     return (
         <section className="faq-section-home">
-            <h1>❓ Frequently Asked Questions</h1>
+            <h1>Pertanyaan yang Sering Diajukan</h1>
             <p className="faq-subtitle">Pertanyaan yang sering diajukan oleh pengunjung kami</p>
             <div className="faq-container">
                 {faqs.map((faq, idx) => (

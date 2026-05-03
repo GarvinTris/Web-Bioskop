@@ -69,7 +69,7 @@ function Login() {
     return (
         <div className="auth-layout">
             <div className="login-card user-card">
-                <h2>Login Penonton</h2>
+                <h2>Login</h2>
                 <p className="subtitle">Masuk dengan email atau nomor HP</p>
                 
                 <form onSubmit={handleLogin} className="login-form">
