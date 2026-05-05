@@ -50,7 +50,7 @@ function About(){
   const teamMembers = [
     {
       id: 1,
-      name: "Budi Santoso",
+      name: "Garvin Triskie",
       role: "Founder & CEO",
       image: "https://randomuser.me/api/portraits/men/1.jpg",
       bio: "Visioner industri hiburan dengan pengalaman 15 tahun",
@@ -58,7 +58,7 @@ function About(){
     },
     {
       id: 2,
-      name: "Siti Rahayu",
+      name: "Jevanie Shenjaya",
       role: "Chief Operating Officer",
       image: "https://randomuser.me/api/portraits/women/2.jpg",
       bio: "Ahli manajemen operasional bioskop berskala nasional",
@@ -66,7 +66,7 @@ function About(){
     },
     {
       id: 3,
-      name: "Ahmad Wijaya",
+      name: "Jadrian Oliver Tahir",
       role: "Head of Programming",
       image: "https://randomuser.me/api/portraits/men/3.jpg",
       bio: "Kurator film dengan koneksi internasional",
@@ -74,7 +74,7 @@ function About(){
     },
     {
       id: 4,
-      name: "Dewi Lestari",
+      name: "Joshua Dave Whang",
       role: "Customer Experience Director",
       image: "https://randomuser.me/api/portraits/women/4.jpg",
       bio: "Memastikan setiap kunjungan menjadi pengalaman tak terlupakan",

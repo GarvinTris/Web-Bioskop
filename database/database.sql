@@ -37,7 +37,7 @@ CREATE TABLE film (
     Deskripsi     TEXT,
     Rating_Usia   VARCHAR(10),
     Trailer_URL   VARCHAR(255),
-    Rating        DECIMAL(2,1),
+    Rating        DECIMAL(2,1) CHECK (Rating BETWEEN 0 AND 10),
     FOREIGN KEY (ID_Kategori) REFERENCES kategori(ID_Kategori) ON DELETE SET NULL
 );
 
@@ -90,15 +90,14 @@ CREATE TABLE jadwal (
 );
 
 -- =============================================
--- 9. TABEL TIKET
+-- 9. TABEL TIKET (Stok dihapus, cukup Status)
 -- =============================================
 CREATE TABLE tiket (
     ID_Tiket      VARCHAR(20) PRIMARY KEY,
-    Stok          INT(11) NOT NULL,
     Harga         INT(11) NOT NULL,
     ID_Kursi      VARCHAR(20) NOT NULL,
     ID_Jadwal     VARCHAR(20) NOT NULL,
-    Status        VARCHAR(20) DEFAULT 'tersedia',
+    Status        ENUM('tersedia', 'terjual', 'dipesan') DEFAULT 'tersedia',
     FOREIGN KEY (ID_Kursi)  REFERENCES kursi(ID_Kursi) ON DELETE CASCADE,
     FOREIGN KEY (ID_Jadwal) REFERENCES jadwal(ID_Jadwal) ON DELETE CASCADE,
     UNIQUE KEY unique_tiket (ID_Jadwal, ID_Kursi)
@@ -146,7 +145,7 @@ CREATE TABLE notifications (
 );
 
 -- =============================================
--- TABEL PASSWORD RESETS (untuk lupa password)
+-- TABEL PASSWORD RESETS
 -- =============================================
 CREATE TABLE IF NOT EXISTS password_resets (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -175,7 +174,9 @@ ALTER TABLE tiket      ADD INDEX idx_id_kursi (ID_Kursi);
 ALTER TABLE notifications ADD INDEX idx_user_id (user_id);
 ALTER TABLE notifications ADD INDEX idx_is_read (is_read);
 
-
+-- =============================================
+-- 14. INSERT DATA ADMIN
+-- =============================================
 INSERT INTO admin (ID_Admin, Nama_Lengkap, Email, Password, Created_At) 
 VALUES (
     'ADM001', 
@@ -184,8 +185,9 @@ VALUES (
     '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
     NOW()
 );
+
 -- =============================================
--- 14. INSERT DATA KATEGORI
+-- 15. INSERT DATA KATEGORI
 -- =============================================
 INSERT INTO kategori (ID_Kategori, Nama_Kategori) VALUES
     ('AKSI',      'Action'),
@@ -202,7 +204,7 @@ INSERT INTO kategori (ID_Kategori, Nama_Kategori) VALUES
     ('THRIL',     'Thriller');
 
 -- =============================================
--- 15. INSERT DATA STUDIO
+-- 16. INSERT DATA STUDIO
 -- =============================================
 INSERT INTO studio (No_Studio, Nama_Studio, Harga_Tiket) VALUES
     (1, 'Reguler 1',    50000),
@@ -216,41 +218,40 @@ INSERT INTO studio (No_Studio, Nama_Studio, Harga_Tiket) VALUES
     (9, 'IMAX 3D',      95000);
 
 -- =============================================
--- 16. INSERT DATA KURSI (Studio 1)
+-- 17. GENERATE KURSI UNTUK SEMUA STUDIO (1-9)
 -- =============================================
--- Baris A (Kursi 1-8)
-INSERT INTO kursi (ID_Kursi, No_Studio, Baris, Nomor_Kursi) VALUES
-    ('KRS1A01', 1, 'A', 1), ('KRS1A02', 1, 'A', 2),
-    ('KRS1A03', 1, 'A', 3), ('KRS1A04', 1, 'A', 4),
-    ('KRS1A05', 1, 'A', 5), ('KRS1A06', 1, 'A', 6),
-    ('KRS1A07', 1, 'A', 7), ('KRS1A08', 1, 'A', 8);
+DELIMITER $$
+CREATE PROCEDURE GenerateAllSeats()
+BEGIN
+    DECLARE studio_num INT DEFAULT 1;
+    DECLARE baris_char CHAR(1);
+    DECLARE nomor INT;
+    
+    WHILE studio_num <= 9 DO
+        SET baris_char = 'A';
+        WHILE baris_char <= 'C' DO
+            SET nomor = 1;
+            WHILE nomor <= 8 DO
+                INSERT INTO kursi (ID_Kursi, No_Studio, Baris, Nomor_Kursi)
+                VALUES (CONCAT('KRS', studio_num, baris_char, LPAD(nomor, 2, '0')), 
+                        studio_num, baris_char, nomor)
+                ON DUPLICATE KEY UPDATE ID_Kursi = ID_Kursi;
+                SET nomor = nomor + 1;
+            END WHILE;
+            SET baris_char = CHAR(ASCII(baris_char) + 1);
+        END WHILE;
+        SET studio_num = studio_num + 1;
+    END WHILE;
+END$$
+DELIMITER ;
 
--- Baris B (Kursi 1-8)
-INSERT INTO kursi (ID_Kursi, No_Studio, Baris, Nomor_Kursi) VALUES
-    ('KRS1B01', 1, 'B', 1), ('KRS1B02', 1, 'B', 2),
-    ('KRS1B03', 1, 'B', 3), ('KRS1B04', 1, 'B', 4),
-    ('KRS1B05', 1, 'B', 5), ('KRS1B06', 1, 'B', 6),
-    ('KRS1B07', 1, 'B', 7), ('KRS1B08', 1, 'B', 8);
-
--- Baris C (Kursi 1-8)
-INSERT INTO kursi (ID_Kursi, No_Studio, Baris, Nomor_Kursi) VALUES
-    ('KRS1C01', 1, 'C', 1), ('KRS1C02', 1, 'C', 2),
-    ('KRS1C03', 1, 'C', 3), ('KRS1C04', 1, 'C', 4),
-    ('KRS1C05', 1, 'C', 5), ('KRS1C06', 1, 'C', 6),
-    ('KRS1C07', 1, 'C', 7), ('KRS1C08', 1, 'C', 8);
+CALL GenerateAllSeats();
+DROP PROCEDURE GenerateAllSeats;
 
 -- =============================================
--- 17. INSERT DATA FILM
+-- 18. INSERT DATA FILM
 -- =============================================
--- =============================================
--- INSERT DATA FILM BARU (Tambahan)
--- =============================================
-
--- =====================================================
--- INSERT DATA FILM KE TABEL web_bioskop film
--- =====================================================
-
-    INSERT INTO `film` (`Judul_Film`, `Durasi`, `ID_Kategori`, `image`, `Director`, `Deskripsi`, `Rating_Usia`, `Trailer_URL`, `Rating`) VALUES
+INSERT INTO `film` (`Judul_Film`, `Durasi`, `ID_Kategori`, `image`, `Director`, `Deskripsi`, `Rating_Usia`, `Trailer_URL`, `Rating`) VALUES
     ('John Wick: Chronicles', '02:15:00', 'AKSI', '1772629196_John_Wick_Chronicles.jpg', 'Chad Stahelski', 'Kisah legendaris sang pembunuh bayaran John Wick yang kembali dari masa pensiun untuk membalas dendam.', 'R', 'https://www.youtube.com/watch?v=2AUmvWm5ZDQ', 8.2),
     ('Home Alone', '01:45:00', 'KOMEDI', '1772631725_69a836ad217bc.jpg', 'John Hughes', 'Seorang anak kecil yang tertinggal di rumah saat liburan Natal harus melindungi rumahnya dari dua pencuri bodoh.', 'SU', 'https://www.youtube.com/watch?v=jEDaVHmw7r4', 7.9),
     ('Train to Busan', '01:58:00', 'HOROR', '1772635229_69a8445d438ca.jpg', 'Yeon Sang-ho', 'Penumpang kereta cepat menuju Busan harus berjuang mempertahankan hidup saat wabah zombie menyebar dengan cepat.', 'D', 'https://www.youtube.com/watch?v=SbP8_9iNwdA', 8.0),
@@ -263,122 +264,147 @@ INSERT INTO kursi (ID_Kursi, No_Studio, Baris, Nomor_Kursi) VALUES
     ('Zootopia 2', '01:50:00', 'ANIM', '1775825738_69d8f34a3f20b.jpg', 'Jared Bush', 'Judy Hoops dan Nick Wilde kembali dengan petualangan baru di kota Zootopia.', 'SU', 'https://www.youtube.com/watch?v=BjkIOU5PhyQ', 7.6),
     ('Legenda Kelam (Malin Kundang)', '02:00:00', 'DRAMA', '1775825832_69d8f3a848185.jpg', 'Lee Chang Hee', 'Adaptasi modern dari legenda Malin Kundang tentang kesombongan dan pengkhianatan anak kepada ibu.', 'D', 'https://www.youtube.com/watch?v=tu5kRtyIU3U', 7.3),
     ('Keadilan (The Verdict)', '01:55:00', 'KOMEDI', '1775825902_69d8f3ee786af.jpg', 'Muhadhly Acho', 'Empat detektif yang terus gagal dalam misi harus menyelesaikan kasus besar terakhir mereka.', 'R', 'https://www.youtube.com/watch?v=oXWmB0csH6U', 8.5),
-    ('Agak Laen: Menyala Pantik!', '02:10:00', 'KOMEDI', '1775826000_69d8f450b0d68.jpg', 'Muhadhly Acho', 'Film komedi aksi yang menampilkan para komedian terkenal dengan cerita penuh tawa dan kejutan.', 'D', 'https://www.youtube.com/watch?v=QxgqR7yXxdA
-    ', 8.0),
-    ('The Amazing Spider-Man', '02:16:00', 'AKSI', '1777136510_69ecf37e46e39.jpg', 'Sam Raimi', 'Kisah Peter Parker yang berubah menjadi pahlawan super Spider-Man setelah digigit laba-laba radioaktif.', 'R', 'https://www.youtube.com/watch?v=-tnxzJ0SSOw&t=18s
-    ', 7.4),
+    ('Agak Laen: Menyala Pantik!', '02:10:00', 'KOMEDI', '1775826000_69d8f450b0d68.jpg', 'Muhadhly Acho', 'Film komedi aksi yang menampilkan para komedian terkenal dengan cerita penuh tawa dan kejutan.', 'D', 'https://www.youtube.com/watch?v=QxgqR7yXxdA', 8.0),
+    ('The Amazing Spider-Man', '02:16:00', 'AKSI', '1777136510_69ecf37e46e39.jpg', 'Sam Raimi', 'Kisah Peter Parker yang berubah menjadi pahlawan super Spider-Man setelah digigit laba-laba radioaktif.', 'R', 'https://www.youtube.com/watch?v=-tnxzJ0SSOw', 7.4),
     ('Whisper of the Heart', '01:51:00', 'ANIM', '1777213531_69ee205b1f9fb.jpg', 'Yoshifumi Kondo', 'Sebuah film animasi Studio Ghibli tentang seorang gadis pencinta buku yang menemukan perpustakaan ajaib.', 'SU', 'https://www.youtube.com/watch?v=0pVkiod6V0U', 8.0),
-    ('The Odyssey', '03:00:00', 'PETUALANG', '1777217859_69ee3143c060d.jpg', 'Christopher Nolan', 'Epik petualangan berdasarkan puisi karya Homer tentang prajurit Yunani yang berjuang pulang ke rumah.', 'R', 'https://www.youtube.com/watch?v=iklicVKcoI8&t=1s', 8.7),
-    ('Masters of the Universe', '02:08:00', 'FANTASI', '1777217880_69ee31585bafc.jpg', 'Travis Knight', 'Adaptasi live-action dari He-Man dan petualangannya melawan musuh bebuyutannya.', 'R', 'https://www.youtube.com/watch?v=ZmEx7wQI6RY&t=1s', 7.2),
-    ('Hard Boiled', '02:08:00', 'AKSI', '1777217907_69ee31733eb34.jpg', 'John Woo', 'Film aksi klasik John Woo tentang seorang polisi yang menyusup ke sindikat senjata api.', 'R', 'https://www.youtube.com/watch?v=_fcwFheTLdE&t=1s', 7.8),
+    ('The Odyssey', '03:00:00', 'PETUALANG', '1777217859_69ee3143c060d.jpg', 'Christopher Nolan', 'Epik petualangan berdasarkan puisi karya Homer tentang prajurit Yunani yang berjuang pulang ke rumah.', 'R', 'https://www.youtube.com/watch?v=iklicVKcoI8', 8.7),
+    ('Masters of the Universe', '02:08:00', 'FANTASI', '1777217880_69ee31585bafc.jpg', 'Travis Knight', 'Adaptasi live-action dari He-Man dan petualangannya melawan musuh bebuyutannya.', 'R', 'https://www.youtube.com/watch?v=ZmEx7wQI6RY', 7.2),
+    ('Hard Boiled', '02:08:00', 'AKSI', '1777217907_69ee31733eb34.jpg', 'John Woo', 'Film aksi klasik John Woo tentang seorang polisi yang menyusup ke sindikat senjata api.', 'R', 'https://www.youtube.com/watch?v=_fcwFheTLdE', 7.8),
     ('The Killer', '02:00:00', 'THRIL', '1777217925_69ee3185619ee.jpg', 'John Woo', 'Film terbaru John Woo tentang seorang pembunuh bayaran yang meragukan pilihannya.', 'R', 'https://www.youtube.com/watch?v=zgNOS5ofQhw', 7.3),
-    ('Ikatan Darah', '02:00:00', 'DRAMA', '1777258691_69eed0c3155e2.jpg', 'Matthew Rosiana', 'Film drama tentang ikatan keluarga dan pengorbanan seorang ayah untuk anak-anaknya.', 'D', 'https://www.youtube.com/watch?v=uyiyfcyvA0A&t=1s', 7.0);
+    ('Ikatan Darah', '02:00:00', 'DRAMA', '1777258691_69eed0c3155e2.jpg', 'Matthew Rosiana', 'Film drama tentang ikatan keluarga dan pengorbanan seorang ayah untuk anak-anaknya.', 'D', 'https://www.youtube.com/watch?v=uyiyfcyvA0A', 7.0);
 
+-- =============================================
+-- 19. INSERT JADWAL (sudah diaktifkan semua)
+-- =============================================
 INSERT INTO jadwal (ID_Jadwal, Tanggal, Jam_Mulai, No_Studio, ID_Film) VALUES
--- John Wick: Chronicles (ID_Film = 1)
-('JWL001', '2026-05-01', '13:00:00', 1, 1),
-('JWL002', '2026-05-02', '15:30:00', 1, 1),
-('JWL003', '2026-05-03', '19:00:00', 3, 1),
-('JWL004', '2026-05-04', '14:00:00', 5, 1),
-('JWL005', '2026-05-05', '20:00:00', 5, 1),
+('JDWL001', '2026-05-01', '13:00:00', 1, 1),
+('JDWL002', '2026-05-02', '15:30:00', 1, 1),
+('JDWL003', '2026-05-03', '19:00:00', 3, 1),
+('JDWL004', '2026-05-04', '14:00:00', 5, 1),
+('JDWL005', '2026-05-05', '20:00:00', 5, 1),
+('JDWL006', '2026-05-01', '14:00:00', 2, 2),
+('JDWL007', '2026-05-02', '19:30:00', 2, 2),
+('JDWL008', '2026-05-03', '16:00:00', 4, 2),
+('JDWL009', '2026-05-04', '20:30:00', 6, 2),
+('JDWL010', '2026-05-05', '18:00:00', 6, 2),
+('JDWL011', '2026-05-01', '16:00:00', 3, 3),
+('JDWL012', '2026-05-02', '20:00:00', 3, 3),
+('JDWL013', '2026-05-03', '13:30:00', 7, 3),
+('JDWL014', '2026-05-04', '19:00:00', 8, 3),
+('JDWL015', '2026-05-05', '21:00:00', 8, 3),
+('JDWL016', '2026-05-01', '21:00:00', 7, 4),
+('JDWL017', '2026-05-03', '22:00:00', 7, 4),
+('JDWL018', '2026-05-05', '20:00:00', 3, 4),
+('JDWL019', '2026-05-01', '13:00:00', 1, 5),
+('JDWL020', '2026-05-03', '10:00:00', 3, 5),
+('JDWL021', '2026-05-05', '16:00:00', 1, 5),
+('JDWL022', '2026-05-01', '19:00:00', 4, 6),
+('JDWL023', '2026-05-03', '20:30:00', 6, 6),
+('JDWL024', '2026-05-05', '14:00:00', 2, 6),
+('JDWL025', '2026-05-02', '13:00:00', 3, 7),
+('JDWL026', '2026-05-04', '16:00:00', 5, 7),
+('JDWL027', '2026-05-05', '11:00:00', 3, 7),
+('JDWL028', '2026-05-02', '20:00:00', 5, 8),
+('JDWL029', '2026-05-04', '21:00:00', 5, 8),
+('JDWL030', '2026-05-05', '22:00:00', 8, 8),
+('JDWL031', '2026-05-02', '23:00:00', 7, 9),
+('JDWL032', '2026-05-04', '20:00:00', 7, 9),
+('JDWL033', '2026-05-05', '21:30:00', 7, 9),
+('JDWL034', '2026-05-01', '10:00:00', 1, 10),
+('JDWL035', '2026-05-03', '11:00:00', 3, 10),
+('JDWL036', '2026-05-05', '09:00:00', 2, 10),
+('JDWL037', '2026-05-01', '15:00:00', 5, 11),
+('JDWL038', '2026-05-03', '17:00:00', 5, 11),
+('JDWL039', '2026-05-05', '19:00:00', 3, 11),
+('JDWL040', '2026-05-01', '16:00:00', 1, 12),
+('JDWL041', '2026-05-03', '14:00:00', 1, 12),
+('JDWL042', '2026-05-05', '18:00:00', 2, 12),
+('JDWL043', '2026-05-01', '20:00:00', 8, 13),
+('JDWL044', '2026-05-03', '21:00:00', 8, 13),
+('JDWL045', '2026-05-05', '22:30:00', 8, 13),
+('JDWL046', '2026-05-02', '16:00:00', 4, 14),
+('JDWL047', '2026-05-04', '18:00:00', 4, 14),
+('JDWL048', '2026-05-05', '15:00:00', 6, 14),
+('JDWL049', '2026-05-02', '10:00:00', 3, 15),
+('JDWL050', '2026-05-04', '11:00:00', 1, 15),
+('JDWL051', '2026-05-05', '10:00:00', 3, 15),
+('JDWL052', '2026-05-02', '19:00:00', 4, 16),
+('JDWL053', '2026-05-04', '20:00:00', 4, 16),
+('JDWL054', '2026-05-05', '17:00:00', 4, 16),
+('JDWL055', '2026-05-02', '14:00:00', 6, 17),
+('JDWL056', '2026-05-04', '15:00:00', 2, 17),
+('JDWL057', '2026-05-05', '13:00:00', 6, 17),
+('JDWL058', '2026-05-02', '17:00:00', 3, 18),
+('JDWL059', '2026-05-04', '19:00:00', 5, 18),
+('JDWL060', '2026-05-05', '14:00:00', 1, 18),
+('JDWL061', '2026-05-02', '21:00:00', 6, 19),
+('JDWL062', '2026-05-04', '22:00:00', 4, 19),
+('JDWL063', '2026-05-05', '20:00:00', 2, 19),
+('JDWL064', '2026-05-02', '12:00:00', 2, 20),
+('JDWL065', '2026-05-04', '14:00:00', 3, 20),
+('JDWL066', '2026-05-05', '16:00:00', 5, 20);
 
--- Home Alone (ID_Film = 2)
-('KLR001', '2026-05-01', '14:00:00', 2, 2),
-('KLR002', '2026-05-02', '19:30:00', 2, 2),
-('KLR003', '2026-05-03', '16:00:00', 4, 2),
-('KLR004', '2026-05-04', '20:30:00', 6, 2),
-('KLR005', '2026-05-05', '18:00:00', 6, 2),
+-- =============================================
+-- 20. GENERATE TIKET UNTUK SEMUA JADWAL & KURSI
+-- =============================================
+INSERT INTO tiket (ID_Tiket, Harga, ID_Kursi, ID_Jadwal, Status)
+SELECT CONCAT('TKT', j.ID_Jadwal, k.ID_Kursi),
+       s.Harga_Tiket,
+       k.ID_Kursi,
+       j.ID_Jadwal,
+       'tersedia'
+FROM jadwal j
+JOIN studio s ON j.No_Studio = s.No_Studio
+CROSS JOIN kursi k
+WHERE k.No_Studio = j.No_Studio
+ON DUPLICATE KEY UPDATE ID_Tiket = ID_Tiket;
 
--- Train to Busan (ID_Film = 3)
-('HBD001', '2026-05-01', '16:00:00', 3, 3),
-('HBD002', '2026-05-02', '20:00:00', 3, 3),
-('HBD003', '2026-05-03', '13:30:00', 7, 3),
-('HBD004', '2026-05-04', '19:00:00', 8, 3),
-('HBD005', '2026-05-05', '21:00:00', 8, 3),
+-- =============================================
+-- 21. TRIGGER UPDATE STATUS TIKET SAAT TRANSAKSI
+-- =============================================
+DELIMITER $$
+CREATE TRIGGER after_transaksi_insert
+AFTER INSERT ON transaksi
+FOR EACH ROW
+BEGIN
+    DECLARE kursi_list TEXT;
+    DECLARE kursi_item VARCHAR(20);
+    DECLARE pos INT;
+    
+    SET kursi_list = NEW.Kursi;
+    
+    WHILE LENGTH(kursi_list) > 0 DO
+        SET pos = LOCATE(',', kursi_list);
+        IF pos > 0 THEN
+            SET kursi_item = TRIM(SUBSTRING(kursi_list, 1, pos - 1));
+            SET kursi_list = SUBSTRING(kursi_list, pos + 1);
+        ELSE
+            SET kursi_item = TRIM(kursi_list);
+            SET kursi_list = '';
+        END IF;
+        
+        UPDATE tiket 
+        SET Status = 'terjual'
+        WHERE ID_Kursi = kursi_item 
+          AND ID_Jadwal = NEW.ID_Jadwal;
+    END WHILE;
+END$$
+DELIMITER ;
 
--- Avengers: Endgame (ID_Film = 4)
-('TTB001', '2026-05-01', '21:00:00', 7, 4),
-('TTB002', '2026-05-03', '22:00:00', 7, 4),
-('TTB003', '2026-05-05', '20:00:00', 3, 4),
+-- =============================================
+-- 22. TRIGGER UPDATE Last_Login ADMIN
+-- =============================================
+DELIMITER $$
+CREATE TRIGGER before_admin_login
+BEFORE UPDATE ON admin
+FOR EACH ROW
+BEGIN
+    IF NEW.Last_Login IS NOT NULL AND OLD.Last_Login IS NULL THEN
+        SET NEW.Last_Login = NOW();
+    END IF;
+END$$
+DELIMITER ;
 
--- Five Nights at Freddy's (ID_Film = 5)
-('HMA001', '2026-05-01', '13:00:00', 1, 5),
-('HMA002', '2026-05-03', '10:00:00', 3, 5),
-('HMA003', '2026-05-05', '16:00:00', 1, 5),
-
--- The Shadow Edge (ID_Film = 6)
-('JWK001', '2026-05-01', '19:00:00', 4, 6),
-('JWK002', '2026-05-03', '20:30:00', 6, 6),
-('JWK003', '2026-05-05', '14:00:00', 2, 6),
-
--- Nuremberg (ID_Film = 7)
-('NRB001', '2026-05-02', '13:00:00', 3, 7),
-('NRB002', '2026-05-04', '16:00:00', 5, 7),
-('NRB003', '2026-05-05', '11:00:00', 3, 7),
-
--- Blue Moon (ID_Film = 8)
-('BLM001', '2026-05-02', '20:00:00', 5, 8),
-('BLM002', '2026-05-04', '21:00:00', 5, 8),
-('BLM003', '2026-05-05', '22:00:00', 8, 8),
-
--- The Substance (ID_Film = 9)
-('SUB001', '2026-05-02', '23:00:00', 7, 9),
-('SUB002', '2026-05-04', '20:00:00', 7, 9),
-('SUB003', '2026-05-05', '21:30:00', 7, 9),
-
--- Zootopia 2 (ID_Film = 10)
-('ZTP001', '2026-05-01', '10:00:00', 1, 10),
-('ZTP002', '2026-05-03', '11:00:00', 3, 10),
-('ZTP003', '2026-05-05', '09:00:00', 2, 10),
-
--- Legenda Kelam (ID_Film = 11)
-('LKL001', '2026-05-01', '15:00:00', 5, 11),
-('LKL002', '2026-05-03', '17:00:00', 5, 11),
-('LKL003', '2026-05-05', '19:00:00', 3, 11),
-
--- Keadilan (ID_Film = 12)
-('KDL001', '2026-05-01', '16:00:00', 1, 12),
-('KDL002', '2026-05-03', '14:00:00', 1, 12),
-('KDL003', '2026-05-05', '18:00:00', 2, 12),
-
--- Agak Laen (ID_Film = 13)
-('AGL001', '2026-05-01', '20:00:00', 8, 13),
-('AGL002', '2026-05-03', '21:00:00', 8, 13),
-('AGL003', '2026-05-05', '22:30:00', 8, 13),
-
--- The Amazing Spider-Man (ID_Film = 14)
-('SPM001', '2026-05-02', '16:00:00', 4, 14),
-('SPM002', '2026-05-04', '18:00:00', 4, 14),
-('SPM003', '2026-05-05', '15:00:00', 6, 14),
-
--- Whisper of the Heart (ID_Film = 15)
-('WSH001', '2026-05-02', '10:00:00', 3, 15),
-('WSH002', '2026-05-04', '11:00:00', 1, 15),
-('WSH003', '2026-05-05', '10:00:00', 3, 15),
-
--- The Odyssey (ID_Film = 16)
-('ODY001', '2026-05-02', '19:00:00', 4, 16),
-('ODY002', '2026-05-04', '20:00:00', 4, 16),
-('ODY003', '2026-05-05', '17:00:00', 4, 16),
-
--- Masters of the Universe (ID_Film = 17)
-('MOT001', '2026-05-02', '14:00:00', 6, 17),
-('MOT002', '2026-05-04', '15:00:00', 2, 17),
-('MOT003', '2026-05-05', '13:00:00', 6, 17),
-
--- Hard Boiled (ID_Film = 18)
-('HBO001', '2026-05-02', '17:00:00', 3, 18),
-('HBO002', '2026-05-04', '19:00:00', 5, 18),
-('HBO003', '2026-05-05', '14:00:00', 1, 18),
-
--- The Killer (ID_Film = 19)
-('TKR001', '2026-05-02', '21:00:00', 6, 19),
-('TKR002', '2026-05-04', '22:00:00', 4, 19),
-('TKR003', '2026-05-05', '20:00:00', 2, 19),
-
--- Ikatan Darah (ID_Film = 20)
-
-('IKD001', '2026-05-02', '12:00:00', 2, 20),
-('IKD002', '2026-05-04', '14:00:00', 3, 20),
-('IKD003', '2026-05-05', '16:00:00', 5, 20);
-;
+-- =============================================
+-- SELESAI
+-- =============================================

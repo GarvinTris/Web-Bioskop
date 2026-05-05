@@ -25,6 +25,7 @@
 /* ===== SHOWCASE FILM ===== */
 .reservasi-showcase {
   display: flex;
+  padding: 50px;
   gap: 50px;
   margin-bottom: 50px;
   flex-wrap: wrap;
@@ -97,6 +98,234 @@
   color: #cccccc;
 }
 
+/* ========== TRAILER HERO SECTION - FULL WIDTH & FULL SCREEN ========== */
+.trailer-hero {
+  width: 100%;
+  height: 70vh;
+  min-height: 500px;
+  max-height: 700px;
+  position: relative;
+  overflow: hidden;
+  background-color: #000;
+  margin-left: calc(-50vw + 50%);
+  margin-right: calc(-50vw + 50%);
+  left: 0;
+  right: 0;
+}
+
+.trailer-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.trailer-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  object-fit: cover;
+}
+
+/* Gradient overlay untuk transisi ke konten di bawah */
+.trailer-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 180px;
+  background: linear-gradient(to top, #0f0f1a 0%, transparent 100%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Tombol Play di tengah - lebih besar */
+.trailer-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(229, 9, 20, 0.9);
+  color: white;
+  border: none;
+  padding: 18px 42px;
+  border-radius: 60px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+}
+
+.trailer-play-button:hover {
+  background-color: #e50914;
+  transform: translate(-50%, -50%) scale(1.08);
+  box-shadow: 0 10px 40px rgba(229, 9, 20, 0.4);
+}
+
+.play-icon {
+  font-size: 1.4rem;
+}
+
+/* Info tambahan di atas trailer (judul film) */
+.trailer-info-overlay {
+  position: absolute;
+  bottom: 80px;
+  left: 60px;
+  z-index: 2;
+  max-width: 500px;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.trailer-info-overlay h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  color: white;
+  font-weight: 700;
+}
+
+.trailer-info-overlay .meta {
+  display: flex;
+  gap: 12px;
+}
+
+.trailer-info-overlay .rating-badge {
+  background-color: #ffc107;
+  color: #1a1a2e;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.trailer-info-overlay .age-badge {
+  background-color: #e94560;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Placeholder jika tidak ada trailer */
+.trailer-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.trailer-placeholder img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.5);
+}
+
+.placeholder-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 16px 32px;
+  border-radius: 50px;
+  color: #ffcc00;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Loading indicator untuk trailer */
+.trailer-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 3;
+}
+
+.trailer-loading .spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #e50914;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.trailer-loading p {
+  color: white;
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .trailer-hero {
+    height: 60vh;
+    min-height: 400px;
+  }
+  
+  .trailer-play-button {
+    padding: 14px 32px;
+    font-size: 1.1rem;
+  }
+  
+  .trailer-info-overlay {
+    bottom: 40px;
+    left: 30px;
+  }
+  
+  .trailer-info-overlay h1 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .trailer-hero {
+    height: 50vh;
+    min-height: 300px;
+  }
+  
+  .trailer-play-button {
+    padding: 12px 24px;
+    font-size: 0.9rem;
+    gap: 8px;
+  }
+  
+  .play-icon {
+    font-size: 1rem;
+  }
+  
+  .trailer-info-overlay {
+    bottom: 20px;
+    left: 20px;
+  }
+  
+  .trailer-info-overlay h1 {
+    font-size: 1.3rem;
+  }
+  
+  .trailer-info-overlay .meta {
+    gap: 8px;
+  }
+  
+  .trailer-info-overlay .rating-badge,
+  .trailer-info-overlay .age-badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+  }
+}
+  
 .movie-meta .label {
   color: #999;
   font-weight: 500;

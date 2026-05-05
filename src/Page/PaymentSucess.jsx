@@ -7,72 +7,44 @@ function PaymentSuccess() {
   const [transaction, setTransaction] = useState(null);
   const [countdown, setCountdown] = useState(5);
 
-  // PaymentSuccess.jsx - update useEffect
-useEffect(() => {
-  const lastTrx = localStorage.getItem("lastTransaction");
-  console.log("Last transaction from localStorage:", lastTrx);
-  
-  if (lastTrx) {
+  useEffect(() => {
+    const lastTrx = localStorage.getItem("lastTransaction");
+    console.log("Last transaction:", lastTrx);
+    
+    if (lastTrx) {
       const trxData = JSON.parse(lastTrx);
       console.log("Transaction data:", trxData);
       setTransaction(trxData);
-      
-      // Pastikan transaksi tersimpan dengan benar
-      const userId = localStorage.getItem("userId");  
-      if (userId && trxData.id) {
-          const transactionKey = `transaction_${userId}_${trxData.id}`;
-          const existingTrx = localStorage.getItem(transactionKey);
-          
-          if (!existingTrx) {
-              // Jika belum tersimpan, simpan sekarang
-              localStorage.setItem(transactionKey, lastTrx);
-              console.log("Transaction saved on success page:", transactionKey);
-          } else {
-              console.log("Transaction already exists:", transactionKey);
-          }
-      }
-  } else {
-      // Jika tidak ada lastTransaction, coba cari transaksi terbaru
+    } else {
+      // Fallback: cari dari riwayat
       const userId = localStorage.getItem("userId");
       if (userId) {
-          let latestTransaction = null;
-          let latestKey = null;
-          
-          for (let i = 0; i < localStorage.length; i++) {
-              const key = localStorage.key(i);
-              if (key && key.startsWith(`transaction_${userId}_`)) {
-                  const trx = JSON.parse(localStorage.getItem(key));
-                  if (!latestTransaction || new Date(trx.date) > new Date(latestTransaction.date)) {
-                      latestTransaction = trx;
-                      latestKey = key;
-                  }
-              }
+        let latestTransaction = null;
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && key.startsWith(`transaction_${userId}_`)) {
+            const trx = JSON.parse(localStorage.getItem(key));
+            if (!latestTransaction || new Date(trx.date) > new Date(latestTransaction.date)) {
+              latestTransaction = trx;
+            }
           }
-          
-          if (latestTransaction) {
-              console.log("Found latest transaction:", latestKey);
-              setTransaction(latestTransaction);
-          } else {
-              navigate("/riwayat-tiket");
-          }
-      } else {
+        }
+        if (latestTransaction) {
+          setTransaction(latestTransaction);
+        } else {
           navigate("/riwayat-tiket");
+        }
+      } else {
+        navigate("/riwayat-tiket");
       }
-  }
+    }
 
-  const timer = setInterval(() => {
-      setCountdown((prev) => {
-          if (prev <= 1) {
-              clearInterval(timer);
-              navigate("/riwayat-tiket");
-              return 0;
-          }
-          return prev - 1;
-      });
-  }, 1000);
+    const timer = setTimeout(() => {
+      navigate("/riwayat-tiket");
+    }, 5000);
 
-  return () => clearInterval(timer);
-}, [navigate]);
+    return () => clearTimeout(timer);
+  }, [navigate]);
 
   const formatRupiah = (angka) => {
     return new Intl.NumberFormat('id-ID', {
@@ -83,6 +55,7 @@ useEffect(() => {
   };
 
   const formatTanggal = (tanggal) => {
+    if (!tanggal) return "";
     return new Date(tanggal).toLocaleDateString('id-ID', {
       weekday: 'long',
       day: 'numeric',
@@ -95,6 +68,7 @@ useEffect(() => {
     return (
       <div className="payment-loading">
         <div className="loading-spinner"></div>
+        <p>Memuat detail transaksi...</p>
       </div>
     );
   }
@@ -111,83 +85,51 @@ useEffect(() => {
         <h3>Detail Transaksi</h3>
         
         <div className="transaction-detail">
-          <span className="detail-label">
-            <i>🆔</i> ID Transaksi
-          </span>
-          <span className="detail-value transaction-id" style={{ color: '#ffffff' }}>{transaction.id}</span>
-        </div>
-        
-        
-      <div className="transaction-detail">
-        <span className="detail-label">
-          <i>🎬</i> Film
-        </span>
-        <span className="detail-value" style={{ color: '#ffffff' }}>
-    {transaction.jadwal?.Judul_Film || transaction.jadwal?.judul_film || "Film Tidak Diketahui"}
-  </span>
-      </div>
-        
-        <div className="transaction-detail">
-          <span className="detail-label">
-            <i>📅</i> Tanggal
-          </span>
-          <span className="detail-value" style={{ color: '#ffffff' }}>{formatTanggal(transaction.jadwal?.Tanggal)}</span>
+          <span className="detail-label"><i>🆔</i> ID Transaksi</span>
+          <span className="detail-value transaction-id">{transaction.id}</span>
         </div>
         
         <div className="transaction-detail">
-          <span className="detail-label">
-            <i>⏰</i> Jam
-          </span>
-          <span className="detail-value" style={{ color: '#ffffff' }}>{transaction.jadwal?.Jam_Mulai?.substring(0, 5)} WIB</span>
+          <span className="detail-label"><i>🎬</i> Film</span>
+          <span className="detail-value">{transaction.jadwal?.Judul_Film || transaction.jadwal?.judul_film || "Film Tidak Diketahui"}</span>
         </div>
         
         <div className="transaction-detail">
-          <span className="detail-label">
-            <i>🎥</i> Studio
-          </span>
-          <span className="detail-value" style={{ color: '#ffffff' }}>
-            {transaction.jadwal?.Nama_Studio || `Studio ${transaction.jadwal?.No_Studio}`}
-          </span>
+          <span className="detail-label"><i>📅</i> Tanggal</span>
+          <span className="detail-value">{formatTanggal(transaction.jadwal?.Tanggal)}</span>
         </div>
         
         <div className="transaction-detail">
-          <span className="detail-label">
-            <i>💺</i> Kursi
-          </span>
-          <span className="detail-value" style={{ color: '#ffffff' }}>
-            {transaction.seats?.join(", ") || "-"}
-          </span>
+          <span className="detail-label"><i>⏰</i> Jam</span>
+          <span className="detail-value">{transaction.jadwal?.Jam_Mulai?.substring(0, 5)} WIB</span>
         </div>
         
         <div className="transaction-detail">
-          <span className="detail-label">
-            <i>💰</i> Total
-          </span>
-          <span className="detail-value total-amount" style={{ color: '#ffffff' }}>
-            {formatRupiah(transaction.total)}
-          </span>
+          <span className="detail-label"><i>🎥</i> Studio</span>
+          <span className="detail-value">{transaction.jadwal?.Nama_Studio || `Studio ${transaction.jadwal?.No_Studio}`}</span>
         </div>
         
         <div className="transaction-detail">
-          <span className="detail-label">
-            <i>💳</i> Metode
-          </span>
-          <span className="detail-value" style={{ color: '#ffffff' }}>{transaction.paymentMethod || "Transfer Bank"}</span>
+          <span className="detail-label"><i>💺</i> Kursi</span>
+          <span className="detail-value">{transaction.seats?.join(", ") || "-"}</span>
+        </div>
+        
+        <div className="transaction-detail">
+          <span className="detail-label"><i>💰</i> Total</span>
+          <span className="detail-value total-amount">{formatRupiah(transaction.total)}</span>
+        </div>
+        
+        <div className="transaction-detail">
+          <span className="detail-label"><i>💳</i> Metode</span>
+          <span className="detail-value">{transaction.paymentMethod || "Transfer Bank"}</span>
         </div>
       </div>
 
       <div className="success-actions">
-        <button
-          onClick={() => navigate("/riwayat-tiket")}
-          className="success-button primary"
-        >
+        <button onClick={() => navigate("/riwayat-tiket")} className="success-button primary">
           📋 Lihat Riwayat Tiket
         </button>
-        
-        <button
-          onClick={() => window.print()}
-          className="success-button secondary"
-        >
+        <button onClick={() => window.print()} className="success-button secondary">
           🖨️ Cetak Tiket
         </button>
       </div>
@@ -198,10 +140,7 @@ useEffect(() => {
         detik...
       </div>
 
-      <button
-        onClick={() => navigate("/")}
-        className="back-button"
-      >
+      <button onClick={() => navigate("/")} className="back-button">
         ← Kembali ke Beranda
       </button>
     </div>

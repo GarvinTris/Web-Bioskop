@@ -62,10 +62,6 @@ function Navbar() {
     <>
       <nav>
         <div className="layout">
-          <select className="dropdown">
-            <option value="en">ID</option>
-            <option value="id">EN</option>
-          </select>
           <Link to="/" style={{ textDecoration: "none" }}>
             <h1>FilmOut</h1>
           </Link>

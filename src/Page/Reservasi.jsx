@@ -14,18 +14,40 @@ function Reservasi() {
   const [activeTab, setActiveTab] = useState("synopsis");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [trailerEmbedUrl, setTrailerEmbedUrl] = useState("");
+  const [hasTrailer, setHasTrailer] = useState(false);
+  const [isTrailerPlaying, setIsTrailerPlaying] = useState(false);
 
   const navigate = useNavigate();
   const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
 
-  // 🔴 PERBAIKAN: Coba dengan GET dulu untuk debugging
+  // Fungsi untuk extract YouTube ID dan buat embed URL
+  const getYouTubeEmbedUrl = (url, autoplay = 0) => {
+    if (!url) return "";
+    
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\?]+)/,
+      /youtube\.com\/shorts\/([^&\?]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match) {
+        const videoId = match[1];
+        return `https://www.youtube.com/embed/${videoId}?autoplay=${autoplay}&rel=0&modestbranding=1&showinfo=0&controls=1&mute=0`;
+      }
+    }
+    
+    return url;
+  };
+
+  // Fetch data film
   useEffect(() => {
     const fetchMovieData = async () => {
       setLoading(true);
       setError(null);
       
       try {
-        // Cek dulu apakah ada film dengan judul yang sama
         const url = `http://localhost/Web_Bioskop/API_PHP/bioskop.php?judul=${encodeURIComponent(decodedTitle)}`;
         console.log("Fetching URL:", url);
         
@@ -39,19 +61,26 @@ function Reservasi() {
         const data = await response.json();
         console.log("Response data:", data);
         
-        // 🔴 CEK STRUKTUR RESPONSE
         if (data && Array.isArray(data) && data.length > 0) {
           const filmData = data[0];
           console.log("Film found:", filmData);
           setMovie(filmData);
           setJadwal(filmData.jadwal || []);
           setFilteredJadwal(filmData.jadwal || []);
+          
+          // Set trailer embed URL jika ada
+          if (filmData.Trailer_URL) {
+            const embedUrl = getYouTubeEmbedUrl(filmData.Trailer_URL, 0);
+            setTrailerEmbedUrl(embedUrl);
+            setHasTrailer(true);
+          } else {
+            setHasTrailer(false);
+          }
         } else if (data && data.success === false) {
           setError(data.message || "Film tidak ditemukan");
           setMovie(null);
         } else {
           console.warn("No film found, trying alternative fetch...");
-          // 🔴 ALTERNATIF: Ambil semua film lalu cari manual
           await fetchAllMoviesAndFind();
         }
       } catch (err) {
@@ -62,7 +91,6 @@ function Reservasi() {
       }
     };
     
-    // Fungsi alternatif: ambil semua film lalu cari
     const fetchAllMoviesAndFind = async () => {
       try {
         const response = await fetch('http://localhost/Web_Bioskop/API_PHP/bioskop.php', {
@@ -72,7 +100,6 @@ function Reservasi() {
         console.log("All movies:", allMovies);
         
         if (Array.isArray(allMovies)) {
-          // Cari film dengan judul yang match (case insensitive)
           const foundMovie = allMovies.find(
             film => film.Judul_Film?.toLowerCase() === decodedTitle.toLowerCase()
           );
@@ -80,7 +107,15 @@ function Reservasi() {
           if (foundMovie) {
             console.log("Found movie in all movies:", foundMovie);
             setMovie(foundMovie);
-            // Ambil jadwal terpisah
+            
+            if (foundMovie.Trailer_URL) {
+              const embedUrl = getYouTubeEmbedUrl(foundMovie.Trailer_URL, 0);
+              setTrailerEmbedUrl(embedUrl);
+              setHasTrailer(true);
+            } else {
+              setHasTrailer(false);
+            }
+            
             await fetchJadwalForMovie(foundMovie.ID_Film);
           } else {
             setError(`Film "${decodedTitle}" tidak ditemukan`);
@@ -94,7 +129,6 @@ function Reservasi() {
       }
     };
     
-    // Ambil jadwal berdasarkan ID Film
     const fetchJadwalForMovie = async (idFilm) => {
       try {
         const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/jadwal.php?id_film=${idFilm}`, {
@@ -132,6 +166,13 @@ function Reservasi() {
     setFilteredJadwal(filtered);
     setSelectedJadwal(null);
   }, [selectedDate, jadwal]);
+
+  // Handle play trailer
+  const handlePlayTrailer = () => {
+    setIsTrailerPlaying(true);
+    const newUrl = getYouTubeEmbedUrl(movie?.Trailer_URL, 1);
+    setTrailerEmbedUrl(newUrl);
+  };
 
   // Mendapatkan daftar tanggal unik
   const uniqueDates = [...new Set(jadwal.map((j) => j.Tanggal))].sort();
@@ -221,7 +262,42 @@ function Reservasi() {
 
   return (
     <div className="reservasi-container">
-      {/* Bagian atas: poster dan info film */}
+      
+      {/* ========== TRAILER HERO SECTION - FULL WIDTH ========== */}
+      <div className="trailer-hero">
+        {hasTrailer && trailerEmbedUrl ? (
+          <div className="trailer-wrapper">
+            <iframe
+              src={trailerEmbedUrl}
+              title={`Trailer ${movie.Judul_Film}`}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="trailer-video"
+            ></iframe>
+            <div className="trailer-gradient"></div>
+            
+            {/* Tombol Play jika trailer belum diputar */}
+            {!isTrailerPlaying && (
+              <button className="trailer-play-button" onClick={handlePlayTrailer}>
+                <span className="play-icon">▶</span> PUTAR TRAILER
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="trailer-placeholder">
+            <img 
+              src={`http://localhost/Web_Bioskop/API_PHP/uploads/${movie.image}`} 
+              alt={movie.Judul_Film}
+            />
+            <div className="placeholder-text">
+              <p>Trailer tidak tersedia</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ========== BAGIAN POSTER & INFO FILM (STYLE AWAL, TETAP SAMA) ========== */}
       <div className="reservasi-showcase">
         <img 
           src={`http://localhost/Web_Bioskop/API_PHP/uploads/${movie.image}`} 
@@ -244,19 +320,10 @@ function Reservasi() {
             <span className="label">Director:</span>
             <span className="value">{movie.Director || "-"}</span>
           </div>
-          <button
-            className="trailer-btn"
-            onClick={() => {
-              if (movie.Trailer_URL) window.open(movie.Trailer_URL, "_blank");
-              else alert("Trailer tidak tersedia");
-            }}
-          >
-            <i className="fa-brands fa-youtube"></i> See Trailer
-          </button>
         </div>
       </div>
 
-      {/* Tab navigasi */}
+      {/* ========== TAB NAVIGASI (TETAP SAMA) ========== */}
       <div className="tab-navigation">
         <button className={`tab-btn ${activeTab === "synopsis" ? "active" : ""}`} onClick={() => setActiveTab("synopsis")}>
           SYNOPSIS
@@ -266,7 +333,7 @@ function Reservasi() {
         </button>
       </div>
 
-      {/* Konten tab */}
+      {/* ========== KONTEN TAB (TETAP SAMA) ========== */}
       <div className="tab-content">
         {activeTab === "synopsis" && (
           <div className="synopsis-content">
@@ -276,7 +343,6 @@ function Reservasi() {
 
         {activeTab === "schedule" && (
           <div className="schedule-content">
-            {/* Filter tanggal */}
             {uniqueDates.length > 0 && (
               <div className="date-filter">
                 <h3>Pilih Tanggal</h3>
@@ -293,7 +359,6 @@ function Reservasi() {
               </div>
             )}
 
-            {/* Daftar jadwal */}
             <div className="jadwal-section">
               <h2>{movie.Judul_Film} SCHEDULE IN CINEMAS</h2>
               <p className="result-count">{filteredJadwal.length} jadwal tersedia</p>

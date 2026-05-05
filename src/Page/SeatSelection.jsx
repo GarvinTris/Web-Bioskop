@@ -1,4 +1,3 @@
-// SeatSelection.js
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../style/SeatSelection.css"
@@ -18,7 +17,6 @@ function SeatSelection() {
   const rows = ['A', 'B', 'C', 'D', 'E'];
   const seatsPerRow = 8;
 
-  // Get seat display name (A1, A2, etc)
   const getSeatDisplayName = (baris, nomor) => {
     return `${baris}${nomor}`;
   };
@@ -28,21 +26,30 @@ function SeatSelection() {
     try {
         const timestamp = new Date().getTime();
         const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/get_booked_seats.php?id_jadwal=${idJadwal}&t=${timestamp}`, {
-            credentials: 'include'
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+            }
         });
+        
         const data = await response.json();
+        console.log("Response get_booked_seats:", data);
         
         if (data.success) {
-            // Data sudah dalam format ["A1", "B2", ...] dari API
-            setBookedSeats(data.booked_seats || []);
-            console.log("Booked seats loaded:", data.booked_seats);
+            const booked = Array.isArray(data.booked_seats) ? data.booked_seats : [];
+            setBookedSeats(booked);
+            console.log("Booked seats loaded:", booked);
+        } else {
+            console.error("API Error:", data.error);
+            setBookedSeats([]);
         }
     } catch (error) {
         console.error("Error fetching booked seats:", error);
+        setBookedSeats([]);
     }
-};
+  };
 
-  // Fetch studio name from database
   const fetchStudioName = async (noStudio) => {
     try {
       const response = await fetch(`http://localhost/Web_Bioskop/API_PHP/getStudio.php`);
@@ -59,23 +66,19 @@ function SeatSelection() {
     }
   };
 
-  // Di useEffect, pastikan harga diambil dengan benar
+  // Load semua data saat pertama kali halaman dimuat
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       
       let jadwalData = null;
       
-      // Try to get from location state first
       if (location.state && location.state.selectedJadwal) {
         jadwalData = location.state.selectedJadwal;
-        console.log("Jadwal data from state:", jadwalData);
       } else {
-        // Try to get from localStorage
         const storedData = localStorage.getItem("selectedJadwal");
         if (storedData) {
           jadwalData = JSON.parse(storedData);
-          console.log("Jadwal data from localStorage:", jadwalData);
         }
       }
       
@@ -86,13 +89,10 @@ function SeatSelection() {
         return;
       }
       
-      // 🔴 PASTIKAN JUDUL FILM ADA
       if (!jadwalData.Judul_Film && !jadwalData.judul_film) {
-        console.warn("No movie title found in jadwal data!");
         jadwalData.Judul_Film = "Film Tidak Diketahui";
       }
       
-      // Set harga kursi
       let harga = jadwalData.Harga;
       if (typeof harga === 'string') {
         harga = parseInt(harga);
@@ -120,6 +120,25 @@ function SeatSelection() {
     loadData();
   }, [navigate, location]);
 
+  // Auto refresh booked seats setiap 10 detik (tapi hanya jika halaman aktif)
+  useEffect(() => {
+    let intervalId;
+    
+    if (selectedJadwal?.ID_Jadwal && !loading) {
+      intervalId = setInterval(() => {
+        console.log("Auto refreshing booked seats...");
+        fetchBookedSeats(selectedJadwal.ID_Jadwal);
+      }, 10000); // Refresh setiap 10 detik
+    }
+    
+    // Cleanup interval saat komponen unmount atau selectedJadwal berubah
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [selectedJadwal, loading]); // Hanya bergantung pada selectedJadwal dan loading
+
   const showAlertMessage = (message) => {
     setAlertMessage(message);
     setShowAlert(true);
@@ -127,14 +146,20 @@ function SeatSelection() {
   };
 
   const toggleSeat = (seatId) => {
+    // Cek apakah kursi sudah dipesan
+    if (bookedSeats.includes(seatId)) {
+        showAlertMessage(`Kursi ${seatId} sudah dipesan!`);
+        return;
+    }
+    
     if (selectedSeats.includes(seatId)) {
-      setSelectedSeats(selectedSeats.filter(s => s !== seatId));
+        setSelectedSeats(selectedSeats.filter(s => s !== seatId));
     } else {
-      if (selectedSeats.length < 5) {
-        setSelectedSeats([...selectedSeats, seatId]);
-      } else {
-        showAlertMessage("Maksimal 5 kursi per transaksi");
-      }
+        if (selectedSeats.length < 5) {
+            setSelectedSeats([...selectedSeats, seatId]);
+        } else {
+            showAlertMessage("Maksimal 5 kursi per transaksi");
+        }
     }
   };
 
@@ -144,7 +169,6 @@ function SeatSelection() {
       return;
     }
 
-    // Prepare data for payment
     const paymentData = {
       selectedSeats: selectedSeats,
       jadwal: {
@@ -161,7 +185,6 @@ function SeatSelection() {
     navigate("/payment");
   };
 
-  // Format time properly
   const formatTime = (timeString) => {
     if (!timeString) return "";
     if (timeString.includes(':')) {
@@ -172,7 +195,6 @@ function SeatSelection() {
     return timeString;
   };
 
-  // Format date to Indonesian format
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -185,17 +207,6 @@ function SeatSelection() {
   };
 
   const totalPrice = selectedSeats.length * seatPrice;
-
-  // Debug log
-  useEffect(() => {
-    if (selectedJadwal) {
-      console.log("Selected Jadwal:", selectedJadwal);
-      console.log("Studio Name:", studioName);
-      console.log("Seat price:", seatPrice);
-      console.log("Total price:", totalPrice);
-      console.log("Booked seats:", bookedSeats);
-    }
-  }, [selectedJadwal, selectedSeats, bookedSeats, seatPrice, studioName]);
 
   if (loading) {
     return (
@@ -223,34 +234,20 @@ function SeatSelection() {
         <h2>Pilih Kursi</h2>
       </div>
       
-      {/* Info Film dan Jadwal */}
       <div className="movie-info-card">
         <h3>{selectedJadwal.Judul_Film || selectedJadwal.judul_film || "Film"}</h3>
         <div className="movie-info-details">
-          <p>
-            <strong>📅 Tanggal:</strong> {formatDate(selectedJadwal.Tanggal)}
-          </p>
-          <p>
-            <strong>⏰ Jam:</strong> {formatTime(selectedJadwal.Jam_Mulai)} WIB
-          </p>
-          <p>
-            <strong>🎪 Studio:</strong> {studioName || `Studio ${selectedJadwal.No_Studio}`}
-          </p>
-          <p>
-            <strong>🎬 Durasi:</strong> {selectedJadwal.Durasi || "Belum tersedia"}
-          </p>
-          <p>
-            <strong>💰 Harga Tiket:</strong> Rp {seatPrice.toLocaleString()}
-          </p>
+          <p><strong>📅 Tanggal:</strong> {formatDate(selectedJadwal.Tanggal)}</p>
+          <p><strong>⏰ Jam:</strong> {formatTime(selectedJadwal.Jam_Mulai)} WIB</p>
+          <p><strong>🎪 Studio:</strong> {studioName || `Studio ${selectedJadwal.No_Studio}`}</p>
+          <p><strong>💰 Harga Tiket:</strong> Rp {seatPrice.toLocaleString()}</p>
         </div>
       </div>
 
-      {/* Screen */}
       <div className="screen-container">
         <div className="screen">LAYAR</div>
       </div>
 
-      {/* Kursi */}
       <div className="seats-container">
         {rows.map(row => (
           <div key={row} className="seat-row">
@@ -268,7 +265,7 @@ function SeatSelection() {
               return (
                 <button
                   key={seatDisplayId}
-                  onClick={() => !isBooked && toggleSeat(seatDisplayId)}
+                  onClick={() => toggleSeat(seatDisplayId)}
                   disabled={isBooked}
                   className={seatClass}
                   title={isBooked ? "Kursi sudah dipesan" : "Klik untuk memilih kursi"}
@@ -281,7 +278,6 @@ function SeatSelection() {
         ))}
       </div>
 
-      {/* Legend */}
       <div className="legend-container">
         <div className="legend-item">
           <div className="legend-box available"></div>
@@ -297,22 +293,13 @@ function SeatSelection() {
         </div>
       </div>
 
-      {/* Ringkasan & Tombol */}
       <div className="summary-card">
         <div className="summary-content">
           <div className="summary-info">
-            <p>
-              <strong>💺 Kursi dipilih:</strong> {selectedSeats.join(", ") || "Belum ada"}
-            </p>
-            <p>
-              <strong>🎟️ Jumlah kursi:</strong> {selectedSeats.length} kursi
-            </p>
-            <p>
-              <strong>💰 Harga per kursi:</strong> Rp {seatPrice.toLocaleString()}
-            </p>
-            <p>
-              <strong>💵 Total:</strong> <span className="total-price">Rp {totalPrice.toLocaleString()}</span>
-            </p>
+            <p><strong>💺 Kursi dipilih:</strong> {selectedSeats.join(", ") || "Belum ada"}</p>
+            <p><strong>🎟️ Jumlah kursi:</strong> {selectedSeats.length} kursi</p>
+            <p><strong>💰 Harga per kursi:</strong> Rp {seatPrice.toLocaleString()}</p>
+            <p><strong>💵 Total:</strong> <span className="total-price">Rp {totalPrice.toLocaleString()}</span></p>
           </div>
           <button
             onClick={handleContinue}
