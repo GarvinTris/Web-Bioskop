@@ -6,7 +6,7 @@ import "../style/Login.css";
 function AdminLogin() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [mfaCode, setMfaCode] = useState(["", "", "", "", "", ""]); // Array untuk 6 digit
+    const [mfaCode, setMfaCode] = useState(["", "", "", "", "", ""]);
     const [step, setStep] = useState("login");
     const [loading, setLoading] = useState(false);
     const [countdown, setCountdown] = useState(0);
