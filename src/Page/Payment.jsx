@@ -87,7 +87,7 @@ function Payment() {
         const userIdFromStorage = localStorage.getItem("userId");
         if (userIdFromStorage) {
           userId = userIdFromStorage;
-        }
+        }x  
       }
       
       if (!userId) {

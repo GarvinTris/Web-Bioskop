@@ -1102,30 +1102,6 @@ const filteredOrders = transactions.filter(order => {
           <option value="cancelled">Dibatalkan</option>
         </select>
       </div>
-          {/* ==================== FILTER & SEARCH ==================== */}
-    <div style={{ display: "flex", gap: "15px", marginBottom: "20px", flexWrap: "wrap" }}>
-      <div style={{ flex: 2 }}>
-        <input 
-          type="text" 
-          placeholder="🔍 Cari ID Pesanan / Penonton / Film..." 
-          value={searchOrder}
-          onChange={(e) => setSearchOrder(e.target.value)}
-          style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ddd", color: "#000" }}
-        />
-      </div>
-      <div>
-        <select 
-          value={filterStatus} 
-          onChange={(e) => setFilterStatus(e.target.value)}
-          style={{ padding: "10px", borderRadius: "8px", border: "1px solid #ddd", color: "#000" }}
-        >
-          <option value="all">Semua Status</option>
-          <option value="pending">Menunggu Pembayaran</option>
-          <option value="paid">Sudah Dibayar</option>
-          <option value="completed">Selesai</option>
-          <option value="cancelled">Dibatalkan</option>
-        </select>
-      </div>
       <button 
         onClick={fetchOrders} 
         style={{ padding: "10px 20px", backgroundColor: "#4caf50", color: "white", border: "none", borderRadius: "8px", cursor: "pointer" }}
@@ -1134,7 +1110,7 @@ const filteredOrders = transactions.filter(order => {
       </button>
     </div>
 
-    {/* 🔥🔥🔥 TAMBAHKAN INI - FILTER TANGGAL 🔥🔥🔥 */}
+    {/* FILTER TANGGAL */}
     <div style={{ 
       display: "flex", 
       gap: "15px", 
@@ -1196,12 +1172,6 @@ const filteredOrders = transactions.filter(order => {
 
     {/* ==================== TABEL PESANAN ==================== */}
     <div style={{ overflowX: "auto" }}>
-      {/* ... tabel ... */}
-    </div>
-    </div>
-
-    {/* ==================== TABEL PESANAN ==================== */}
-    <div style={{ overflowX: "auto" }}>
       <table className="admin-table" style={{ color: "#000", width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
@@ -1258,7 +1228,7 @@ const filteredOrders = transactions.filter(order => {
                     <button className="btn-delete" onClick={() => handleDeleteOrder(order.ID_Transaksi)} disabled={loading} style={{ padding: "4px 8px", fontSize: "11px" }}>🗑️ Hapus</button>
                   </div>
                 </td>
-               </tr>
+              </tr>
             ))
           )}
         </tbody>
