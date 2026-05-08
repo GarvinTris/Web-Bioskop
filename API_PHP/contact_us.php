@@ -83,8 +83,8 @@ if (!$phpmailer_found) {
     
     $sent = @mail($to, $email_subject, $email_body, $headers);
     
-    $user_body = "Halo $name,\n\nTerima kasih telah menghubungi Cinema XXI.\n\nKami akan merespon dalam 1x24 jam.\n\nSalam hangat,\nTim Cinema XXI";
-    @mail($email, "Terima kasih telah menghubungi Cinema XXI", $user_body, "From: noreply@cinema-xxi.com\r\n");
+    $user_body = "Halo $name,\n\nTerima kasih telah menghubungi Filmout.\n\nKami akan merespon dalam 1x24 jam.\n\nSalam hangat,\nTim Filmout";
+    @mail($email, "Terima kasih telah menghubungi Filmout", $user_body, "From: noreply@cinema-xxi.com\r\n");
     
     echo json_encode(["success" => $sent, "message" => $sent ? "Pesan berhasil dikirim!" : "Gagal mengirim email"]);
     exit;
@@ -107,7 +107,7 @@ function sendEmail($to, $subject, $body, $altBody = '', $replyTo = null, $replyT
         $mail->Port       = 465;
         $mail->SMTPDebug  = 0;
         
-        $mail->setFrom('garvintriskie15@gmail.com', 'Cinema XXI');
+        $mail->setFrom('garvintriskie15@gmail.com', 'Filmout');
         $mail->addAddress($to);
         
         if ($replyTo) {
@@ -171,10 +171,10 @@ $admin_body = "
             </div>
             
             <hr>
-            <p style='font-size: 12px; color: #666; text-align: center;'>Email ini dikirim otomatis dari sistem Cinema XXI<br>Balas email ini untuk membalas pesan dari " . htmlspecialchars($name) . "</p>
+            <p style='font-size: 12px; color: #666; text-align: center;'>Email ini dikirim otomatis dari sistem Filmout<br>Balas email ini untuk membalas pesan dari " . htmlspecialchars($name) . "</p>
         </div>
         <div class='footer'>
-            <p>© " . date('Y') . " Cinema XXI. All rights reserved.</p>
+            <p>© " . date('Y') . " Filmout. All rights reserved.</p>
             <p>Jl. Sudirman No. 123, Jakarta Selatan, Indonesia</p>
         </div>
     </div>
@@ -212,7 +212,7 @@ $user_body = "
 <body>
     <div class='container'>
         <div class='header'>
-            <h2>🎬 Cinema XXI</h2>
+            <h2>🎬 Filmout</h2>
             <p>Terima kasih telah menghubungi kami</p>
         </div>
         <div class='content'>
@@ -237,10 +237,10 @@ $user_body = "
             <hr>
             
             <p style='text-align: center;'>Salam hangat,<br>
-            <strong style='color: #DC143C;'>Tim Cinema XXI</strong></p>
+            <strong style='color: #DC143C;'>Tim Filmout</strong></p>
         </div>
         <div class='footer'>
-            <p>© " . date('Y') . " Cinema XXI. All rights reserved.</p>
+            <p>© " . date('Y') . " Filmout. All rights reserved.</p>
             <p>Jl. Sudirman No. 123, Jakarta Selatan, Indonesia</p>
         </div>
     </div>
@@ -255,11 +255,11 @@ $user_alt .= "Pesan Anda:\n$message\n\n";
 $user_alt .= "Atau hubungi kami:\n";
 $user_alt .= "Telepon: +62 812-3456-7890\n";
 $user_alt .= "Email: info@cinema-xxi.com\n\n";
-$user_alt .= "Salam hangat,\nTim Cinema XXI";
+$user_alt .= "Salam hangat,\nTim Filmout";
 
 // ============ KIRIM EMAIL ============
-$admin_sent = sendEmail("garvintriskie15@gmail.com", "[CONTACT US] $subject", $admin_body, $admin_alt, $email, $name);
-$user_sent = sendEmail($email, "Terima kasih telah menghubungi Cinema XXI", $user_body, $user_alt);
+$admin_sent = sendEmail("garvintriskie15@gmail.com", "Contact Us $subject", $admin_body, $admin_alt, $email, $name);
+$user_sent = sendEmail($email, "Terima kasih telah menghubungi Filmout", $user_body, $user_alt);
 
 if ($admin_sent && $user_sent) {
     echo json_encode(["success" => true, "message" => "Pesan berhasil dikirim! Kami akan merespon segera."]);
