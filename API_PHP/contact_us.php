@@ -151,7 +151,7 @@ $admin_body = "
 <body>
     <div class='container'>
         <div class='header'>
-            <h2>🎬 Cinema XXI</h2>
+            <h2>🎬 Filmout</h2>
             <p style='margin: 5px 0 0; opacity: 0.9;'>Pesan Baru dari Contact Us</p>
         </div>
         <div class='content'>
