@@ -151,22 +151,22 @@ $admin_body = "
 <body>
     <div class='container'>
         <div class='header'>
-            <h2>🎬 Filmout</h2>
+            <h2>Filmout</h2>
             <p style='margin: 5px 0 0; opacity: 0.9;'>Pesan Baru dari Contact Us</p>
         </div>
         <div class='content'>
             <div class='info-box'>
-                <p><span class='label'>👤 Nama:</span> " . htmlspecialchars($name) . "</p>
-                <p><span class='label'>📧 Email:</span> " . htmlspecialchars($email) . "</p>
-                <p><span class='label'>📅 Tanggal:</span> " . date('d-m-Y H:i:s') . "</p>
+                <p><span class='label'>Nama:</span> " . htmlspecialchars($name) . "</p>
+                <p><span class='label'>Email:</span> " . htmlspecialchars($email) . "</p>
+                <p><span class='label'>Tanggal:</span> " . date('d-m-Y H:i:s') . "</p>
             </div>
             
             <div class='info-box'>
-                <p><span class='label'>📌 Subjek:</span> " . htmlspecialchars($subject) . "</p>
+                <p><span class='label'>Subjek:</span> " . htmlspecialchars($subject) . "</p>
             </div>
             
             <div class='message-box'>
-                <p><span class='label'>💬 Pesan:</span></p>
+                <p><span class='label'>Pesan:</span></p>
                 <p>" . nl2br(htmlspecialchars($message)) . "</p>
             </div>
             
